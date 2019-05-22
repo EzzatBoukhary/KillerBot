@@ -19,15 +19,15 @@ namespace Bot.Entities
 
         public IReadOnlyList<string> Prefixes { get; set; } = new List<string>();
 
-        public IReadOnlyList<string> WelcomeMessages { get; private set; } = new List<string> { };
+        public IReadOnlyList<string> WelcomeMessages { get; set; } = new List<string> { };
 
-        public IReadOnlyList<string> LeaveMessages { get; private set; } = new List<string>();
+        public IReadOnlyList<string> LeaveMessages { get; set; } = new List<string>();
 
-        public Dictionary<string, string> Tags { get; private set; } = new Dictionary<string, string>();
+        public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
 
         //public Modules.ServerBots.GuildData BotData { get; private set; }
 
-        public RoleByPhraseSettings RoleByPhraseSettings { get; private set; } = new RoleByPhraseSettings();
+        public RoleByPhraseSettings RoleByPhraseSettings { get; set; } = new RoleByPhraseSettings();
 
         public int ServerActivityLog { get; set; }
 

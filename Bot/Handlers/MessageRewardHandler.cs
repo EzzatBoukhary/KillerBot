@@ -31,7 +31,7 @@ namespace Bot.Handlers
             }
 
             // Generate a randomized reward in the configured boundries
-            userAcc.Miunies += (ulong) Global.Rng.Next(Constants.MessagRewardMinMax.Item1, Constants.MessagRewardMinMax.Item2 + 1);
+            userAcc.Coins += (ulong) Global.Rng.Next(Constants.MessagRewardMinMax.Item1, Constants.MessagRewardMinMax.Item2 + 1);
             userAcc.LastMessage = now;
 
             _globalUserAccounts.SaveAccounts(msg.Author.Id);

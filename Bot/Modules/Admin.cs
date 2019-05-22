@@ -7,6 +7,7 @@ using System.Net;
 using System.Threading.Tasks;
 using System.IO;
 using Bot.Extensions;
+using Discord.Addons.Interactive;
 using Bot.Handlers;
 using Bot.Preconditions;
 using System.Collections.Generic;
@@ -25,11 +26,24 @@ namespace Bot.Modules
         [Command("purge", RunMode = RunMode.Async)]
         [Remarks("Purges An Amount Of Messages")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task Clear(int amountOfMessagesToDelete)
         {
-            await (Context.Message.Channel as SocketTextChannel).DeleteMessagesAsync(await Context.Message.Channel.GetMessagesAsync(amountOfMessagesToDelete + 1).FlattenAsync());
-            await ReplyAsync("Messages specified were purged. :white_check_mark: ");
-        }
+            try
+            {
+                var messages = await Context.Channel.GetMessagesAsync(amountOfMessagesToDelete + 1).FlattenAsync();
+                await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
+                var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
+                await Task.Delay(5000);
+                await m.DeleteAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Couldn't delete message on {Context.Guild.Name}, Error: {ex.Message}");
+                await ReplyAsync($"<:KBfail:580129304592252995> Error: {ex.Message}");
+            }
+        
+    }
 
 
         [Command("purge")]
@@ -45,7 +59,9 @@ namespace Bot.Modules
             var result = messages.Where(x => x.Author.Id == user.Id && x.CreatedAt >= DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(14)));
 
             await (Context.Message.Channel as SocketTextChannel).DeleteMessagesAsync(result);
-            await ReplyAsync("Messages specified were purged. :white_check_mark: ");
+            var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
+            await Task.Delay(5000);
+            await m.DeleteAsync();
         }
 
         [Command("Kick"), Summary("Kick @Username This is a reason"), Remarks("Kicks a user from the guild")]
@@ -54,7 +70,7 @@ namespace Bot.Modules
         public async Task KickAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] SocketGuildUser user = null, [Remainder] string reason = null)
         {
             if (user == null)
-                throw new ArgumentException("You must mention a user!");
+                throw new ArgumentException("You must mention a user! <:KBfail:580129304592252995>");
             if (string.IsNullOrEmpty(reason))
             {
                 reason = "[No reason was provided]";
@@ -86,57 +102,71 @@ namespace Bot.Modules
             Console.WriteLine($"{DateTime.Now}: {user} was kicked in {Context.Guild}");
             
         }
-        [Command("mutetest")]
-        [Remarks("Mutes A User")]
-        public async Task Mute(SocketGuildUser user)
-        {
-            await Context.Guild.GetUser(user.Id).ModifyAsync(x => x.Mute = true);
-
-            var muteRole = await GetMuteRole(user.Guild);
-            if (!user.Roles.Any(r => r.Id == muteRole.Id))
-                await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-        }
-        [Command("AddRoletest")]
+       
+       /* [Command("AddRole")]
         [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task AddRoleAsync(SocketGuildUser user, [Remainder] SocketRole role)
         {
+          
             await user.AddRoleAsync(role);
-            await ReplyAsync($"Added the role **{role}** to {user.Mention}!");
-               
-        }
+            await ReplyAsync($"Added **{role}** to {user.Mention}!");
+
+        } 
+
+        [Command("RemoveRole")]
+        [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
+        {
+            await user.RemoveRoleAsync(role);
+            await ReplyAsync($"Removed **{role}** from {user.Mention}!");
+
+        } */
+
         [Command("mute")]
         [Remarks("Mutes A User")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task Mute([NoSelf][RequireBotHigherHirachy] SocketGuildUser user = null, [Remainder] string reason = null)
         {
-           
+
             if (user == null)
                 throw new ArgumentException("You must mention a user!");
             if (string.IsNullOrEmpty(reason))
-                throw new ArgumentException("You must mention a reason!");
-            /*   if (string.IsNullOrEmpty(reason))
-               {
-                   reason = "[No reason was provided]";
-               } */
-
-            await Context.Guild.GetUser(user.Id).ModifyAsync(x => x.Mute = true);
+            {
+                reason = "[No reason was provided]";
+            }
 
             var muteRole = await GetMuteRole(user.Guild);
             if (!user.Roles.Any(r => r.Id == muteRole.Id))
                 await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            await ReplyAsync("User has been muted. :white_check_mark: ");
-        }
+            var usr = Context.Guild.GetUser(user.Id);
 
+            // await (usr as IGuildUser).ModifyAsync(x => x.Mute = true);
+            await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
+            var embed = new EmbedBuilder();
+            embed.Color = new Color(206, 47, 47);
+            embed.Title = "=== Muted User ===";
+            embed.Description = $"**Username: ** {user.Username} || {user.Discriminator}\n**Muted by: ** {Context.User}\n**Reason: **{reason}";
+            await ReplyAsync("", false, embed.Build());
+
+                var embed2 = new EmbedBuilder();
+                embed2.Description = ($"You've been muted from **{Context.Guild.Name}** for **{reason}**.");
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                await dmChannel.SendMessageAsync("", false, embed2.Build());
+
+    }
         [Command("unmute")]
         [Remarks("Unmutes A User")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task Unmute([NoSelf][RequireBotHigherHirachy] SocketGuildUser user)
         {
-            await Context.Guild.GetUser(user.Id).ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
+            //await Context.Guild.GetUser(user.Id).ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
 
-            try { await user.ModifyAsync(x => x.Mute = false).ConfigureAwait(false); } catch { }
-            try { await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); } catch { }
-            await ReplyAsync("User has been unmuted. :white_check_mark: ");
+            await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); 
+            await ReplyAsync("User has been unmuted. <a:KBtick:580851374070431774> ");
         }
 
         [Command("Ban"), Summary("Usage: Ban @Username {Days to prune messages} Reason"), Remarks("Bans a user from the guild")]
@@ -145,7 +175,7 @@ namespace Bot.Modules
         public async Task BanAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] SocketGuildUser user = null, int pruneDays = 0, [Remainder] string reason = null)
         {
             if (user == null)
-                throw new ArgumentException("You must mention a user!");
+                throw new ArgumentException("You must mention a user! <:KBfail:580129304592252995>");
             if (pruneDays == null)
                 throw new ArgumentException("You must mention how many days of the user's messages you would like to prune.");
             if (string.IsNullOrEmpty(reason))
@@ -200,7 +230,7 @@ namespace Bot.Modules
             var theUser = bans.FirstOrDefault(x => x.User.Id == id);
 
             await Context.Guild.RemoveBanAsync(theUser.User);
-            await ReplyAsync($"The user of ID `{id}` has been unbanned. :white_check_mark: ");
+            await ReplyAsync($"The user of ID `{id}` has been unbanned. <a:KBtick:580851374070431774> ");
 
         }
 
@@ -211,7 +241,7 @@ namespace Bot.Modules
         public async Task Nickname([RequireUserHierarchy][RequireBotHigherHirachy]SocketGuildUser username, [Remainder]string name)
         {
             await Context.Guild.GetUser(username.Id).ModifyAsync(x => x.Nickname = name);
-            await ReplyAsync(" :white_check_mark: ");
+            await ReplyAsync(" <a:KBtick:580851374070431774> Nickname changed. ");
         }
 
         [Command("createtext")]
@@ -221,7 +251,7 @@ namespace Bot.Modules
         public async Task Text(string channelname)
         {
             await Context.Guild.CreateTextChannelAsync(channelname);
-            await ReplyAsync("Text channel was created. :white_check_mark: ");
+            await ReplyAsync("Text channel was created. <a:KBtick:580851374070431774> ");
         }
 
         [Command("createvoice")]
@@ -231,7 +261,7 @@ namespace Bot.Modules
         public async Task Voice([Remainder]string channelname)
         {
             await Context.Guild.CreateVoiceChannelAsync(channelname);
-            await ReplyAsync("Voice channel was created. :white_check_mark: ");
+            await ReplyAsync("Voice channel was created. <a:KBtick:580851374070431774> ");
         }
 
         [Command("announce")]
@@ -245,26 +275,7 @@ namespace Bot.Modules
             await Context.Message.DeleteAsync();
         }
 
-        [Command("echo")]
-        [Remarks("Make The Bot Say A Message")]
-
-        public async Task Echo([Remainder] string message)
-        {
-            var embed = EmbedHandler.CreateEmbed("Message by: " + Context.Message.Author.Username, message, EmbedHandler.EmbedMessageType.Info, true);
-
-            await Context.Channel.SendMessageAsync("", false, embed);
-            await Context.Message.DeleteAsync();
-        }
-
-        [Command("setgame"), Alias("ChangeGame", "SetGame")]
-        [Remarks("Change what the bot is currently playing.")]
-        [RequireOwner]
-        public async Task SetGame([Remainder] string gamename)
-        {
-            await Context.Client.SetGameAsync(gamename);
-            await ReplyAsync($"Changed game to `{gamename}`");
-        }
-
+        
         public async Task<IRole> GetMuteRole(IGuild guild)
         {
             const string defaultMuteRoleName = "Muted";
@@ -305,55 +316,6 @@ namespace Bot.Modules
 
             return muteRole;
         }
-
-       
-
-        [Command("ForceLeave")]
-        [Remarks("Usage: |prefix|forceleave {serverName}")]
-        [RequireOwner]
-        public async Task ForceLeaveAsync([Remainder] string serverName)
-        {
-            var target = Context.Client.Guilds.FirstOrDefault(g => g.Name == serverName);
-            if (target is null)
-            {
-                EmbedBuilder builder1 = new EmbedBuilder();
-                builder1.Color = new Color(114, 137, 218);
-                builder1.AddField("ForceLeave",$"I'm not in the guild **{serverName}**.");
-                await ReplyAsync("", false, builder1.Build());
-               
-
-            }
-
-            await target.LeaveAsync();
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Color = new Color(114, 137, 218);
-            builder.AddField("ForceLeave",$"Successfully left **{target.Name}**");
-            await ReplyAsync("", false, builder.Build());
-
-        }
-
-
-        [Command("setAvatar"), Remarks("Sets the bots Avatar")]
-        [RequireOwner]
-        public async Task SetAvatar(string link)
-        {
-            var s = Context.Message.DeleteAsync();
-
-            try
-            {
-                var webClient = new WebClient();
-                byte[] imageBytes = webClient.DownloadData(link);
-
-                var stream = new MemoryStream(imageBytes);
-
-                var image = new Image(stream);
-                await Context.Client.CurrentUser.ModifyAsync(k => k.Avatar = image);
-            }
-            catch (Exception)
-            {
-                var embed = EmbedHandler.CreateEmbed("Avatar", "Coult not set the avatar!", EmbedHandler.EmbedMessageType.Exception);
-                await Context.Channel.SendMessageAsync("", false, embed);
-            }
-        }
+        
     }
 }

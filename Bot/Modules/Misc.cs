@@ -16,6 +16,7 @@ using Humanizer;
 using System.Diagnostics;
 using System.Data;
 using System.Runtime.InteropServices;
+using Bot.Handlers;
 
 namespace Bot.Modules
 {
@@ -31,10 +32,32 @@ namespace Bot.Modules
             _listManager = listManager;
         }
 
-        [Cooldown(15)]
+         /* [Cooldown(15)]
+          [Command("help"), Alias("h"),
+           Remarks(
+               "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
+          public async Task Help()
+          {
+              await Context.Channel.SendMessageAsync("Check your DMs.");
+
+              var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+
+              var contextString = Context.Guild?.Name ?? "DMs with me";
+              var emb = new EmbedBuilder()
+                  .WithTitle("These are the commands you can use:")
+                  .WithColor(Color.Red)
+                  .WithDescription("**__Prefix Commands:__** \nprefix add \nprefix remove \nprefix list \n \n**__Moderation Commands:__**" + "\nkick \nBan \nunban \nmute \nunmute \nchangenick \ncreatetext \ncreatevoice \npurge \nannounce \n \n**__Basic Commands__:** \nHello \nversion \ninvite \nserver \nuptime \nfeedback \necho \naccount info \naccount commandhistory \nuserinfo \nserverinfo \nping \nusercount \nbotinfo \nweather <city> \nreport, bugreport, bug, reportbug \n8ball \n \n**__Join-leave announcements:__** \n announcements setchannel \nannouncements unsetchannel \nwelcome add \nwelcome list \nwelcome remove \nleave add \nleave list \nleave remove \n \n**__Fun/Misc Commands:__** \nremind \nremind list \nremind remove \nflip or flipcoin \nrps \nquote \navatar \nchoose \ncalculate (do `help calculate` for more info) \n \n**Tags:** \ntag new \ntag edit \ntag remove \ntag list \nprivatetag/ptag new \nptag edit \nptag remove \nptag list \n \n**Combat:** \nfight \nslash \ngiveup \n \n**Auctions:** \nauction \nbid \nauctioncheck \nauctionend");
+
+
+              await dmChannel.SendMessageAsync("", false, emb.Build());
+          } */
+    
+      
+       
+       
         [Command("help"), Alias("h"),
-         Remarks(
-             "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
+            Remarks(
+                "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
         public async Task Help()
         {
             await Context.Channel.SendMessageAsync("Check your DMs.");
@@ -42,67 +65,7 @@ namespace Bot.Modules
             var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
 
             var contextString = Context.Guild?.Name ?? "DMs with me";
-            var emb = new EmbedBuilder()
-                .WithTitle("These are the commands you can use:")
-                .WithColor(Color.Red)
-                .WithDescription("**__Prefix Commands:__** \nprefix add \nprefix remove \nprefix list \n \n**__Moderation Commands:__**" + "\nkick \nBan \nunban \nmute \nunmute \nchangenick \ncreatetext \ncreatevoice \npurge \nannounce \n \n**__Basic Commands__:** \nHello \nversion \ninvite \nserver \nuptime \nfeedback \necho \naccount info \naccount commandhistory \nuserinfo \nserverinfo \nping \nusercount \nbotinfo \nweather <city> \nreport, bugreport, bug, reportbug \n8ball \n \n**__Join-leave announcements:__** \n announcements setchannel \nannouncements unsetchannel \nwelcome add \nwelcome list \nwelcome remove \nleave add \nleave list \nleave remove \n \n**__Fun/Misc Commands:__** \nremind \nremind list \nremind remove \nflip or flipcoin \nrps \nquote \navatar \nchoose \ncalculate (do `help calculate` for more info) \n \n**Tags:** \ntag new \ntag edit \ntag remove \ntag list \nprivatetag/ptag new \nptag edit \nptag remove \nptag list \n \n**Combat:** \nfight \nslash \ngiveup \n \n**Auctions:** \nauction \nbid \nauctioncheck \nauctionend");
-
-
-            await dmChannel.SendMessageAsync("", false, emb.Build());
-        }
-
-        /*  [Command("donate", RunMode = RunMode.Async)]
-          [Summary("Help keep ninjaBot going!")]
-          public async Task Donate()
-          {
-              var embed = new EmbedBuilder();
-              StringBuilder sb = new StringBuilder();
-
-              sb.AppendLine($"Would you like to help keep NinjaBot going?");
-              sb.AppendLine();
-              sb.AppendLine($"Every little bit counts!");
-              sb.AppendLine();
-              sb.AppendLine($"[Donate To Support NinjaBot!]([DonateUrl]/5) :thumbsup:");
-
-              embed.ThumbnailUrl = "https://static1.squarespace.com/static/5644323de4b07810c0b6db7b/t/5931c57f46c3c47b464d717a/1496434047310/FdxsNNRt.jpg";
-              embed.WithColor(new Color(0, 255, 0));
-              embed.Title = $"{Context.User.Username}, help keep NinjaBot going!";
-              embed.Description = sb.ToString();
-
-              await ReplyAsync("",false, embed.Build());
-          } */
-        [Command("Showser")]
-        [Summary("Show the servers the bot is in")]
-        [RequireOwner]
-        public async Task ListGuilds()
-        {
-
-            var guilds = (Context.Client as DiscordSocketClient).Guilds.ToList(); 
-            StringBuilder sb = new StringBuilder();
-            var embed = new EmbedBuilder();
-             foreach (var guild in guilds)
-             {
-                sb.AppendLine($"{guild.Name} - {guild.Id}"); // Owner: {guild.Owner}
-            }
-            embed.WithColor(new Color(0, 255, 0));
-            embed.Title = "Server List:";
-            embed.WithFooter($"Count: {Context.Client.Guilds.Count.ToString()}", Context.User.GetAvatarUrl());
-            embed.WithCurrentTimestamp();
-            embed.Description = sb.ToString();
-            await ReplyAsync("", false, embed.Build()); 
-           
-        }
-        [Command("SetStream")]
-        [Remarks("Usage: |prefix|setstream {streamer} {streamName}")]
-        [RequireOwner]
-        public async Task SetStreamAsync(string streamer, [Remainder] string streamName)
-        {
-            await Context.Client.SetGameAsync(streamName, $"https://twitch.tv/{streamer}", ActivityType.Streaming);
-            await ReplyAsync(
-                    $"Set the bot's stream to **{streamName}**, and the Twitch URL to **[{streamer}](https://twitch.tv/{streamer})**.")
-               ;
-        }
-        /*   var builder = new EmbedBuilder()
+            var builder = new EmbedBuilder()
            {
                Title = "Help",
                Description = $"These are the commands you can use in {contextString}",
@@ -147,7 +110,7 @@ namespace Bot.Modules
                await dmChannel.SendMessageAsync("", false, builder.Build());
 
            }
-       } */
+       } 
 
         [Command("version"), Alias("ver")]
         [Remarks("Returns the current version of the bot.")]
@@ -156,7 +119,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `0.9.0`");
+            builder.AddField("Version", $"The current version of the bot is: `1.0.0`");
             await ReplyAsync("", false, builder.Build());
         }
 
@@ -183,7 +146,7 @@ namespace Bot.Modules
           } */
 
         [Command("Uptime")]
-        [Remarks("Usage: |prefix|uptime")]
+        [Remarks("Usage: k!uptime")]
         public async Task UptimeAsync()
         {
 
@@ -288,56 +251,7 @@ namespace Bot.Modules
             }
         } 
 
-        /* [Command("credits")]
-        [Summary("Shows everyone who has worked on and contributed to me")]
-        public async Task Credits()
-        {
-            var embB = new EmbedBuilder()
-                .WithTitle("Credits")
-                .WithColor(Color.Blue)
-                .WithUrl("https://github.com/discord-bot-tutorial/Community-Discord-BOT")
-                .WithFooter(Global.GetRandomDidYouKnow())
-                // Someone needs to pimp this message... it is lame
-                .WithDescription("Peter is the one who created me... fleshed me out and taught me how to speak.\n" +
-                                 "Everything was organized... my life was good :smiley:\n" +
-                                 "And then he let those people lose on me... :scream:\n");
-
-
-            var contributions = await GitHub.Contributions("petrspelos", "Community-Discord-BOT");
-            // Sort contributions by commits
-            contributions = contributions.OrderByDescending(contribution => contribution.total).ToList();
-            // Creating the embeds with all the contributers and their stats
-            embB = contributions.Aggregate(embB, (emb, cont) =>
-            {
-                // Accumulate all the weeks stats to the total stat
-                var stats = cont.weeks.Aggregate(
-                    Tuple.Create(0, 0),
-                    (acc, week) => Tuple.Create(acc.Item1 + week.a, acc.Item2 + week.d)
-                );
-                return emb.AddField(GitHub.ContributionStat(cont, stats));
-            });
-
-            await ReplyAsync("", false, embB.Build());
-        } */
-
-        /* [Command("bug")]
-         [Alias("bug-report", "issue", "feedback")]
-         [Summary("It sends users where to report bugs.")]
-         public async Task Bug()
-         {
-             var embed = new EmbedBuilder();
-             embed.WithColor(99, 193, 50);
-             embed.WithTitle("Bug reporting");
-             embed.WithDescription(@"Thank you for your interest, how about you let us know by creating an Issue on our **GitHub** " + "\n\n\n" +
-             "**[ 🢂 🐞 HERE 🐞 🢀 ](https://github.com/discord-bot-tutorial/Community-Discord-BOT/issues/new/choose)**" + "\n\n\n" +
-             "(*If button doesnt work: https://github.com/discord-bot-tutorial/Community-Discord-BOT/issues/new/choose*)");
-             embed.WithFooter("Your help is more than welcome!");
-             embed.WithAuthor(Global.Client.CurrentUser);
-             embed.WithCurrentTimestamp();
-
-             await ReplyAsync("", false, embed.Build());
-
-         } */
+       
         string usage;
 
         [Command("calculate", RunMode = RunMode.Async)]
@@ -375,54 +289,48 @@ namespace Bot.Modules
         }
 
 
-        [Command("report"), Alias("bug", "bugreport", "reportbug")]
-        [Summary("Send a report about a bug to the bot owner. Spam/troll is not tolerated.")]
-        public async Task BugReport([Remainder] string report)
+
+
+        /* [Command("List")]
+         [Summary("Manage lists with custom accessibility by role")]
+         public async Task ManageList(params String[] input)
+         {
+             if (input.Length == 0) { return; }
+             var user = Context.User as SocketGuildUser;
+             var roleIds = user.Roles.Select(r => r.Id).ToArray();
+             var availableRoles = Context.Guild.Roles.ToDictionary(r => r.Name, r => r.Id);
+             var output = _listManager.HandleIO(new ListHelper.UserInfo(user.Id, roleIds), availableRoles, Context.Message.Id, input);
+             RestUserMessage message;
+             if (output.permission != ListHelper.ListPermission.PRIVATE)
+             {
+                 message = (RestUserMessage)await Context.Channel.SendMessageAsync(output.outputString, false, output.outputEmbed);
+             }
+             else
+             {
+                 var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+                 message = (RestUserMessage)await dmChannel.SendMessageAsync(output.outputString, false, output.outputEmbed);
+             }
+             if (output.listenForReactions)
+             {
+                 await message.AddReactionAsync(ListHelper.ControlEmojis["up"]);
+                 await message.AddReactionAsync(ListHelper.ControlEmojis["down"]);
+                 await message.AddReactionAsync(ListHelper.ControlEmojis["check"]);
+                 ListManager.ListenForReactionMessages.Add(message.Id, Context.User.Id);
+             }
+         } */
+
+        [Command("echo")]
+        [Remarks("Make The Bot Say A Message")]
+
+        public async Task Echo([Remainder] string message)
         {
-          
-            var application = await Context.Client.GetApplicationInfoAsync();
-            var message = await application.Owner.GetOrCreateDMChannelAsync();
+            var embed = EmbedHandler.CreateEmbed("Message by: " + Context.Message.Author.Username, message, EmbedHandler.EmbedMessageType.Info, true);
 
-            var embed = new EmbedBuilder()
-            {
-                Color = (Color.Red)
-            };
-
-            embed.Description = $"{report}";
-            embed.WithFooter(new EmbedFooterBuilder().WithText($"Message from: {Context.User.Username} | Guild: {Context.Guild.Name}"));
-            await message.SendMessageAsync("", false, embed.Build());
-            embed.Description = $"You have sent a message to the Bot owner (Panda#8822). He will read the message soon.";
-
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Channel.SendMessageAsync("", false, embed);
+            await Context.Message.DeleteAsync();
         }
 
-       /*  [Command("List")]
-        [Summary("Manage lists with custom accessibility by role")]
-        public async Task ManageList(params String[] input)
-        {
-            if (input.Length == 0) { return; }
-            var user = Context.User as SocketGuildUser;
-            var roleIds = user.Roles.Select(r => r.Id).ToArray();
-            var availableRoles = Context.Guild.Roles.ToDictionary(r => r.Name, r => r.Id);
-            var output = _listManager.HandleIO(new ListHelper.UserInfo(user.Id, roleIds), availableRoles, Context.Message.Id, input);
-            RestUserMessage message;
-            if (output.permission != ListHelper.ListPermission.PRIVATE)
-            {
-                message = (RestUserMessage)await Context.Channel.SendMessageAsync(output.outputString, false, output.outputEmbed);
-            }
-            else
-            {
-                var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
-                message = (RestUserMessage)await dmChannel.SendMessageAsync(output.outputString, false, output.outputEmbed);
-            }
-            if (output.listenForReactions)
-            {
-                await message.AddReactionAsync(ListHelper.ControlEmojis["up"]);
-                await message.AddReactionAsync(ListHelper.ControlEmojis["down"]);
-                await message.AddReactionAsync(ListHelper.ControlEmojis["check"]);
-                ListManager.ListenForReactionMessages.Add(message.Id, Context.User.Id);
-            }
-        } */
+
 
         [Command("botinfo")]
         [Summary("Shows All Bot Info.")]

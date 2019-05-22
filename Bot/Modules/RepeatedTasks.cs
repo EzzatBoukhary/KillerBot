@@ -1,4 +1,4 @@
-﻿/* using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Bot.Extensions;
 using Discord;
 using Discord.Commands;
@@ -54,4 +54,4 @@ namespace Bot.Modules
         }
 
     }
-}  */
+}  

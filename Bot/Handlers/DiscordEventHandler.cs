@@ -211,6 +211,7 @@ namespace Bot.Handlers
             (new ListReactionHandler()).HandleReactionAdded(new ListHelper.UserInfo(user.Id, roleIds), _listManager, cacheMessage, reaction);
 
             _triviaGames.HandleReactionAdded(cacheMessage, reaction);
+            
            // _blogHandler.ReactionAdded(reaction);
         }
 
@@ -226,9 +227,11 @@ namespace Bot.Handlers
 
         private async Task Ready()
         {
+            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
             _repeatedTaskFunctions.InitRepeatedTasks();
+            
             // ServerBots.Init(_globalGuildAccounts);
-         
+
         }
 
         private async Task RecipientAdded(SocketGroupUser user)

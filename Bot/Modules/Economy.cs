@@ -31,7 +31,7 @@ namespace Bot.Modules
         {
             try
             {
-                _dailyMiunies.GetDaily(Context.User.Id);
+                var accounts =_dailyMiunies.GetDaily(Context.User.Id);
                 await ReplyAsync($"{Context.User.Mention}, you just claimed your {Constants.DailyMuiniesGain} daily money!");
             }
             catch (InvalidOperationException e)
@@ -46,7 +46,7 @@ namespace Bot.Modules
         public async Task CheckMiunies()
         {
             var account = _globalUserAccounts.GetById(Context.User.Id);
-            await ReplyAsync(GetMiuniesReport(account.Miunies, Context.User.Mention));
+            await ReplyAsync(GetCoinsReport(account.Coins, Context.User.Mention));
         }
 
         [Command("money"), Remarks("Shows how much money the mentioned user has")]
@@ -54,7 +54,7 @@ namespace Bot.Modules
         public async Task CheckMiuniesOther(IGuildUser target)
         {
             var account = _globalUserAccounts.GetById(target.Id);
-            await ReplyAsync(GetMiuniesReport(account.Miunies, target.Mention));
+            await ReplyAsync(GetCoinsReport(account.Coins, target.Mention));
         }
 
         [Command("Leaderboard"), Remarks("Shows a user list of the sorted by money. Pageable to see lower ranked users.")]
@@ -81,7 +81,7 @@ namespace Bot.Modules
                 return;
             }
             // Sort the accounts descending by Minuies
-            var ordered = accounts.OrderByDescending(acc => acc.Miunies).ToList();
+            var ordered = accounts.OrderByDescending(acc => acc.Coins).ToList();
 
             var embB = new EmbedBuilder()
                 .WithTitle("These are the richest people:")
@@ -121,7 +121,7 @@ namespace Bot.Modules
 	            {
 					contentName = $"#{i + usersPerPage * page} {user.Username}";
 				}
-                embB.AddField(contentName, $"{account.Miunies} Coins", true);
+                embB.AddField(contentName, $"{account.Coins} Coins", true);
             }
 
             await ReplyAsync("", false, embB.Build());
@@ -135,45 +135,45 @@ namespace Bot.Modules
             try
             {
                 _miuniesTransfer.UserToUser(Context.User.Id, target.Id, amount);
-                await ReplyAsync($":white_check_mark: {Context.User.Username} has given {target.Username} {amount} coins!");
+                await ReplyAsync($"<a:KBtick:580851374070431774> **{Context.User.Username}** has given **{target.Username}** {amount} coin(s)!");
             }
             catch (InvalidOperationException e)
             {
                 // TODO: Get Miunie phrase based on exception message.
-                await ReplyAsync($":negative_squared_cross_mark: {e.Message}");
+                await ReplyAsync($"<:KBfail:580129304592252995> {e.Message}");
             }
         }
 
-        public string GetMiuniesReport(ulong miunies, string mention)
+        public string GetCoinsReport(ulong coins, string mention)
         {
-            return $"{mention} has **{miunies} coins**! {GetMiuniesCountReaction(miunies, mention)}";
+            return $"{mention} has **{coins} coins**! {GetMiuniesCountReaction(coins, mention)}";
         }
 
-       /* [Command("newslot"), Remarks("Creates a new slot machine if you feel the current one is unlucky")]
+        [Command("newslot"), Remarks("Creates a new slot machine if you feel the current one is unlucky")]
         [Alias("newslots")]
         public async Task NewSlot(int amount = 0)
         {
             Global.Slot = new Slot(amount);
-            await ReplyAsync("A new slotmachine got generated! Good luck with this puppy!");
+            await ReplyAsync("<a:KBtick:580851374070431774> A new slot machine got generated! Good luck!");
         }
 
-        [Command("slots"), Remarks("Play the slots! Win or lose some Miunies!")]
+        [Command("slots"), Remarks("Play the slots! Win or lose some coins!")]
         [Alias("slot")]
         public async Task SpinSlot(uint amount)
         {
             if (amount < 1)
             {
-                await ReplyAsync("You can spin for that amount of Miunies.\nAND YOU KNOW IT!");
+                await ReplyAsync("Oh, nice try. But we only spin for coins > 1");
                 return;
             }
             var account = _globalUserAccounts.GetById(Context.User.Id);
-            if (account.Miunies < amount)
+            if (account.Coins < amount)
             {
-                await ReplyAsync($"Sorry but it seems like you don't have enough Minuies... You only have {account.Miunies}.");
+                await ReplyAsync($"Sorry but it seems like you don't have enough coins... You only have {account.Coins}.");
                 return;
             }
 
-            account.Miunies -= amount;
+            account.Coins -= amount;
             _globalUserAccounts.SaveAccounts(Context.User.Id);
 
             var slotEmojis = Global.Slot.Spin();
@@ -181,13 +181,13 @@ namespace Bot.Modules
 
             if (payoutAndFlavour.Item1 > 0)
             {
-                account.Miunies += payoutAndFlavour.Item1;
+                account.Coins += payoutAndFlavour.Item1;
                 _globalUserAccounts.SaveAccounts();
             }            
 
-            await ReplyAsync(slotEmojis);
+            await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
             await Task.Delay(1000);
-            await ReplyAsync(payoutAndFlavour.Item2);
+            await ReplyAsync($"You used {amount} coin(s) {payoutAndFlavour.Item2}");
         }
 
         [Command("showslots"), Remarks("Shows the configuration of the current slot machine")]
@@ -195,6 +195,6 @@ namespace Bot.Modules
         public async Task ShowSlot()
         {
             await ReplyAsync(string.Join("\n", Global.Slot.GetCylinderEmojis(true)));
-        } */
+        } 
     }
 } 

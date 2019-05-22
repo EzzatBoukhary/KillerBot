@@ -20,7 +20,7 @@ namespace Bot.Features.Onboarding.Tasks
                 await logger.Log(LogSeverity.Error, "Onboarding > HelloWorldTask", $"Default channel of a new guild ({guild.Name}) is null.");
                 return;
             }
-            
+            else
             await defaultChannel.SendMessageAsync(":wave: Thanks for adding KillerBot! Do `@KillerBot#5438 help` to know the commands you can use :)");
         }
     }

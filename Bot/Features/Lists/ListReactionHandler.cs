@@ -27,6 +27,7 @@ namespace Bot.Features.Lists
                     {
                         await HandleMovement(reaction, cacheMessage.Value.Content, false).ConfigureAwait(false);
                     }
+                
                     else if (reaction.Emote.Name == ControlEmojis["check"].Name)
                     {
                         var seperatedMessage = SepereateMessageByLines(cacheMessage.Value.Content);

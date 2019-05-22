@@ -10,18 +10,19 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using Gommon;
+using Bot.Helpers;
 
 namespace Bot.Modules
 {
     public class Basics : ModuleBase<MiunieCommandContext>
     {
-        [Command("Hello")]
+        [Command("Hello"),Summary("Hey!")]
         [Cooldown(5)]
         public async Task SayHello()
         {
             await ReplyAsync("Hey!");
         }
-        [Command("invite"), Alias("inv")]
+        [Command("invite"), Alias("inv"),Summary("Sends an invite link for the bot.")]
         [Cooldown(5)]
         public async Task InviteBot()
         {
@@ -83,29 +84,7 @@ namespace Bot.Modules
             await ReplyAsync("", false, emb.Build());
         } 
 
-        /* [Command("PingNew")]
-        [Summary("Show the Gateway latency to Discord.")]
-        [Remarks("Usage: |prefix|ping")]
-        public async Task PingAsync()
-        {
-            var embed = new EmbedBuilder()
-            {
-                Color = (Color.Green)
-            };
-            embed.WithDescription("Pinging...");
-            var sw = new Stopwatch();
-            sw.Start();
-            var msg = await Context.Channel.SendMessageAsync("", false, embed.Build());
-            sw.Stop();
-            await msg.ModifyAsync(x =>
-            {
-                embed.WithDescription(
-                    $"**Ping**: {sw.ElapsedMilliseconds}ms \n" +
-                    $"**API**: {Context.Client.Latency}ms");
-                x.Embed = embed.Build();
-            });
-        } */
-
+      
         [Command("changelog")]
         [Summary("Change log for the current version of the bot")]
         public async Task changes()
@@ -113,12 +92,13 @@ namespace Bot.Modules
 
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
-            embed.Description = " == Changelog == \n`0.9.0` - **Changed/Fixed** \n \n•Added reasons in audit log for kick and ban commands. \n \n•The bot now DMs the person kicked/banned a message informing them that they got kicked/banned from that server with the reason. \n \n•Ban now has 'pruned days' feature. However, its required to specify a number, so just put 0 if you don't want to prune. \nUsage `ban @User#0000 {Number of days to prune the user's messages} Reason` \n \n•Small changes in the reply messages of unban & mute commands. ";
+            embed.WithTitle("== Changelog ==");
+            embed.Description = " **== Major Release ==** `1.0.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Economy System! \nCommands: `daily`,`money`,`transfer`,`leaderboard`,`slots`,`showslots`,`newslots` \n \n<:KBdot:580470791251034123> Default prefix `k!` \n \n<:KBdot:580470791251034123> Self role system! \nCommands: `rbp status`,`rbp addrole` Do `k!help rolebyphrase` for more info & commands. \n \n<:KBdot:580470791251034123> Added some new stuff related to accounts `k!account mydata` \n \n<:KBdot:580470791251034123> New `k!trivia` command! \n \n<:KBdot:580470791251034123> New `k!mock` command. \n \n<:KBdot:580470791251034123> Added new 8ball & mute command replies \n \n **[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed all bugs in the combat & welcome/leave systems, as well as the mute-unmute commands. \n \n<:KBdot:580470791251034123> Changed the layout of `k!userinfo` and `k!help` \n \n<:KBdot:580470791251034123> Made embed color of the quote command role related & added custom emojis to some commands. ";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: 12/05/2019 9:03 PM GMT");
+                x.WithText("Last updated: 22/05/2019 8:16 PM GMT");
 
 
 
@@ -132,7 +112,7 @@ namespace Bot.Modules
         List<string> queueList = new List<string>();
         Random rand = new Random();
         string[] PredictionsTexts = new string[]
-      {
+        {
         "It is very unlikely.",
         "I don't think so...",
         "Yes!",
@@ -145,8 +125,10 @@ namespace Bot.Modules
         "You may rely on it." ,
         "My dad said no." ,
         "The whole country agreed!" ,
-         "Nah."
-      };
+        "Certainly.",
+        "I guess not...",
+        "Nah."
+       };
         Random rnd = new Random();
         [Command("8ball")]
         [Summary("Gives a prediction")]
@@ -246,47 +228,172 @@ namespace Bot.Modules
             await ReplyAsync("", false, embed.Build());
         }
 
-        [Command("userinfo")]
-        [Alias("user", "whois", "user profile")]
-        [Summary("shows all the info of a user")]
-        public async Task user(IGuildUser user)
+        [Command("mock"), Summary("rEpEaTs yOuR tExT lIkE tHiS.")]
+        public async Task Mock([Remainder] string input = "")
         {
+            string result = "";
+            if (input == "")
             {
-                var application = await Context.Client.GetApplicationInfoAsync();
-                var thumbnailurl = user.GetAvatarUrl();
-                var date = $"{user.CreatedAt.Month}/{user.CreatedAt.Day}/{user.CreatedAt.Year}";
-                var auth = new EmbedAuthorBuilder()
-
-                {
-
-                    Name = user.Username,
-                    IconUrl = thumbnailurl,
-
-                };
-
-                var embed = new EmbedBuilder()
-
-                {
-                    ThumbnailUrl = user.GetAvatarUrl(),
-
-                    Color = (Color.Gold),
-                    Author = auth
-                };
-
-                var us = user as SocketGuildUser;
-                var bot = user.IsBot;
-                var D = us.Username;
-                var A = us.Discriminator;
-                var T = us.Id;
-                var S = date;
-                var C = us.Status;
-                var CC = us.JoinedAt;
-                embed.Title = $"**{us.Username}** Information";
-                embed.Description = $"**Username**: {D}\n \n**Discriminator**: {A}\n \n **User ID**: {T}\n \n **Created at**: {S}\n \n**Current Status**: {C}\n \n  **Joined server at**: {CC}\n \n **Is bot**: {bot}";
-                await ReplyAsync("", false, embed.Build());
+                var message = await Context.Channel.GetMessagesAsync(2).FlattenAsync();
+                input = message.Last().Content;
             }
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    result += char.ToLower(input[i]);
+                }
+                else
+                {
+                    result += char.ToUpper(input[i]);
+                }
+            }
+            await ReplyAsync(result);
         }
 
+        [Command("userinfo")]
+        [Summary("Gets information about the specified user")]
+        public async Task UserInfo([Remainder] IGuildUser user)
+        {
+
+            EmbedBuilder emb = new EmbedBuilder();
+
+            string userRoles = DiscordHelpers.GetListOfUsersRoles(user);
+
+            // Find user's highest role so the embed will be coloured with the role's colour
+
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(user);
+
+            if (highestRole != null)
+                emb.Color = highestRole.Color;
+
+            // Display if the user is a bot or a webhook
+            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
+            author.Name = user.Username;
+            if (user.IsBot)
+                author.Name += " (Bot)";
+            else if (user.IsWebhook)
+                author.Name += " (Webhook)";
+
+            emb.Author = author;
+
+            // If the user has a default avatar
+            if (string.IsNullOrEmpty(user.AvatarId))
+                emb.ThumbnailUrl = $"https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
+            else
+                emb.ThumbnailUrl = $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.png";
+
+            EmbedFooterBuilder footer = new EmbedFooterBuilder();
+            footer.Text = $"User info requested by {Context.User.Username}";
+            // If the user has a default avatar
+            if (string.IsNullOrEmpty(Context.User.AvatarId))
+                footer.IconUrl = $"https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
+            else
+                footer.IconUrl = $"https://cdn.discordapp.com/avatars/{Context.User.Id}/{Context.User.AvatarId}.png";
+            emb.Footer = footer;
+
+            emb.Description = $"User information for {user.Username}#{user.Discriminator} | {user.Id}";
+
+            emb.AddField("Created account at", user.CreatedAt.ToString());
+
+            emb.AddField("Joined server at", ((DateTimeOffset)user.JoinedAt).ToString());
+
+            // Display the list of all of user's roles
+            if (string.IsNullOrEmpty(userRoles) == false)
+                emb.AddField("Role(s)", userRoles);
+
+            // Display the list of all of user's permissions
+            string userPermissions = GetUserPermissions(user);
+
+            if (string.IsNullOrEmpty(userPermissions) == false)
+                emb.AddField("Permissions", userPermissions);
+
+            emb.AddField("Status", user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString());
+
+            await ReplyAsync("", false, emb.Build());
+        }
+
+        /// <summary>
+        /// Get a list of user's permissions in a nicely formatted string.
+        /// </summary>
+        private string GetUserPermissions(IGuildUser user)
+        {
+            string permissions = "";
+
+            if (Context.Guild.OwnerId == user.Id)
+            {
+                permissions += "Owner";
+                return permissions;
+            }
+
+            if (user.GuildPermissions.Administrator)
+            {
+                permissions += "Administrator";
+                return permissions;
+            }
+
+            if (user.GuildPermissions.BanMembers)
+                permissions += "Ban Memebers, ";
+
+            if (user.GuildPermissions.DeafenMembers)
+                permissions += "Deafen Members, ";
+
+            if (user.GuildPermissions.KickMembers)
+                permissions += "Kick Members, ";
+
+            if (user.GuildPermissions.ManageChannels)
+                permissions += "Manage Channels, ";
+
+            if (user.GuildPermissions.ManageEmojis)
+                permissions += "Manage Emojis, ";
+
+            if (user.GuildPermissions.ManageGuild)
+                permissions += "Manage Guild, ";
+
+            if (user.GuildPermissions.ManageMessages)
+                permissions += "Manage Messages, ";
+
+            if (user.GuildPermissions.ManageNicknames)
+                permissions += "Manage Nicknames, ";
+
+            if (user.GuildPermissions.ManageRoles)
+                permissions += "Manage Roles, ";
+
+            if (user.GuildPermissions.ManageWebhooks)
+                permissions += "Manage Webhooks, ";
+
+            if (user.GuildPermissions.MentionEveryone)
+                permissions += "Mention Everyone, ";
+
+            if (user.GuildPermissions.MoveMembers)
+                permissions += "Move Members, ";
+
+            if (user.GuildPermissions.MuteMembers)
+                permissions += "Mute Members, ";
+
+            return permissions.Remove(permissions.Length - 2);
+        }
+        [Command("report"), Alias("bug", "bugreport", "reportbug")]
+        [Summary("Send a report about a bug to the bot owner. Spam/troll is not tolerated.")]
+        public async Task BugReport([Remainder] string report)
+        {
+
+            var application = await Context.Client.GetApplicationInfoAsync();
+            var message = await application.Owner.GetOrCreateDMChannelAsync();
+
+            var embed = new EmbedBuilder()
+            {
+                Color = (Color.Red)
+            };
+
+            embed.Description = $"{report}";
+            embed.WithFooter(new EmbedFooterBuilder().WithText($"Message from: {Context.User.Username} | Guild: {Context.Guild.Name}"));
+            await message.SendMessageAsync("", false, embed.Build());
+            embed.Description = $"You have sent a message to the Bot owner (Panda#8822). He will read the message soon.";
+
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
 
 
         [Command("UserCount")]

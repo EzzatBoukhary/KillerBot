@@ -13,7 +13,7 @@ namespace Bot.Entities
 
         public ulong Id { get; }
 
-        public ulong Miunies { get; set; } = 1;
+        public ulong Coins { get; set; } = 1;
 
         public DateTime LastDaily { get; set; } = DateTime.UtcNow.AddDays(-2);
 

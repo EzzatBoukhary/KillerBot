@@ -8,6 +8,7 @@ using Bot.Entities;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Ofl.Linq;
 
 namespace Bot.Modules.Account
 {
@@ -31,11 +32,12 @@ namespace Bot.Modules.Account
             var embed = new EmbedBuilder()
                 .WithAuthor($"{user.Username}'s account information", user.GetAvatarUrl())
                 .AddField("Joined at: ", user.JoinedAt.Value.DateTime.ToString())
-                .AddField("**Last message**", userAccount.LastMessage.ToString(), true)
-                .AddField("**Number of reminders**: ", userAccount.Reminders.Count, true)
+                .AddField("Last message:", userAccount.LastMessage.ToString(), true)
+                .AddField("Number of reminders: ", userAccount.Reminders.Count, true)
+                .AddField("Coins: ", userAccount.Coins.ToString())
                 .WithColor(Color.Blue)
                 .WithCurrentTimestamp()
-                .WithFooter($"Requested by {Context.User.Username}")
+                .WithFooter($"Requested by {Context.User.Username}", Context.User.GetAvatarUrl())
                 .WithThumbnailUrl(user.GetAvatarUrl())
                 .Build();
 
@@ -57,7 +59,7 @@ namespace Bot.Modules.Account
             return String.Join("\n", commandHistory); //Return the command history separated by line
         }
 
-        /* [Command("GetAllMyAccountData"), Alias("GetMyData", "MyData")]
+         [Command("GetAllMyAccountData"), Alias("GetMyData", "MyData")]
          public async Task GetAccountFile()
          {
              var userFilePath = _globalUserAccounts.GetAccountFilePath(Context.User.Id);
@@ -71,7 +73,7 @@ namespace Bot.Modules.Account
              await Context.Channel.SendMessageAsync($"{Context.User.Mention} DM sent!");
          }
 
-         [Command("DeleteAllMyAccountData", RunMode = RunMode.Async)]
+       /*  [Command("DeleteAllMyAccountData", RunMode = RunMode.Async),Alias("DeleteData","DeleteAllData")]
          public async Task DeleteAccount()
          {
              var response = await AwaitMessageYesNo("I will delete all the data I know about you, are you sure?", "Yes", "No");
@@ -106,13 +108,13 @@ namespace Bot.Modules.Account
          private async Task<SocketMessage> AwaitMessageYesNo(string message, string optionYes, string optionNo)
          {
              await Context.Channel.SendMessageAsync(
-                 $"{Context.User.Mention} {message}. Reply with `{optionYes}` or `{optionNo}`");
+                 $"{Context.User.Mention} {message} Reply with `{optionYes}` or `{optionNo}`");
              var response = await Context.Channel.AwaitMessage(msg => EvaluateResponse(msg, optionYes, optionNo));
              return response;
          }
 
          private bool EvaluateResponse(SocketMessage arg, params String[] options)
-             => options.Any(option => arg.Content.ToLower().Contains(option.ToLower()) && arg.Author.Id == Context.User.Id);
-     } */
+             => options.Any(option => arg.Content.ToLower().Contains(option.ToLower()) && arg.Author.Id == Context.User.Id); */
+     } 
     }
-}
+

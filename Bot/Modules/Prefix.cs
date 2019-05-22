@@ -27,7 +27,7 @@ namespace Bot.Modules
             {
                 var prefixes = guildAcc.Prefixes.ToList();
                 guildAcc.Modify(g => g.SetPrefixes(prefixes.Append(prefix).ToList()), _globalGuildAccounts);
-                response =  $"Successfully added `{prefix}` as prefix!";
+                response =  $"Successfully added `{prefix}` as prefix! <a:KBtick:580851374070431774>";
             }
 
             await ReplyAsync(response);
@@ -38,7 +38,7 @@ namespace Bot.Modules
         public async Task RemovePrefix([Remainder] string prefix)
         {
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
-            var response = $"Failed to remove the Prefix... Was `{prefix}` really a prefix?";
+            var response = $"<:KBfail:580129304592252995> Failed to remove the Prefix... Was `{prefix}` really a prefix?";
             if (guildAcc.Prefixes.Contains(prefix))
             {
                 var prefixes = guildAcc.Prefixes.ToList();

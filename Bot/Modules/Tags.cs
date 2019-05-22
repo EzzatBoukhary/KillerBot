@@ -148,7 +148,7 @@ namespace Bot.Modules
         internal static Embed BuildTagListEmbed(IGlobalAccount account)
         {
             var tags = account.Tags;
-            var embB = new EmbedBuilder().WithTitle("No tags set up yet... add some! =)");
+            var embB = new EmbedBuilder().WithTitle("No tags set up yet... add some!");
             if (tags.Count > 0) embB.WithTitle("Here are all available tags:");
 
             foreach (var tag in tags)
@@ -163,7 +163,7 @@ namespace Bot.Modules
         {
             if (account.Tags.ContainsKey(tagName))
                 return account.Tags[tagName];
-            return "A tag with that name doesn't exists!";
+            return "A tag with that name doesn't exist!";
         }
 
         internal static string RemoveTag(string tagName, IGlobalAccounts accounts, IGlobalAccount account)

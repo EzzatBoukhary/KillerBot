@@ -120,13 +120,13 @@ namespace Bot.Features.Economy
             payoutModifier += CheckPayoutForCoordinates(2, 0, 1, 1, 0, 2);
 
             uint moneyGain = (uint) (amount * payoutModifier);
-            string flavourText = "You played and ";
+            string flavourText = "and ";
             if (moneyGain > amount)
-                flavourText += $"got wopping **{moneyGain} Miunies** out of it!";
+                flavourText += $"got **{moneyGain} coins** out of it!";
             else if (moneyGain == amount)
-                flavourText += "you got your money back... well at least you haven't lost anything right?";
+                flavourText += "got your money back... well at least you haven't lost anything right?";
             else if (moneyGain > 0)
-                flavourText += $"at least you got some of your cash back... have those {moneyGain} Miunies!";
+                flavourText += $"got {moneyGain} coins, at least you got some of your cash back...";
             else
                 flavourText += "lost everything!";
 

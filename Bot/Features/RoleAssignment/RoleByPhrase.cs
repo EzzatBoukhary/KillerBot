@@ -11,10 +11,11 @@ namespace Bot.Features.RoleAssignment
         /// </summary>
         /// <param name="settings"></param>
         /// <param name="phrase">String phrase to trigger a relation action.</param>
-        /// <exception cref="PhraseAlreadyAddedException"></exception>
+        /// <exception cref="PhraseAl
+        /// AddedException"></exception>
         /// <exception cref="InvalidPhraseException"></exception>
         public static void AddPhrase(this RoleByPhraseSettings settings, string phrase)
-        {
+        { 
             if (settings.Phrases.Contains(phrase)) 
             {
                 throw new PhraseAlreadyAddedException($"Phrase '{phrase}' is already added.");

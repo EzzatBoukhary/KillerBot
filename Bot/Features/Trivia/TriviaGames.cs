@@ -70,7 +70,6 @@ namespace Bot.Features.Trivia
             await msg.AddReactionAsync(ReactOptions["ok"]);
         }
 
-
         /// <summary>
         /// Checks if given reaction associated to a running game and if the person who game 
         /// the reaction is the same who created this game - if so initiates handling the game mechanics

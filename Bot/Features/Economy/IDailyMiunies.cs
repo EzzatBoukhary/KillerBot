@@ -6,6 +6,6 @@ namespace Bot.Features.Economy
 {
     public interface IDailyMiunies
     {
-        void GetDaily(ulong userId);
+        GlobalAccounts.IGlobalUserAccounts GetDaily(ulong userId);
     }
 }

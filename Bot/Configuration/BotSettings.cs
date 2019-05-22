@@ -28,7 +28,7 @@ namespace Bot.Configuration
                 // Setting up defaults
                 config = new BotConfig()
                 {
-                    Token = "MjYzNzUzNzI2MzI0Mzc1NTcy.D12_CA.OrlWK4SgQ-2T-dXUUKE5UP52KIY"
+                    Token = "MzEwMTI2ODY4MDE3OTcxMjAy.XNnLww.6KF8lUgiLMA390fKk7lKJZ3lxsM"
                 };
                 jsonDataStorage.StoreObject(config, configFile, useIndentations: true);
             }

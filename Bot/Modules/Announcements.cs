@@ -122,7 +122,7 @@ namespace Bot.Modules
             var response = $"Failed to add this Leave Message...";
             if (!guildAcc.LeaveMessages.Contains(message))
             {
-                var messages = guildAcc.WelcomeMessages.ToList();
+                var messages = guildAcc.LeaveMessages.ToList();
                 messages.Add(message);
                 guildAcc.Modify(g => g.SetLeaveMessages(messages), _globalGuildAccounts);
                 response =  $"Successfully added `{message}` as Leave Message!";

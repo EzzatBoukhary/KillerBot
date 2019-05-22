@@ -47,15 +47,13 @@ namespace Bot.Modules
         [Summary("starts a fight with the @Mention user (example: `fight @Panda#8822`")]
         public async Task Fight(IUser user)
         {
-            if (Context.User.Mention != user.Mention && SwitchCaseString == "nofight")
-            {
-
-            }
-            else
+            
+            if (Context.User.Mention == user.Mention || SwitchCaseString != "nofight")
             {
                 await ReplyAsync(Context.User.Mention + " sorry but there is already a fight going on, or u simply tried to kill youself.");
+                return;
             }
-
+           
 
             SwitchCaseString = "fight_p1";
             player1 = Context.User.Mention;
@@ -84,7 +82,7 @@ namespace Bot.Modules
             }
 
             await ReplyAsync
-            ("Fight started between " + Context.User.Mention + " and " + user.Mention + "!\n    k!slash to hit. \n does a line break so we can show all the info in one compact message ;) \n"
+            ("Fight started between " + Context.User.Mention + " and " + user.Mention + "!\n    `k!slash` to hit. \n"
 
             + player1 + " you got " + health1 + " health!\n"
             + player2 + " you got " + health2 + " health!\n \n"
@@ -117,19 +115,21 @@ namespace Bot.Modules
         {
             if (SwitchCaseString == "fight_p1")
             {
-                if (whosTurn == Context.User.Mention)   //we simply use 2 if statements this time because we want to answer correctly.
-                {
 
-                }
-                else
+                if (whosTurn != Context.User.Mention)   //we simply use 2 if statements this time because we want to answer correctly.
                 {
-                    await ReplyAsync(Context.User.Mention + " it is not your turn!");
-
-                }
+                    String message = Context.User.Mention;
+                    message += (Context.User.Mention != player1 && Context.User.Mention != player2) 
+                            ? " You are not in the game." 
+                            : " it is not your turn.";
+                    await ReplyAsync(message);
+                    return;
+                }   
             }
             else
             {
                 await ReplyAsync("There is no fight at the moment. :/");
+                return;
             }
 
 

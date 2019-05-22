@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bot.Entities;
 using Bot.Features.GlobalAccounts;
 
 namespace Bot.Features.Economy
 {
     public class Daily : IDailyMiunies
     {
-        private readonly IGlobalUserAccounts globalUserAccountProvider;
+        private readonly GlobalUserAccounts globalUserAccountProvider;
 
-        public Daily(IGlobalUserAccounts globalUserAccountProvider)
+        public Daily(GlobalUserAccounts globalUserAccountProvider)
         {
             this.globalUserAccountProvider = globalUserAccountProvider;
         }
         
-        public void GetDaily(ulong userId)
+        public IGlobalUserAccounts GetDaily(ulong userId)
         {
             var account = globalUserAccountProvider.GetById(userId);
             var sinceLastDaily = DateTime.UtcNow - account.LastDaily;
@@ -25,10 +26,11 @@ namespace Bot.Features.Economy
                 throw e;
             }
 
-            account.Miunies += Constants.DailyMuiniesGain;
+            account.Coins += Constants.DailyMuiniesGain;
             account.LastDaily = DateTime.UtcNow;
 
             globalUserAccountProvider.SaveAccounts(userId);
+            return globalUserAccountProvider;
         }
     }
 }

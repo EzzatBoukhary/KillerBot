@@ -6,10 +6,10 @@ namespace Bot.Features.Economy
 {
     public class Transfer : IMiuniesTransfer
     {
-        private readonly IGlobalUserAccounts globalUserAccountProvider;
+        private readonly GlobalUserAccounts globalUserAccountProvider;
         private readonly IDiscordSocketClient discordClient;
 
-        public Transfer(IGlobalUserAccounts globalUserAccountProvider, IDiscordSocketClient discordClient)
+        public Transfer(GlobalUserAccounts globalUserAccountProvider, IDiscordSocketClient discordClient)
         {
             this.globalUserAccountProvider = globalUserAccountProvider;
             this.discordClient = discordClient;
@@ -19,16 +19,16 @@ namespace Bot.Features.Economy
         {
             if (sourceUserId == targetUserId) { throw new InvalidOperationException(Constants.ExTransferSameUser); }
             
-            if (targetUserId == discordClient.GetCurrentUser().Id) { throw new InvalidOperationException(Constants.ExTransferToMiunie); }
+            if (targetUserId == discordClient.GetCurrentUser().Id) { throw new InvalidOperationException(Constants.ExTransferToKB); }
 
             var transferSource = globalUserAccountProvider.GetById(sourceUserId);
 
-            if (transferSource.Miunies < amount) { throw new InvalidOperationException(Constants.ExTransferNotEnoughFunds); }
+            if (transferSource.Coins < amount) { throw new InvalidOperationException(Constants.ExTransferNotEnoughFunds); }
 
             var transferTarget = globalUserAccountProvider.GetById(targetUserId);
 
-            transferSource.Miunies -= amount;
-            transferTarget.Miunies += amount;
+            transferSource.Coins -= amount;
+            transferTarget.Coins += amount;
 
             globalUserAccountProvider.SaveAccounts(transferSource.Id, transferTarget.Id);
         }

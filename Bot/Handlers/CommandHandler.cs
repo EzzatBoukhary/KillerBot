@@ -52,7 +52,9 @@ namespace Bot.Handlers
             );
 
             var argPos = 0;
-            if (msg.HasMentionPrefix(_client.CurrentUser, ref argPos) || CheckPrefix(ref argPos, context))
+            if (msg.HasStringPrefix("k!", ref argPos)
+               || msg.HasMentionPrefix(_client.CurrentUser, ref argPos)
+               || CheckPrefix(ref argPos, context))
             {
                 var cmdSearchResult = _cmdService.Search(context, argPos);
                 if (!cmdSearchResult.IsSuccess) { return; }
@@ -101,5 +103,6 @@ namespace Bot.Handlers
             argPos = tmpArgPos;
             return success;
         }
-    }
+        
+}
 }

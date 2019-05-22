@@ -1,7 +1,7 @@
 ﻿using Bot.Extensions;
 using Discord.Commands;
 using System;
-using System.Collections.Generic;
+/*using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,3 +67,4 @@ namespace Bot.Modules
         }
     }
 }
+*/

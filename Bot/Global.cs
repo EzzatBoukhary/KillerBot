@@ -98,7 +98,7 @@ namespace Bot
                 return $"Yea, {mention} is broke. What a surprise.";
             }
 
-            return "The whole concept of miunies is fake. I hope you know that";
+            return "The whole concept of coins is fake. I hope you know that";
         }
 
         public static async Task<string> SendWebRequest(string requestUrl)
