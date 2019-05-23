@@ -93,7 +93,7 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = " **== Major Release ==** `1.0.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Economy System! \nCommands: `daily`,`money`,`transfer`,`leaderboard`,`slots`,`showslots`,`newslots` \n \n<:KBdot:580470791251034123> Default prefix `k!` \n \n<:KBdot:580470791251034123> Self role system! \nCommands: `rbp status`,`rbp addrole` Do `k!help rolebyphrase` for more info & commands. \n \n<:KBdot:580470791251034123> Added some new stuff related to accounts `k!account mydata` \n \n<:KBdot:580470791251034123> New `k!trivia` command! \n \n<:KBdot:580470791251034123> New `k!mock` command. \n \n<:KBdot:580470791251034123> Added new 8ball & mute command replies \n \n **[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed all bugs in the combat & welcome/leave systems, as well as the mute-unmute commands. \n \n<:KBdot:580470791251034123> Changed the layout of `k!userinfo` and `k!help` \n \n<:KBdot:580470791251034123> Made embed color of the quote command role related & added custom emojis to some commands. ";
+            embed.Description = " **== Fix ==** `1.0.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a huge bug making the bot crash if it gets added to a server with no permission to send the on-join message in the default channel.";
             embed.WithFooter(x =>
 
             {
