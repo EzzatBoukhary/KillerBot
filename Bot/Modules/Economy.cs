@@ -7,7 +7,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bot.Extensions;
 using static Bot.Global;
-using static Bot.Features.Economy.Transfer;
+using Bot.Features.Economy;
+using Bot.Preconditions;
 // ReSharper disable ConvertIfStatementToSwitchStatement
 
 namespace Bot.Modules
@@ -21,6 +22,7 @@ namespace Bot.Modules
         public Economy(IDailyMiunies dailyMiunies, IMiuniesTransfer miuniesTransfer, GlobalUserAccounts globalUserAccounts)
         {
             _dailyMiunies = dailyMiunies;
+            
             _miuniesTransfer = miuniesTransfer;
             _globalUserAccounts = globalUserAccounts;
         } 
@@ -32,7 +34,7 @@ namespace Bot.Modules
             try
             {
                 var accounts =_dailyMiunies.GetDaily(Context.User.Id);
-                await ReplyAsync($"{Context.User.Mention}, you just claimed your {Constants.DailyMuiniesGain} daily money!");
+                await ReplyAsync($"{Context.User.Mention}, you just claimed your {Constants.DailyMuiniesGain} daily coins!");
             }
             catch (InvalidOperationException e)
             {
@@ -59,6 +61,7 @@ namespace Bot.Modules
 
         [Command("Leaderboard"), Remarks("Shows a user list of the sorted by money. Pageable to see lower ranked users.")]
         [Alias("Top", "Top10", "Richest")]
+        [Cooldown(5)]
         public async Task ShowRichesPeople(int page = 1)
         {
             if (page < 1)
@@ -187,7 +190,7 @@ namespace Bot.Modules
 
             await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
             await Task.Delay(1000);
-            await ReplyAsync($"You used {amount} coin(s) {payoutAndFlavour.Item2}");
+            await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2}");
         }
 
         [Command("showslots"), Remarks("Shows the configuration of the current slot machine")]
@@ -196,5 +199,24 @@ namespace Bot.Modules
         {
             await ReplyAsync(string.Join("\n", Global.Slot.GetCylinderEmojis(true)));
         } 
+        [Command("work")]
+        [Summary("Work every hour and receive some coins!")]
+        [Cooldown(3600)]
+        public async Task Work()
+        {
+            var account = _globalUserAccounts.GetById(Context.User.Id);
+            var emb = new EmbedBuilder();
+            var result = (ulong)Global.Rng.Next(Constants.WorkRewardMinMax.Item1, Constants.WorkRewardMinMax.Item2 + 1);
+                var accounts = _globalUserAccounts.GetById(Context.User.Id);
+                account.Coins += result;
+                _globalUserAccounts.SaveAccounts();
+                emb.WithColor(Color.Green);
+                emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}",Context.User.GetAvatarUrl());
+                emb.WithCurrentTimestamp();
+                emb.WithDescription($"You work and recieve **{result} coins** for your hard work. <a:KBtick:580851374070431774> ");
+                await ReplyAsync("", false, emb.Build());
+            
+        } 
+       
     }
 } 

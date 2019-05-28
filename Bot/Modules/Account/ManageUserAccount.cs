@@ -34,6 +34,7 @@ namespace Bot.Modules.Account
                 .AddField("Joined at: ", user.JoinedAt.Value.DateTime.ToString())
                 .AddField("Last message:", userAccount.LastMessage.ToString(), true)
                 .AddField("Number of reminders: ", userAccount.Reminders.Count, true)
+                //.AddField("Number of warnings: ", userAccount.Warns.Count, true)
                 .AddField("Coins: ", userAccount.Coins.ToString())
                 .WithColor(Color.Blue)
                 .WithCurrentTimestamp()
@@ -65,7 +66,7 @@ namespace Bot.Modules.Account
              var userFilePath = _globalUserAccounts.GetAccountFilePath(Context.User.Id);
              if (String.IsNullOrEmpty(userFilePath))
              {
-                 Context.Channel.SendMessageAsync("I don't have any information about you.");
+                 await Context.Channel.SendMessageAsync("I don't have any information about you.");
                  return;
              }
 

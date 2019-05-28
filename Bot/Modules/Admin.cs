@@ -12,6 +12,11 @@ using Bot.Handlers;
 using Bot.Preconditions;
 using System.Collections.Generic;
 using Discord.Net;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Runtime.Serialization;
+using Bot.Entities;
+using Bot.Features.GlobalAccounts;
 
 namespace Bot.Modules
 {
@@ -20,6 +25,12 @@ namespace Bot.Modules
         private static readonly OverwritePermissions denyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
         private int _fieldRange = 10;
         private CommandService _service;
+        private readonly GlobalUserAccounts _globalUserAccounts;
+
+        public Admin(GlobalUserAccounts globalUserAccounts)
+        {
+            _globalUserAccounts = globalUserAccounts;
+        }
 
 
 
@@ -103,28 +114,28 @@ namespace Bot.Modules
             
         }
        
-       /* [Command("AddRole")]
-        [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
-        [RequireBotPermission(GuildPermission.ManageRoles)]
-        [RequireUserPermission(GuildPermission.ManageRoles)]
-        public async Task AddRoleAsync(SocketGuildUser user, [Remainder] SocketRole role)
-        {
-          
-            await user.AddRoleAsync(role);
-            await ReplyAsync($"Added **{role}** to {user.Mention}!");
+        /* [Command("AddRole")]
+         [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
+         [RequireBotPermission(GuildPermission.ManageRoles)]
+         [RequireUserPermission(GuildPermission.ManageRoles)]
+         public async Task AddRoleAsync(SocketGuildUser user, [Remainder] SocketRole role)
+         {
 
-        } 
+             await user.AddRoleAsync(role);
+             await ReplyAsync($"Added **{role}** to {user.Mention}!");
 
-        [Command("RemoveRole")]
-        [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
-        [RequireBotPermission(GuildPermission.ManageRoles)]
-        [RequireUserPermission(GuildPermission.ManageRoles)]
-        public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
-        {
-            await user.RemoveRoleAsync(role);
-            await ReplyAsync($"Removed **{role}** from {user.Mention}!");
+         } 
 
-        } */
+         [Command("RemoveRole")]
+         [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
+         [RequireBotPermission(GuildPermission.ManageRoles)]
+         [RequireUserPermission(GuildPermission.ManageRoles)]
+         public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
+         {
+             await user.RemoveRoleAsync(role);
+             await ReplyAsync($"Removed **{role}** from {user.Mention}!");
+
+         } */
 
         [Command("mute")]
         [Remarks("Mutes A User")]
@@ -263,10 +274,12 @@ namespace Bot.Modules
             await Context.Guild.CreateVoiceChannelAsync(channelname);
             await ReplyAsync("Voice channel was created. <a:KBtick:580851374070431774> ");
         }
+       
 
         [Command("announce")]
         [Remarks("Make A Announcement")]
         [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
         public async Task Announce([Remainder]string announcement)
         {
             var embed = EmbedHandler.CreateEmbed("Announcement By " + Context.Message.Author, announcement, EmbedHandler.EmbedMessageType.Info, true);
@@ -316,6 +329,70 @@ namespace Bot.Modules
 
             return muteRole;
         }
-        
+
+        //WARN SYSTEM
+      /*  [Command("warn")]
+        [Alias("strike")]
+        [Summary("Direct message a user with a warning")]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task Warn(SocketGuildUser user = null, string reason = null)
+        {
+           
+            //If no reason is provided
+            if (string.IsNullOrWhiteSpace(reason))
+            {
+                reason = "[No reason was provided]";
+            }
+
+            //If we're able to dm the user
+            EmbedBuilder success = new EmbedBuilder()
+                .WithDescription($"Successfully sent a warning to **{user.Username}#{user.Discriminator}**!")
+                .WithColor(Color.Green)
+                .WithCurrentTimestamp();
+
+            //if unable to dm the user
+            EmbedBuilder error = new EmbedBuilder()
+                .WithDescription("Unable to send this user a Direct Message.")
+                .WithColor(Color.LightOrange)
+                .WithCurrentTimestamp();
+
+            EmbedBuilder output = new EmbedBuilder()  //warn message
+
+                .WithTitle("Warning received!")
+                .WithDescription($"**{Context.Guild.Name}** has issued you a server warning!")
+                .AddField($"Sender: ", Context.User.Username + "#" + Context.User.Discriminator)
+                .AddField($"Server Owner: ", Context.Guild.Owner.Username + "#" + Context.Guild.Owner.Discriminator)
+                .AddField($"Warning message: ", reason)
+                .WithThumbnailUrl(Context.Guild.IconUrl)
+                .WithTimestamp(DateTime.Now)
+                .WithColor(Color.Red);
+           
+            var dm = await user.GetOrCreateDMChannelAsync().ConfigureAwait(false);
+            if (dm == null)
+                
+                await ReplyAsync("",false, error.Build());
+            else
+            {
+                await dm.SendMessageAsync("",false, output.Build()).ConfigureAwait(false);
+                await ReplyAsync("",false, success.Build()).ConfigureAwait(false);
+            }
+            var server = Context.Guild.Name;
+            var time = DateTime.Now;
+            var account = _globalUserAccounts.GetById(user.Id);
+            var newWarn = new WarnEntry(server,time, reason);
+
+            account.Warns.Add(newWarn);
+            _globalUserAccounts.SaveAccounts(Context.User.Id);
+        }
+
+        [Command("removewarn")]
+        [Alias("removestrike")]
+        [Summary("Direct message a user with a warning")]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task RemoveWarn(SocketGuildUser user = null) */
+
+        //end
     }
 }

@@ -176,7 +176,7 @@ namespace Bot.Features.Economy
             Cylinders[0].Pointer = Global.Rng.Next(count);
             Cylinders[1].Pointer = Global.Rng.Next(count);
             Cylinders[2].Pointer = Global.Rng.Next(count);
-            return String.Join("\n", GetCylinderEmojis());
+            return String.Join("\n \n", GetCylinderEmojis());
         }
     }
 }

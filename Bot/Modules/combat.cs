@@ -151,7 +151,7 @@ namespace Bot.Modules
                 if (Context.User.Mention != player1)             //FIND THE ENEMY!
                 {
                     health1 = health1 - randomIndex2;
-                    if (health1 >= 0)                                          //check if he/she is still alive
+                    if (health1 > 0)                                          //check if he/she is still alive
                     {
 
                         placeHolder = whosTurn;

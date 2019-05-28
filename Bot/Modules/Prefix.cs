@@ -44,7 +44,7 @@ namespace Bot.Modules
                 var prefixes = guildAcc.Prefixes.ToList();
                 prefixes.Remove(prefix);
                 guildAcc.Modify(g => g.SetPrefixes(prefixes), _globalGuildAccounts);
-                response =  $"Successfully removed `{prefix}` as possible prefix!";
+                response =  $"Successfully removed `{prefix}` as possible prefix! <a:KBtick:580851374070431774>";
             }
 
             await ReplyAsync(response);
@@ -55,7 +55,7 @@ namespace Bot.Modules
         {
             var prefixes = _globalGuildAccounts.GetById(Context.Guild.Id).Prefixes;
             var response = "No Prefix set yet... just mention me to use commands!";
-            if (prefixes.Count != 0) response = "Usable Prefixes are:\n`" + string.Join("`, `", prefixes) + "`\nOr just mention me!";
+            if (prefixes.Count != 0) response = "Usable Prefixes are:\n`" + string.Join("`, `", prefixes) + "`\nOr either use `k!` or mention me!";
             await ReplyAsync(response);
         }
     }

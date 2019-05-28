@@ -12,11 +12,16 @@ using Bot.Extensions;
 using Bot.Features.Lists;
 using Discord.WebSocket;
 using Discord.Rest;
+using Urban.NET;
 using Humanizer;
 using System.Diagnostics;
 using System.Data;
 using System.Runtime.InteropServices;
 using Bot.Handlers;
+using Discord.Addons.Interactive;
+using System.Net.Http;
+using Gommon;
+using Newtonsoft.Json.Linq;
 
 namespace Bot.Modules
 {
@@ -58,6 +63,7 @@ namespace Bot.Modules
         [Command("help"), Alias("h"),
             Remarks(
                 "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
+        [Cooldown(5)]
         public async Task Help()
         {
             await Context.Channel.SendMessageAsync("Check your DMs.");
@@ -119,31 +125,10 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.0.1`");
+            builder.AddField("Version", $"The current version of the bot is: `1.1.0`");
             await ReplyAsync("", false, builder.Build());
         }
 
-
-        /*  [Command("Spotify")]
-          [Remarks("Usage: |prefix|spotify [user]")]
-          public async Task SpotifyAsync(SocketGuildUser target = null)
-          {
-              var user = target ?? Context.User;
-              if (user.Activity is SpotifyGame spotify)
-              {
-                  var emb = new EmbedBuilder()
-               .WithAuthor(user)
-               .WithDescription($"**Track:** [{spotify.TrackTitle}]({spotify.TrackUrl})\n" +
-                                       $"**Album:** {spotify.AlbumTitle}\n" +
-                                       $"**Duration:** {(spotify.Duration.HasValue ? spotify.Duration.Value.Humanize(2) : "No duration provided.")}\n" +
-                                       $"**Artists:** {string.Join(", ", spotify.Artists)}")
-                      .WithThumbnailUrl(spotify.AlbumArtUrl);
-                      ReplyAsync("", false, emb.Build());
-                  return;
-              }
-
-              await ReplyAsync("Target user isn't listening to Spotify right now.");
-          } */
 
         [Command("Uptime")]
         [Remarks("Usage: k!uptime")]
@@ -288,37 +273,6 @@ namespace Bot.Modules
             }
         }
 
-
-
-
-        /* [Command("List")]
-         [Summary("Manage lists with custom accessibility by role")]
-         public async Task ManageList(params String[] input)
-         {
-             if (input.Length == 0) { return; }
-             var user = Context.User as SocketGuildUser;
-             var roleIds = user.Roles.Select(r => r.Id).ToArray();
-             var availableRoles = Context.Guild.Roles.ToDictionary(r => r.Name, r => r.Id);
-             var output = _listManager.HandleIO(new ListHelper.UserInfo(user.Id, roleIds), availableRoles, Context.Message.Id, input);
-             RestUserMessage message;
-             if (output.permission != ListHelper.ListPermission.PRIVATE)
-             {
-                 message = (RestUserMessage)await Context.Channel.SendMessageAsync(output.outputString, false, output.outputEmbed);
-             }
-             else
-             {
-                 var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
-                 message = (RestUserMessage)await dmChannel.SendMessageAsync(output.outputString, false, output.outputEmbed);
-             }
-             if (output.listenForReactions)
-             {
-                 await message.AddReactionAsync(ListHelper.ControlEmojis["up"]);
-                 await message.AddReactionAsync(ListHelper.ControlEmojis["down"]);
-                 await message.AddReactionAsync(ListHelper.ControlEmojis["check"]);
-                 ListManager.ListenForReactionMessages.Add(message.Id, Context.User.Id);
-             }
-         } */
-
         [Command("echo")]
         [Remarks("Make The Bot Say A Message")]
 
@@ -332,7 +286,65 @@ namespace Bot.Modules
 
 
 
+        /*  [Command("ud"),Alias("urbandictionary"), Summary("Gives you the definition of your word on Urban Dictionary.")]
+          [RequireBotPermission(ChannelPermission.EmbedLinks)]
+          public async Task UrbanDictionary([Remainder] string word)
+          {
+              UrbanService client = new UrbanService();
+              var data = await client.Data(word);
+              var pages = new List<string>();
+              var embed = new EmbedBuilder();
+              embed.Color = new Color(200, 200, 0);
+              foreach (var entry in data.List)
+              {
+                  string result = $"[{entry.Word}]({entry.Permalink})\n\nDefinition: ";
+                  string def = entry.Definition.Replace("[", "");
+                  result += def.Replace("]", "");
+                  result += $"\n\n👍{entry.ThumbsUp}\t👎{entry.ThumbsDown}";
+                  embed.WithDescription(result);
+              }
+
+
+              await ReplyAsync("", false, embed.Build());
+
+          } */
+
+        //8ball
+        [Command("8ball"), Summary("Answers all your questions in life.")]
+        [Alias("8b", "ask")]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        public async Task EightBall([Remainder] string question = null)
+        {
+            if (string.IsNullOrWhiteSpace(question))
+                throw new ArgumentException(":8ball: 8 ball requests a question.");
+            string result;
+            var handler = new HttpClientHandler();
+            using (var httpClient = new HttpClient(handler, false))
+            {
+                using (var request = new HttpRequestMessage(HttpMethod.Get,
+                    "https://8ball.delegator.com/magic/JSON/" + question))
+                {
+                    var response = await httpClient.SendAsync(request);
+                    result = await response.Content.ReadAsStringAsync();
+                }
+            }
+
+            result = result.Substring(result.IndexOf("er\": \"", StringComparison.Ordinal) + 6);
+            result = result.Remove(result.IndexOf("\",", StringComparison.Ordinal));
+            var embed = new EmbedBuilder()
+                .WithColor(28, 1, 34)
+                .WithAuthor(author =>
+                {
+                    author
+                        .WithName("8 Ball Result")
+                        .WithIconUrl("https://cdn.discordapp.com/attachments/497373849042812930/581476863692636181/bot-icon.png");
+                })
+                .WithDescription(result);
+            await ReplyAsync("", false, embed.Build());
+        }
+
         [Command("botinfo")]
+        [Cooldown(3)]
         [Summary("Shows All Bot Info.")]
         public async Task Info()
         {
@@ -411,6 +423,28 @@ namespace Bot.Modules
           => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
         private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString();
 
+
+       
+        [Command("randomcat")]
+        [Cooldown(3)]
+        [Alias("meow","cat")]
+        [Summary("Retrieve a random cat photo")]
+        public async Task CatPic()
+        {
+            var http = new HttpClient();
+            var results = await http.GetStringAsync("http://aws.random.cat/meow").ConfigureAwait(false);
+            string url = JObject.Parse(results)["file"].ToString();
+
+            if (string.IsNullOrWhiteSpace(url))
+                throw new ArgumentException("Connection to random.cat failed!");
+
+            EmbedBuilder output = new EmbedBuilder()
+                .WithTitle(":cat: Meow!")
+                .WithImageUrl(url)
+                .WithColor(Color.Orange);
+            await ReplyAsync("",false, output.Build());
+        }
+
         // RPS
 
         [Command("rps")]
@@ -431,11 +465,11 @@ namespace Bot.Modules
 
                     " To play rock, paper, scissors" +
 
-                    "\n:waning_gibbous_moon: type `@KillerBot#5438 rps rock` or `@KillerBot#5438 rps r` to pick rock" +
+                    "\n:waning_gibbous_moon: type `k!rps rock` or `k!rps r` to pick rock" +
 
-                    "\n\n:newspaper: type `@KillerBot#5438 rps paper` or `@KillerBot#5438 rps p` to pick paper" +
+                    "\n\n:newspaper: type `k!rps paper` or `k!rps p` to pick paper" +
 
-                    "\n\n✂️ type `@KillerBot#5438 rps scissors` or `@KillerBot#5438 rps s` to pick scissors"
+                    "\n\n✂️ type `k!rps scissors` or `k!rps s` to pick scissors"
 
                 );
 

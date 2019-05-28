@@ -14,7 +14,10 @@ namespace Bot.Preconditions
             // var bot = (context.Guild as SocketGuild).GetUser(context.Client.CurrentUser.Id);
             var exec = (context.Guild as SocketGuild).GetUser(context.User.Id);
             if ((user != null) && (exec.Hierarchy == user.Hierarchy))
-                return Task.FromResult(PreconditionResult.FromError("You don't have enough permissions"));
+                return Task.FromResult(PreconditionResult.FromError("You don't have enough permissions."));
+
+            if ((user != null) && (exec.Hierarchy < user.Hierarchy))
+                return Task.FromResult(PreconditionResult.FromError("You don't have enough permissions."));
 
             return Task.FromResult(PreconditionResult.FromSuccess());
         }

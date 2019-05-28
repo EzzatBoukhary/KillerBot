@@ -23,6 +23,8 @@ namespace Bot.Entities
 
         public List<ReminderEntry> Reminders { get; internal set; } = new List<ReminderEntry>();
 
+       // public List<WarnEntry> Warns { get; internal set; } = new List<WarnEntry>();
+
         private List<CommandInformation> _commandHistory { get; } = new List<CommandInformation>();
 
         public ReadOnlyCollection<CommandInformation> CommandHistory { get; private set; }
@@ -65,7 +67,19 @@ namespace Bot.Entities
             return unchecked((int)Id);
         }
     }
+  /*  public struct WarnEntry
+    {
+        public DateTime Time;
+        public string Server;
+        public string Reason;
 
+        public WarnEntry(string server,DateTime time, string reason)
+        {
+            Time = time;
+            Server = server;
+            Reason = reason;
+        }
+    } */
     public struct ReminderEntry
     {
         public DateTime DueDate;

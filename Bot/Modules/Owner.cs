@@ -33,27 +33,28 @@ namespace Bot.Modules
                     $"Set the bot's stream to **{streamName}**, and the Twitch URL to **[{streamer}](https://twitch.tv/{streamer})**.")
                ;
         }
-        [Command("Showser")]
-        [Summary("Show the servers the bot is in")]
+        [Command("guildlist")]
         [RequireOwner]
-        public async Task ListGuilds()
+        public async Task GuildList()
         {
-
-            var guilds = (Context.Client as DiscordSocketClient).Guilds.ToList();
-            StringBuilder sb = new StringBuilder();
-            var embed = new EmbedBuilder();
-            foreach (var guild in guilds)
+            try
             {
-                sb.AppendLine($"{guild.Name} - {guild.Id}"); // Owner: {guild.Owner}
+                string guildList = $"Guild Count: {Context.Client.Guilds.Count.ToString()} \n \n";
+                var guilds = (Context.Client as DiscordSocketClient).Guilds;
+                foreach (var g in guilds)
+                {
+                    guildList += $"Name: {g.Name}\n Owner: {g.Owner} \n ID: {g.Id} \n \n";
+                }
+                File.WriteAllText("guildlist.txt", guildList);
+                await Context.Channel.SendFileAsync("guildlist.txt", null, false, null);
             }
-            embed.WithColor(new Color(0, 255, 0));
-            embed.Title = "Server List:";
-            embed.WithFooter($"Count: {Context.Client.Guilds.Count.ToString()}", Context.User.GetAvatarUrl());
-            embed.WithCurrentTimestamp();
-            embed.Description = sb.ToString();
-            await ReplyAsync("", false, embed.Build());
-
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+               
+            }
         }
+       
         [Command("setgame"), Alias("ChangeGame", "SetGame")]
         [Remarks("Change what the bot is currently playing.")]
         [RequireOwner]

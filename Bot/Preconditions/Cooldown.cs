@@ -17,7 +17,7 @@ namespace Bot.Preconditions
         /// </summary>
         /// <param name="seconds">Sets the cooldown in seconds.</param>
         /// <param name="adminsAreLimited">Set whether admins should have cooldowns between commands use.</param>
-        public Cooldown(int seconds, bool adminsAreLimited = false)
+        public Cooldown(int seconds, bool adminsAreLimited = true)
         {
             CooldownLength = TimeSpan.FromSeconds(seconds);
             AdminsAreLimited = adminsAreLimited;
@@ -50,7 +50,7 @@ namespace Bot.Preconditions
                 // Display message if command is on cooldown
                 if (difference.Ticks > 0)
                 {
-                    return Task.FromResult(PreconditionResult.FromError($"You can use this command in {difference.ToString(@"mm\:ss")}"));
+                    return Task.FromResult(PreconditionResult.FromError($"Cooldown, try again in {difference.ToString(@"mm\:ss")}"));
                 }
                 // Update cooldown time
                 var time = DateTime.UtcNow.Add(CooldownLength);

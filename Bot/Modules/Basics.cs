@@ -17,7 +17,7 @@ namespace Bot.Modules
     public class Basics : ModuleBase<MiunieCommandContext>
     {
         [Command("Hello"),Summary("Hey!")]
-        [Cooldown(5)]
+        [Cooldown(2)]
         public async Task SayHello()
         {
             await ReplyAsync("Hey!");
@@ -37,10 +37,13 @@ namespace Bot.Modules
         }
 
         [Command("Feedback"), Alias("Fb")]
+        [Cooldown(30)]
         [Summary("Submit feedback directly to KillerBot HQ.")]
-        [Remarks("Usage: |prefix |feedback {feedback}")]
-        public async Task FeedbackAsync([Remainder] string feedback)
+        [Remarks("Usage: k!feedback {feedback}")]
+        public async Task FeedbackAsync([Remainder] string feedback = null)
         {
+            if (feedback == null)
+                throw new ArgumentException("Please write a feedback to send.");
             var embed = new EmbedBuilder()
             {
                 Color = (Color.Green)
@@ -52,7 +55,9 @@ namespace Bot.Modules
                 Color = (Color.LightGrey)
             };
             embed2.WithDescription($"```{feedback}```")
-                .WithTitle($"Feedback from {Context.User}");
+            .WithFooter(new EmbedFooterBuilder().WithText($"Feedback from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {Context.Guild.Name}"))
+            .WithAuthor($"{Context.User}", Context.User.GetAvatarUrl());
+
             var channel = Context.Client.GetChannel(550073251641032717) as SocketTextChannel;
             if (channel is null)
             {
@@ -86,6 +91,7 @@ namespace Bot.Modules
 
       
         [Command("changelog")]
+        [Cooldown(5)]
         [Summary("Change log for the current version of the bot")]
         public async Task changes()
         {
@@ -93,12 +99,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = " **== Fix ==** `1.0.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a huge bug making the bot crash if it gets added to a server with no permission to send the on-join message in the default channel.";
+            embed.Description = " **== Minor Release ==** `1.1.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Warn command! \nSends a server warning to a user, Requires Manage messages perm. \n<:KBdot:580470791251034123> Added cooldowns to multiple commands. \n \n<:KBdot:580470791251034123> Economy: Work command, can be used once in an hour. \n \n<:KBdot:580470791251034123> randomcat command \nSends a random picture of a cute cat :cat: \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug in the combat system. \n \n<:KBdot:580470791251034123> Changed the layout of 8ball command. \n \n<:KBdot:580470791251034123> Fixed a bug in user hierarchy. \n \n<:KBdot:580470791251034123> Small changes to userinfo and some other commands.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: 22/05/2019 8:16 PM GMT");
+                x.WithText("Last updated: 29/05/2019 9:28 PM GMT");
 
 
 
@@ -111,34 +117,7 @@ namespace Bot.Modules
 
         List<string> queueList = new List<string>();
         Random rand = new Random();
-        string[] PredictionsTexts = new string[]
-        {
-        "It is very unlikely.",
-        "I don't think so...",
-        "Yes!",
-        "I don't know",
-        "No." ,
-        "Of course!",
-        "Ask me later." ,
-        "Never!" ,
-        "Definitely.",
-        "You may rely on it." ,
-        "My dad said no." ,
-        "The whole country agreed!" ,
-        "Certainly.",
-        "I guess not...",
-        "Nah."
-       };
-        Random rnd = new Random();
-        [Command("8ball")]
-        [Summary("Gives a prediction")]
-        public async Task EightBall([Remainder] string input)
-        {
-            int randomIndex = rand.Next(PredictionsTexts.Length);
-            string text = PredictionsTexts[randomIndex];
-            await ReplyAsync(Context.User.Mention + ", " + text);
-        }
-
+       
         string[] FlipCoin = new string[]
        {
       "Heads!" ,
@@ -204,6 +183,7 @@ namespace Bot.Modules
         }
 
         [Command("serverinfo")]
+        [Cooldown(3)]
         [Alias("sinfo","aboutserver")]
         [Summary("Information about the server the command was done in.")]
         public async Task serverinfo()
@@ -253,10 +233,11 @@ namespace Bot.Modules
         }
 
         [Command("userinfo")]
+        [Cooldown(3)]
         [Summary("Gets information about the specified user")]
-        public async Task UserInfo([Remainder] IGuildUser user)
+        public async Task UserInfo([Remainder] IGuildUser user = null)
         {
-
+            user = user ?? (SocketGuildUser)Context.User;
             EmbedBuilder emb = new EmbedBuilder();
 
             string userRoles = DiscordHelpers.GetListOfUsersRoles(user);
@@ -272,9 +253,10 @@ namespace Bot.Modules
             EmbedAuthorBuilder author = new EmbedAuthorBuilder();
             author.Name = user.Username;
             if (user.IsBot)
-                author.Name += " (Bot)";
+                author.Name += "(Bot)";
             else if (user.IsWebhook)
                 author.Name += " (Webhook)";
+           
 
             emb.Author = author;
 
@@ -308,6 +290,7 @@ namespace Bot.Modules
 
             if (string.IsNullOrEmpty(userPermissions) == false)
                 emb.AddField("Permissions", userPermissions);
+            
 
             emb.AddField("Status", user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString());
 
@@ -375,6 +358,7 @@ namespace Bot.Modules
             return permissions.Remove(permissions.Length - 2);
         }
         [Command("report"), Alias("bug", "bugreport", "reportbug")]
+        [Cooldown(10)]
         [Summary("Send a report about a bug to the bot owner. Spam/troll is not tolerated.")]
         public async Task BugReport([Remainder] string report)
         {
@@ -388,7 +372,7 @@ namespace Bot.Modules
             };
 
             embed.Description = $"{report}";
-            embed.WithFooter(new EmbedFooterBuilder().WithText($"Message from: {Context.User.Username} | Guild: {Context.Guild.Name}"));
+            embed.WithFooter(new EmbedFooterBuilder().WithText($"Message from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {Context.Guild.Name}"));
             await message.SendMessageAsync("", false, embed.Build());
             embed.Description = $"You have sent a message to the Bot owner (Panda#8822). He will read the message soon.";
 
@@ -397,7 +381,7 @@ namespace Bot.Modules
 
 
         [Command("UserCount")]
-
+        [Cooldown(3)]
         [Alias("UC")]
 
         [Remarks("User Count for the current server")]
