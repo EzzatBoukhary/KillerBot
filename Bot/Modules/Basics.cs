@@ -99,7 +99,7 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = " **== Minor Release ==** `1.1.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Warn command! \nSends a server warning to a user, Requires Manage messages perm. \n<:KBdot:580470791251034123> Added cooldowns to multiple commands. \n \n<:KBdot:580470791251034123> Economy: Work command, can be used once in an hour. \n \n<:KBdot:580470791251034123> randomcat command \nSends a random picture of a cute cat :cat: \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug in the combat system. \n \n<:KBdot:580470791251034123> Changed the layout of 8ball command. \n \n<:KBdot:580470791251034123> Fixed a bug in user hierarchy. \n \n<:KBdot:580470791251034123> Small changes to userinfo and some other commands.";
+            embed.Description = " **== Minor Release ==** `1.1.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Added cooldowns to multiple commands. \n \n<:KBdot:580470791251034123> Economy: Work command, can be used once in an hour. \n \n<:KBdot:580470791251034123> randomcat command \nSends a random picture of a cute cat :cat: \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug in the combat system. \n \n<:KBdot:580470791251034123> Changed the layout of 8ball command. \n \n<:KBdot:580470791251034123> Fixed a bug in user hierarchy. \n \n<:KBdot:580470791251034123> Small changes to userinfo and some other commands.";
             embed.WithFooter(x =>
 
             {
