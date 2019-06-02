@@ -13,16 +13,19 @@ using Bot.Preconditions;
 using System.Collections.Generic;
 using Discord.Net;
 using System.Text;
+using Bot.Features.GlobalAccounts;
 
 namespace Bot.Modules
 {
     public class Owner : ModuleBase<MiunieCommandContext>
     {
         private static readonly OverwritePermissions denyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
-        private int _fieldRange = 10;
-        private CommandService _service;
+        private readonly GlobalUserAccounts _globalUserAccounts;
 
-
+        public Owner(GlobalUserAccounts globalUserAccounts)
+        {
+            _globalUserAccounts = globalUserAccounts;
+        }
         [Command("SetStream")]
         [Remarks("Usage: |prefix|setstream {streamer} {streamName}")]
         [RequireOwner]
@@ -64,7 +67,7 @@ namespace Bot.Modules
             await ReplyAsync($"Changed game to `{gamename}`");
         }
         [Command("ForceLeave")]
-        [Remarks("Usage: |prefix|forceleave {serverName}")]
+        [Remarks("Usage: k!prefix forceleave {serverName}")]
         [RequireOwner]
         public async Task ForceLeaveAsync([Remainder] string serverName)
         {
@@ -86,7 +89,26 @@ namespace Bot.Modules
             await ReplyAsync("", false, builder.Build());
 
         }
-
+        [Command("add-coins"),Alias("add-money")]
+        [Remarks("Adds specified money to a specific user. Bot owner only.")]
+        [RequireOwner]
+        public async Task givecoins(SocketGuildUser user = null, ulong amount = 0)
+        {
+            if (user == null)
+                throw new ArgumentException("Please mention a user.");
+            if (amount == 0)
+                throw new ArgumentException("Please specify an amount which is more than 0");
+            var account = _globalUserAccounts.GetById(user.Id);
+            var emb = new EmbedBuilder();
+            account.Coins += amount;
+            _globalUserAccounts.SaveAccounts();
+            emb.WithColor(Color.Green);
+            emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
+            emb.WithCurrentTimestamp();
+            emb.WithDescription($"**{user}** has received **{amount} coins**. <a:KBtick:580851374070431774> ");
+            await ReplyAsync("", false, emb.Build());
+        }
+        
 
         [Command("setAvatar"), Remarks("Sets the bots Avatar")]
         [RequireOwner]

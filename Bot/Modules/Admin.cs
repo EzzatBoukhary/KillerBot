@@ -25,11 +25,11 @@ namespace Bot.Modules
         private static readonly OverwritePermissions denyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
         private int _fieldRange = 10;
         private CommandService _service;
-        private readonly GlobalUserAccounts _globalUserAccounts;
+        private readonly GlobalGuildAccounts _globalGuildAccounts;
 
-        public Admin(GlobalUserAccounts globalUserAccounts)
+        public Admin(GlobalGuildAccounts globalGuildAccounts)
         {
-            _globalUserAccounts = globalUserAccounts;
+            _globalGuildAccounts = globalGuildAccounts;
         }
 
 
@@ -331,31 +331,39 @@ namespace Bot.Modules
         }
 
         //WARN SYSTEM
-      /*  [Command("warn")]
+        [Command("warn")]
         [Alias("strike")]
         [Summary("Direct message a user with a warning")]
+        [Remarks("If you warn reason is a sentence you should put `\"(reason)\"`")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task Warn(SocketGuildUser user = null, string reason = null)
         {
            
             //If no reason is provided
-            if (string.IsNullOrWhiteSpace(reason))
+            if (reason == null)
             {
                 reason = "[No reason was provided]";
             }
+            //If no user is mentioned
+            if (user == null)
+                throw new ArgumentException("You must mention a user.");
 
             //If we're able to dm the user
             EmbedBuilder success = new EmbedBuilder()
                 .WithDescription($"Successfully sent a warning to **{user.Username}#{user.Discriminator}**!")
                 .WithColor(Color.Green)
+                .WithFooter($"Warning by: {Context.User}", Context.User.GetAvatarUrl())
                 .WithCurrentTimestamp();
 
             //if unable to dm the user
             EmbedBuilder error = new EmbedBuilder()
-                .WithDescription("Unable to send this user a Direct Message.")
-                .WithColor(Color.LightOrange)
+                .WithDescription("User was given a warning but not DMed. Unable to send this user a Direct Message.")
+                .WithColor(Color.Orange)
+                .WithFooter($"Warning by: {Context.User}", Context.User.GetAvatarUrl())
+                .WithTitle("Error:")
                 .WithCurrentTimestamp();
+
 
             EmbedBuilder output = new EmbedBuilder()  //warn message
 
@@ -372,26 +380,72 @@ namespace Bot.Modules
             if (dm == null)
                 
                 await ReplyAsync("",false, error.Build());
-            else
+            else try
             {
                 await dm.SendMessageAsync("",false, output.Build()).ConfigureAwait(false);
                 await ReplyAsync("",false, success.Build()).ConfigureAwait(false);
             }
+                catch
+                {
+                    await ReplyAsync("", false, error.Build()).ConfigureAwait(false);
+                }
             var server = Context.Guild.Name;
+            var warned_user = $"{user.Username}#{user.Discriminator} \n({user.Id})";
+            var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
+            var moderator = $"{Context.User.Username}#{Context.User.Discriminator}";
             var time = DateTime.Now;
-            var account = _globalUserAccounts.GetById(user.Id);
-            var newWarn = new WarnEntry(server,time, reason);
+            var newWarn = new WarnEntry(moderator,warned_user,time, reason);
+            guild.Warns.Add(newWarn);
+            var warnings = guild.Warns.ToList();
+            guild.Modify(g => g.SetWarns(warnings), _globalGuildAccounts);            
 
-            account.Warns.Add(newWarn);
-            _globalUserAccounts.SaveAccounts(Context.User.Id);
         }
 
+        [Command("warnings"),Alias("strikes","warnlist","strikelist","listwarns","liststrikes")]
+        [Summary("Lists the strikes/warnings of a user. Only staff can use it.")]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        public async Task ListWarns()
+        {
+           
+            var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
+            var Warns = _globalGuildAccounts.GetById(Context.Guild.Id).Warns;
+            EmbedBuilder embed = new EmbedBuilder()
+                .WithColor(Color.Blue)
+                .WithTitle("Warnings:")
+                .WithFooter($"Requested by: {Context.User}", Context.User.GetAvatarUrl())
+                .WithCurrentTimestamp()
+                .WithDescription($"Count: {guild.Warns.Count} \n \n");
+            for (var i = 0; i < Warns.Count; i++)
+            {
+                embed.AddField($"[{i + 1}] {Warns[i].Warned_user:f}", $"By: {Warns[i].Moderator} \nReason: {Warns[i].Reason} \nDate: {Warns[i].Time}", true);
+            }
+            await ReplyAsync("",false, embed.Build());
+
+        }
+       
+        
         [Command("removewarn")]
-        [Alias("removestrike")]
+        [Alias("removestrike", "deletestrike","deletewarn")]
         [Summary("Direct message a user with a warning")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task RemoveWarn(SocketGuildUser user = null) */
+        public async Task RemoveWarn(int i)
+        {
+            var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
+            var Warns = _globalGuildAccounts.GetById(Context.Guild.Id).Warns;
+            var responseString = "Specified warning doesn't exist, make sure to do `k!warnings` before trying to " +
+                                "delete a warning.";
+            if (i > 0 && i <= Warns.Count)
+            {
+                Warns.RemoveAt(i - 1);
+                var warnings = guild.Warns.ToList();
+                guild.Modify(g => g.SetWarns(warnings), _globalGuildAccounts);
+                responseString = $"Deleted the warning with index **{i}**!";
+            }
+
+            await ReplyAsync(responseString);
+        }
 
         //end
     }

@@ -163,7 +163,20 @@ namespace Bot.Handlers
 
         private async Task LatencyUpdated(int latencyBefore, int latencyAfter)
         {
-            
+            var channel = _client.GetChannel(584836200414576652) as SocketTextChannel;
+            if (latencyAfter > 800)
+            {
+                channel.SendMessageAsync($"KillerBot is currently having major issues. ({latencyAfter} ms)");
+            }
+            else if (latencyAfter > 200)
+            {
+                channel.SendMessageAsync($"KillerBot is currently having minor issues. ({latencyAfter} ms)");
+            }
+            else if (latencyAfter > 500)
+            {
+                channel.SendMessageAsync($"KillerBot is currently having issues. ({latencyAfter} ms)");
+            }
+
         }
 
         private async Task LeftGuild(SocketGuild guild)
@@ -229,7 +242,8 @@ namespace Bot.Handlers
         {
             await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
             _repeatedTaskFunctions.InitRepeatedTasks();
-            
+            var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
+            channel.SendMessageAsync("KillerBot is currently online. <a:KBtick:580851374070431774>");
             // ServerBots.Init(_globalGuildAccounts);
 
         }

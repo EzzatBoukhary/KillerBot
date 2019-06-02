@@ -44,7 +44,7 @@ namespace Bot.Modules
         }
 
         [Command("money"), Remarks("Shows how much money you have")]
-        [Alias("Cash", "Money")]
+        [Alias("Cash", "balance", "coins","bal")]
         public async Task CheckMiunies()
         {
             var account = _globalUserAccounts.GetById(Context.User.Id);
@@ -52,7 +52,7 @@ namespace Bot.Modules
         }
 
         [Command("money"), Remarks("Shows how much money the mentioned user has")]
-        [Alias("Cash", "Money")]
+        [Alias("Cash", "balance", "coins", "bal")]
         public async Task CheckMiuniesOther(IGuildUser target)
         {
             var account = _globalUserAccounts.GetById(target.Id);
@@ -60,7 +60,7 @@ namespace Bot.Modules
         }
 
         [Command("Leaderboard"), Remarks("Shows a user list of the sorted by money. Pageable to see lower ranked users.")]
-        [Alias("Top", "Top10", "Richest")]
+        [Alias("Top", "Top10", "Richest","lb")]
         [Cooldown(5)]
         public async Task ShowRichesPeople(int page = 1)
         {
@@ -83,7 +83,7 @@ namespace Bot.Modules
                 await ReplyAsync($"There are not that many pages...\nPage {lastPageNumber} is the last one...");
                 return;
             }
-            // Sort the accounts descending by Minuies
+            // Sort the accounts descending by Coins
             var ordered = accounts.OrderByDescending(acc => acc.Coins).ToList();
 
             var embB = new EmbedBuilder()
@@ -131,10 +131,14 @@ namespace Bot.Modules
         }
 
         [Command("Transfer")]
-        [Remarks("Transferrs specified amount of your coins to the mentioned person.")]
+        [Remarks("Transfers specified amount of your coins to the mentioned person.")]
         [Alias("Give", "Gift")]
         public async Task TransferMinuies(IGuildUser target, ulong amount)
         {
+            if (amount == 0)
+                throw new ArgumentException("<:KBfail:580129304592252995> Oh wow, you really wanna transfer 0 coins to the user? Not cool. (amount should be more than 0)");
+            if (target.IsBot == true)
+                throw new ArgumentException("<:KBfail:580129304592252995> Cannot transfer coins to bots.");
             try
             {
                 _miuniesTransfer.UserToUser(Context.User.Id, target.Id, amount);
@@ -152,7 +156,7 @@ namespace Bot.Modules
             return $"{mention} has **{coins} coins**! {GetMiuniesCountReaction(coins, mention)}";
         }
 
-        [Command("newslot"), Remarks("Creates a new slot machine if you feel the current one is unlucky")]
+        [Command("newslot"), Summary("Creates a new slot machine if you feel the current one is unlucky"),Remarks("Usage: k!newslots [Optional: (amount of pieces)}]")]
         [Alias("newslots")]
         public async Task NewSlot(int amount = 0)
         {
@@ -160,7 +164,7 @@ namespace Bot.Modules
             await ReplyAsync("<a:KBtick:580851374070431774> A new slot machine got generated! Good luck!");
         }
 
-        [Command("slots"), Remarks("Play the slots! Win or lose some coins!")]
+        [Command("slots"), Summary("Play the slots! Win or lose some coins!")]
         [Alias("slot")]
         public async Task SpinSlot(uint amount)
         {
@@ -193,7 +197,7 @@ namespace Bot.Modules
             await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2}");
         }
 
-        [Command("showslots"), Remarks("Shows the configuration of the current slot machine")]
+        [Command("showslots"), Summary("Shows the configuration of the current slot machine")]
         [Alias("showslot")]
         public async Task ShowSlot()
         {
@@ -207,7 +211,6 @@ namespace Bot.Modules
             var account = _globalUserAccounts.GetById(Context.User.Id);
             var emb = new EmbedBuilder();
             var result = (ulong)Global.Rng.Next(Constants.WorkRewardMinMax.Item1, Constants.WorkRewardMinMax.Item2 + 1);
-                var accounts = _globalUserAccounts.GetById(Context.User.Id);
                 account.Coins += result;
                 _globalUserAccounts.SaveAccounts();
                 emb.WithColor(Color.Green);

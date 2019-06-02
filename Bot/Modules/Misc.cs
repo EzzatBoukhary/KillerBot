@@ -125,7 +125,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.1.0`");
+            builder.AddField("Version", $"The current version of the bot is: `1.2.0`");
             await ReplyAsync("", false, builder.Build());
         }
 
@@ -147,11 +147,14 @@ namespace Bot.Modules
         [Cooldown(5)]
         public async Task HelpQuery([Remainder] string query)
         {
-            var builder = new EmbedBuilder()
-            {
-                Color = new Color(114, 137, 218),
-                Title = $"Help for '{query}'"
-            };
+            var application = await Context.Client.GetApplicationInfoAsync();  /*for lib version*/
+            var builder = new EmbedBuilder();
+
+                builder.Color = new Color(114, 137, 218);
+                builder.Title = $"Help for '{query}'";
+                builder.WithFooter($"Requested by {Context.User}", Context.User.GetAvatarUrl());
+                builder.WithCurrentTimestamp();
+                builder.ThumbnailUrl = application.IconUrl;
 
             var result = _service.Search(Context, query);
             if (query.StartsWith("module "))
@@ -166,7 +169,7 @@ namespace Bot.Modules
 
             await Context.Channel.SendMessageAsync("", false, emb);
         }
-
+       
         private static Embed HelpCommand(SearchResult search, EmbedBuilder builder)
         {
             foreach (var match in search.Commands)
@@ -174,9 +177,11 @@ namespace Bot.Modules
                 var cmd = match.Command;
                 var parameters = cmd.Parameters.Select(p => string.IsNullOrEmpty(p.Summary) ? p.Name : p.Summary);
                 var paramsString = $"Parameters: {string.Join(", ", parameters)}" +
+                                 //  $"\nPreconditions: {cmd.Preconditions.Humanize()}" +
                                    (string.IsNullOrEmpty(cmd.Remarks) ? "" : $"\nRemarks: {cmd.Remarks}") +
                                    (string.IsNullOrEmpty(cmd.Summary) ? "" : $"\nSummary: {cmd.Summary}");
 
+              
                 builder.AddField(x =>
                 {
                     x.Name = string.Join(", ", cmd.Aliases);
@@ -244,7 +249,7 @@ namespace Bot.Modules
         [Remarks("You can use multiple signs at once for example `calculate 4 + 2 * 4`")]
         public async Task Calculate([Remainder]string equation)
         { //Needs improvement
-            usage = "Usage : `|-calculate <equation>` , where `equation` must not contain any functions.";
+            usage = "Usage : `k!calculate <equation>` , where `equation` must not contain any functions.";
             //Replaces all the possible math symbols that may appear
             //Invalid for the computer to compute
             equation = equation.ToUpper()
@@ -385,7 +390,7 @@ namespace Bot.Modules
         })
                         .AddField(y =>
                         {
-                            y.Name = "Discord.net version:";  /*Title*/
+                            y.Name = "Discord.Net version:";  /*Title*/
                             y.Value = DiscordConfig.Version;  /*pulls discord lib version*/
                             y.IsInline = true;
                         })
@@ -397,10 +402,11 @@ namespace Bot.Modules
                                  })
                                          .AddField(y =>
                                          {
-                                             y.Name = "HeapSize:";
-                                             y.Value = GetHeapSize();   /*pulls ram usage of modules/heaps*/
+                                             y.Name = "Heap Size:";
+                                             y.Value = ($"{GetHeapSize()} MB");   /*pulls ram usage of modules/heaps*/
                                              y.IsInline = false;
                                          })
+                                         
                                              .AddField(y =>
                                              {
                                                  y.Name = "Number Of Users:";

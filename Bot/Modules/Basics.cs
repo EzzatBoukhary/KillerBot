@@ -81,12 +81,37 @@ namespace Bot.Modules
             var sw = Stopwatch.StartNew();
             var client = Context.Client as DiscordSocketClient;
             var Gateway = client.Latency;
-            var emb = new EmbedBuilder()
+
+            //good ping
+            var Good = new EmbedBuilder()
                 .WithTitle("Ping results")
                 .WithDescription($"**Gateway Latency:** {Gateway} ms" +
                 $"\n**Response Latency:** {sw.ElapsedMilliseconds} ms")
                 .WithColor(Color.Green);
-            await ReplyAsync("", false, emb.Build());
+
+            //medium ping
+            var meh = new EmbedBuilder()
+                .WithTitle("Ping results")
+                .WithDescription($"**Gateway Latency:** {Gateway} ms" +
+                $"\n**Response Latency:** {sw.ElapsedMilliseconds} ms")
+                .WithColor(Color.Orange);
+
+            //bad ping
+            var bad = new EmbedBuilder()
+                .WithTitle("Ping results")
+                .WithDescription($"**Gateway Latency:** {Gateway} ms" +
+                $"\n**Response Latency:** {sw.ElapsedMilliseconds} ms")
+                .WithColor(new Color(255, 0, 0));
+            if (Gateway < 100)
+            {
+                await ReplyAsync("", false, Good.Build());
+            }
+            if (Gateway > 800)
+            {
+                await ReplyAsync("", false, bad.Build());
+            }
+            else
+                await ReplyAsync("", false, meh.Build());
         } 
 
       
@@ -99,12 +124,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = " **== Minor Release ==** `1.1.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Warn command! \nSends a server warning to a user, Requires Manage messages perm. \n<:KBdot:580470791251034123> Added cooldowns to multiple commands. \n \n<:KBdot:580470791251034123> Economy: Work command, can be used once in an hour. \n \n<:KBdot:580470791251034123> randomcat command \nSends a random picture of a cute cat :cat: \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug in the combat system. \n \n<:KBdot:580470791251034123> Changed the layout of 8ball command. \n \n<:KBdot:580470791251034123> Fixed a bug in user hierarchy. \n \n<:KBdot:580470791251034123> Small changes to userinfo and some other commands.";
+            embed.Description = " **== Minor Release ==** `1.2.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Warn System \nCommands: `warn`,`warnings`,`removewarn`. More will come on later updates.  \n \n<:KBdot:580470791251034123> Added <userdiscriminator> as an option for the join-leave messages. \n \n<:KBdot:580470791251034123> Bot owner command `add-money` \n \n<:KBdot:580470791251034123> Support server-related: Added logging for high pings in `connection-logs` channel. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug making the announcements channel to be unset when bot restarts. \n \n<:KBdot:580470791251034123> Made `ping` command embed color related to the ping. \n \n<:KBdot:580470791251034123> Small changes to `k!money` command's replies. \n \n<:KBdot:580470791251034123> Small changes to some economy commands and `help (module)` command.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: 29/05/2019 9:28 PM GMT");
+                x.WithText("Last updated: 02/06/2019 10:51 PM GMT");
 
 
 

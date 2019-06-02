@@ -85,7 +85,7 @@ namespace Bot.Handlers
             {
                 var info = await _client.GetApplicationInfoAsync();
                 var DMOwner = await info.Owner.GetOrCreateDMChannelAsync();
-                await DMOwner.SendMessageAsync($"I got a message from {message.Author.Username}, here it is:\n \n" + message.Content);
+                await DMOwner.SendMessageAsync($"I got a message from {message.Author}, here it is:\n \n" + message.Content);
             }
         }
 

@@ -39,6 +39,7 @@ namespace Bot
         {
             if (user == null) return messageString;
             return messageString.Replace("<username>", user.Nickname ?? user.Username)
+                .Replace("<userdiscriminator>", user.Discriminator)
                 .Replace("<usermention>", user.Mention)
                 .Replace("<guildname>", user.Guild.Name);
         }
@@ -83,22 +84,22 @@ namespace Bot
             }
             if (value > 800)
             {
-                return $"Alright, {mention}. Put the coins in the back and nobody gets hurt.";
+                return $"Alright, {mention}. Put the coins away and nobody gets hurt.";
             }
             if (value > 550)
             {
-                return $"I like how {mention} think that's impressive.";
+                return $"I like how {mention} thinks that's impressive.";
             }
             if (value > 200)
             {
-                return $"Outch, {mention}! If I knew that is all you've got, I would just DM you the amount. Embarrassing!";
+                return $"Ouch, {mention}! If I knew that is all you've got, I would just DM you the amount. Embarrassing!";
             }
             if (value == 0)
             {
                 return $"Yea, {mention} is broke. What a surprise.";
             }
 
-            return "The whole concept of coins is fake. I hope you know that";
+            return $"Yea, {mention} you still have a lot to go.";
         }
 
         public static async Task<string> SendWebRequest(string requestUrl)

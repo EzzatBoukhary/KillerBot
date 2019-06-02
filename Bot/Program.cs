@@ -44,13 +44,12 @@ namespace Bot
 
                 while (!await AttemptLogin()) { }
 
-                await _client.StartAsync();
-               
+                await _client.StartAsync();                
 
                 do
                 {
                     Console.WriteLine("Press Q to exit");
-                    
+
                 }
                 while (Console.ReadKey(true).Key != ConsoleKey.Q);
             }
