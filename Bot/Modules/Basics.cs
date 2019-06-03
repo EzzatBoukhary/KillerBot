@@ -102,16 +102,16 @@ namespace Bot.Modules
                 .WithDescription($"**Gateway Latency:** {Gateway} ms" +
                 $"\n**Response Latency:** {sw.ElapsedMilliseconds} ms")
                 .WithColor(new Color(255, 0, 0));
-            if (Gateway < 100)
-            {
-                await ReplyAsync("", false, Good.Build());
-            }
             if (Gateway > 800)
             {
                 await ReplyAsync("", false, bad.Build());
             }
-            else
+            else if (Gateway > 100)
                 await ReplyAsync("", false, meh.Build());
+            else if (Gateway < 100)
+            {
+                await ReplyAsync("", false, Good.Build());
+            }
         } 
 
       
