@@ -166,17 +166,20 @@ namespace Bot.Handlers
             var channel = _client.GetChannel(584836200414576652) as SocketTextChannel;
             if (latencyAfter > 800)
             {
-                channel.SendMessageAsync($"KillerBot is currently having major issues. ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having major issues. ({latencyAfter} ms)");
             }
             else if (latencyAfter > 200)
             {
-                channel.SendMessageAsync($"KillerBot is currently having minor issues. ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having minor issues. ({latencyAfter} ms)");
             }
             else if (latencyAfter > 500)
             {
-                channel.SendMessageAsync($"KillerBot is currently having issues. ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having issues. ({latencyAfter} ms)");
             }
-
+            else if (latencyBefore > 200 & latencyAfter < 200)
+            {
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is back to normal. ({latencyAfter} ms)");
+            }
         }
 
         private async Task LeftGuild(SocketGuild guild)
