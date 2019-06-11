@@ -1,4 +1,4 @@
-﻿ /* using System;
+﻿  using System;
 using System.Collections.Generic;
 
  namespace Bot.Features.Blogs
@@ -10,4 +10,4 @@ using System.Collections.Generic;
         public List<ulong> Subscribers { get; set; }
         public string Name { get; set; }
     }
-} */
+} 

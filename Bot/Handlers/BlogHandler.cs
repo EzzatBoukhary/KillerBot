@@ -1,4 +1,5 @@
-﻿/* using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bot.Configuration;
@@ -32,7 +33,7 @@ namespace Bot.Handlers
 
                     _jsonDataStorage.StoreObject(blogs, blogFile, Formatting.Indented);
 
-                    return EmbedHandler.CreateEmbed("Blog", "You now follow this blog", EmbedHandler.EmbedMessageType.Success);
+                    return EmbedHandler.CreateEmbed("Blog", $"You now follow \"{blogname}\" \nAlso, make sure to have dms enabled for the bot to DM you any new posts from this blog.", EmbedHandler.EmbedMessageType.Success);
                 }
                 else
                 {
@@ -71,7 +72,7 @@ namespace Bot.Handlers
                 return EmbedHandler.CreateEmbed("Blog :x:", $"There is no Blog with the name {blogname}", EmbedHandler.EmbedMessageType.Error);
             }
         }
-
+      
         public async Task ReactionAdded(SocketReaction reaction)
         {
             var msgList = Global.MessagesIdToTrack ?? new Dictionary<ulong, string>();
@@ -84,5 +85,6 @@ namespace Bot.Handlers
                 }
             }
         }
+       
     }
-} */
+} 

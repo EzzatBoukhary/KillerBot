@@ -30,13 +30,13 @@ namespace Bot.Handlers
         private readonly TriviaGames _triviaGames;
         private readonly ListManager _listManager;
         private readonly IOnboarding _onboarding;
-        /* private readonly BlogHandler _blogHandler; */
+        private readonly BlogHandler _blogHandler; 
         private readonly Announcements _announcements;
         private readonly MessageRewardHandler _messageRewardHandler;
         private readonly RepeatedTaskFunctions _repeatedTaskFunctions;
         private readonly GlobalGuildAccounts _globalGuildAccounts;
 
-        public DiscordEventHandler(Logger logger, TriviaGames triviaGames, DiscordSocketClient client, CommandHandler commandHandler, ApplicationSettings applicationSettings, ListManager listManager, IOnboarding onboarding, /*BlogHandler blogHandler,*/ Announcements announcements, MessageRewardHandler messageRewardHandler, RepeatedTaskFunctions repeatedTaskFunctions, GlobalGuildAccounts globalGuildAccounts)
+        public DiscordEventHandler(Logger logger, TriviaGames triviaGames, DiscordSocketClient client, CommandHandler commandHandler, ApplicationSettings applicationSettings, ListManager listManager, IOnboarding onboarding, BlogHandler blogHandler, Announcements announcements, MessageRewardHandler messageRewardHandler, RepeatedTaskFunctions repeatedTaskFunctions, GlobalGuildAccounts globalGuildAccounts)
         {
             _logger = logger;
             _client = client;
@@ -45,7 +45,7 @@ namespace Bot.Handlers
             _triviaGames = triviaGames;
             _listManager = listManager;
             _onboarding = onboarding;
-           /* _blogHandler = blogHandler; */
+            _blogHandler = blogHandler; 
             _announcements = announcements;
             _messageRewardHandler = messageRewardHandler;
             _repeatedTaskFunctions = repeatedTaskFunctions;
@@ -158,33 +158,39 @@ namespace Bot.Handlers
         private async Task JoinedGuild(SocketGuild guild)
         {
             _onboarding.JoinedGuild(guild);
+            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
+
             // ServerBots.JoinedGuild(guild);
         }
 
         private async Task LatencyUpdated(int latencyBefore, int latencyAfter)
         {
             var channel = _client.GetChannel(584836200414576652) as SocketTextChannel;
-            if (latencyAfter > 800)
+            if (latencyAfter > 20000)
+            {
+                Console.WriteLine($"`{DateTime.Now}` - KillerBot is currently suffering from a crash attempt! ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently suffering from a crash attempt! :no_entry: :rotating_light: ({latencyAfter} ms)");
+            }
+            else if (latencyAfter > 5000)
+            {
+                Console.WriteLine($"`{DateTime.Now}` - KillerBot is currently having a possible crash attempt! ({latencyAfter} ms)");
+
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having a possible crash attempt! :warning: ({latencyAfter} ms)");
+            }
+            else if (latencyBefore > 1000 & latencyAfter > 1000)
             {
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having major issues. ({latencyAfter} ms)");
             }
-            else if (latencyAfter > 200)
+            else if (latencyBefore > 5000 & latencyAfter < 200)
             {
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having minor issues. ({latencyAfter} ms)");
-            }
-            else if (latencyAfter > 500)
-            {
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having issues. ({latencyAfter} ms)");
-            }
-            else if (latencyBefore > 200 & latencyAfter < 200)
-            {
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is back to normal. ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
+                Console.WriteLine($"`{DateTime.Now}` - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
             }
         }
 
         private async Task LeftGuild(SocketGuild guild)
         {
-            
+            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
         }
 
         private async Task Log(LogMessage logMessage)
@@ -194,12 +200,15 @@ namespace Bot.Handlers
 
         private async Task LoggedIn()
         {
-            
+            _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.2.0 |","\n");
+            _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
+
         }
 
         private async Task LoggedOut()
         {
-            
+         
         }
 
         private async Task MessageDeleted(Cacheable<IMessage, ulong> cacheMessage, ISocketMessageChannel channel)
@@ -221,14 +230,15 @@ namespace Bot.Handlers
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cacheMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
             if (reaction.User.Value.IsBot) { return; }
-            
+
             var user = _client.Guilds.First().GetUser(reaction.UserId);
             var roleIds = user.Roles.Select(r => r.Id).ToArray();
             (new ListReactionHandler()).HandleReactionAdded(new ListHelper.UserInfo(user.Id, roleIds), _listManager, cacheMessage, reaction);
 
             _triviaGames.HandleReactionAdded(cacheMessage, reaction);
             
-           // _blogHandler.ReactionAdded(reaction);
+            _blogHandler.ReactionAdded(reaction);
+
         }
 
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> cacheMessage, ISocketMessageChannel channel, SocketReaction reaction)
@@ -246,7 +256,7 @@ namespace Bot.Handlers
             await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
             _repeatedTaskFunctions.InitRepeatedTasks();
             var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
-            channel.SendMessageAsync("KillerBot is currently online. <a:KBtick:580851374070431774>");
+            channel.SendMessageAsync("<a:KBtick:580851374070431774>");
             // ServerBots.Init(_globalGuildAccounts);
 
         }

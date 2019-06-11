@@ -125,7 +125,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.2.0`");
+            builder.AddField("Version", $"The current version of the bot is: `1.3.0`");
             await ReplyAsync("", false, builder.Build());
         }
 
@@ -291,7 +291,7 @@ namespace Bot.Modules
 
 
 
-        /*  [Command("ud"),Alias("urbandictionary"), Summary("Gives you the definition of your word on Urban Dictionary.")]
+         [Command("ud"),Alias("urbandictionary"), Summary("Gives you the definition of your word on Urban Dictionary.")]
           [RequireBotPermission(ChannelPermission.EmbedLinks)]
           public async Task UrbanDictionary([Remainder] string word)
           {
@@ -299,20 +299,25 @@ namespace Bot.Modules
               var data = await client.Data(word);
               var pages = new List<string>();
               var embed = new EmbedBuilder();
-              embed.Color = new Color(200, 200, 0);
+
+           // if (data.List == null)
+            //    throw new ArgumentException("No results found.");
+            embed.Color = new Color(200, 200, 0);
               foreach (var entry in data.List)
               {
-                  string result = $"[{entry.Word}]({entry.Permalink})\n\nDefinition: ";
+                
+                string result = $"[{entry.Word}]({entry.Permalink})\n\nDefinition: ";
                   string def = entry.Definition.Replace("[", "");
-                  result += def.Replace("]", "");
-                  result += $"\n\n👍{entry.ThumbsUp}\t👎{entry.ThumbsDown}";
+                result += def.Replace("]", "");
+                result += $"\n\nExample: {entry.Example}";
+                result += $"\n\n👍{entry.ThumbsUp}\t👎{entry.ThumbsDown}";
                   embed.WithDescription(result);
               }
+              
+            await ReplyAsync("", false, embed.Build());
 
-
-              await ReplyAsync("", false, embed.Build());
-
-          } */
+           
+          } 
 
         //8ball
         [Command("8ball"), Summary("Answers all your questions in life.")]
@@ -357,7 +362,7 @@ namespace Bot.Modules
             {
                 var embed = new EmbedBuilder();
                 var application = await Context.Client.GetApplicationInfoAsync();  /*for lib version*/
-                embed.ImageUrl = application.IconUrl;  /*pulls bot Avatar. Not needed can be removed*/
+                embed.ThumbnailUrl = application.IconUrl;  /*pulls bot Avatar. Not needed can be removed*/
                 embed.WithColor(new Color(0x4900ff))  /*Hexacode colours*/
 
         .AddField(y =>  /*Adds a Field*/
@@ -406,7 +411,7 @@ namespace Bot.Modules
                                              y.Value = ($"{GetHeapSize()} MB");   /*pulls ram usage of modules/heaps*/
                                              y.IsInline = false;
                                          })
-                                         
+
                                              .AddField(y =>
                                              {
                                                  y.Name = "Number Of Users:";
@@ -419,6 +424,7 @@ namespace Bot.Modules
                                                      y.Value = (Context.Client as DiscordSocketClient).Guilds.Sum(g => g.Channels.Count).ToString();  /*Gets Number of channels*/
                                                      y.IsInline = false;
                                                  });
+
                 await this.ReplyAsync("", false, embed.Build());
             }
 
@@ -429,7 +435,22 @@ namespace Bot.Modules
           => (DateTime.Now - Process.GetCurrentProcess().StartTime).ToString(@"dd\.hh\:mm\:ss");
         private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString();
 
+        [Command("info")]
+        public async Task InfoBot()
+        {
+            using (var process = Process.GetCurrentProcess())
+            {
+                var embed = new EmbedBuilder();
+                var application = await Context.Client.GetApplicationInfoAsync();  /*for lib version*/
+                embed.ThumbnailUrl = application.IconUrl;  /*pulls bot Avatar. Not needed can be removed*/
+                embed.WithColor(new Color(0x4900ff));  /*Hexacode colours*/
+                embed.WithTitle("KillerBot Information");
+                embed.WithDescription("KillerBot is a multi-purpose bot with unique moderation, fun and utility commands that'll change how servers work to the better. \n \n**About my dev** \nI was made with :heart: by Panda#8822 with the help of some testers and support (<@238353818125991936> and <@333988268439764994>). I work on this bot as a hobby and i love to bring joy to my users by adding the features they want. \n \n**When was i created** \nKillerBot started back in 2016 and got hosted for a while until the hosting was stopped and the bot died in 2017. I then decided to bring it back and recode it completely in Discord.Net 2.0.1 and so i did, bringing KillerBot back at 03/03/2019 in a beta state until 05/23/2019 where it was officially released. And we're still going! <:Killerbot:587360915284819998> \n \n**Links** \n[Invite me!](https://discordapp.com/oauth2/authorize?client_id=263753726324375572&scope=bot&permissions=406874134) \n[Discord Support Server](https://discord.gg/DNqAShq) \n[Apply for bot support!](https://docs.google.com/forms/d/e/1FAIpQLSeyl-pHKe9hHic1UcpKaG4lzaMCt2a6Mgaj0PPPnurSgptrIw/viewform) \n------------- \n[Discord Bot list Website](https://discordbotlist.com/bots/263753726324375572) \n[Discord Bots Website](https://discordbots.org/bot/263753726324375572)");
+                embed.WithCurrentTimestamp();
 
+                await ReplyAsync("", false, embed.Build());
+            }
+        }
        
         [Command("randomcat")]
         [Cooldown(3)]

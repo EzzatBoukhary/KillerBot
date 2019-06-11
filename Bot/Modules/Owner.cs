@@ -132,5 +132,6 @@ namespace Bot.Modules
                 await Context.Channel.SendMessageAsync("", false, embed);
             }
         }
+     
     }
 }

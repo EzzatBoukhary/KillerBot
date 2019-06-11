@@ -169,6 +169,58 @@ namespace Bot.Modules
                 await dmChannel.SendMessageAsync("", false, embed2.Build());
 
     }
+        //=====mute with time=====
+        [Command("timemute")]
+        [Remarks("Mutes A User")]
+        [RequireUserPermission(GuildPermission.MuteMembers)]
+        public async Task MuteTime([NoSelf][RequireBotHigherHirachy] SocketGuildUser user = null, int time = 1, [Remainder] string reason = null)
+        {
+
+            if (user == null)
+                throw new ArgumentException("You must mention a user!");
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "[No reason was provided]";
+            }
+
+            var muteRole = await GetMuteRole(user.Guild);
+            if (!user.Roles.Any(r => r.Id == muteRole.Id))
+                await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+            var usr = Context.Guild.GetUser(user.Id);
+
+            // await (usr as IGuildUser).ModifyAsync(x => x.Mute = true);
+            await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
+            var embed = new EmbedBuilder();
+            embed.Color = new Color(206, 47, 47);
+            embed.Title = "=== Muted User ===";
+            embed.Description = $"**Username: ** {user.Username} || {user.Discriminator}\n**Muted by: ** {Context.User}\n**Reason: **{reason}";
+            
+
+            var embed2 = new EmbedBuilder();
+            embed2.Description = ($"You've been muted from **{Context.Guild.Name}** for **{reason}**.");
+            var dmChannel = await user.GetOrCreateDMChannelAsync();
+
+            if (time == 0)
+            {
+                var use = await Context.Channel.SendMessageAsync("Use: ``k!mute @user {time in minutes} {reason}``");
+                await Task.Delay(5000);
+                await use.DeleteAsync();
+            }
+            else
+            {
+                if (!user.Roles.Any(r => r.Id == muteRole.Id))
+                    await user.AddRoleAsync(muteRole).ConfigureAwait(false);
+                await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
+                await ReplyAsync("", false, embed.Build());
+                await dmChannel.SendMessageAsync("", false, embed2.Build());
+                await Task.Delay(time);
+                await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
+                await ReplyAsync("User has been unmuted. <a:KBtick:580851374070431774> ");
+            }
+        } 
+        //======end of time mute======
+
+
         [Command("unmute")]
         [Remarks("Unmutes A User")]
         [RequireUserPermission(GuildPermission.MuteMembers)]

@@ -171,7 +171,7 @@ namespace Bot.Modules
                 else if (Context.User.Mention == player1)               //checks this if the first one was you
                 {
                     health2 = health2 - randomIndex2;
-                    if (health2 >= 0)
+                    if (health2 > 0)
                     {
 
                         placeHolder = whosTurn;

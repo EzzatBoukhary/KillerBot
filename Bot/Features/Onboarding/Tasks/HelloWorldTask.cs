@@ -21,7 +21,7 @@ namespace Bot.Features.Onboarding.Tasks
 
             if (defaultChannel is null)
             {
-                await logger.Log(LogSeverity.Error, "Onboarding > HelloWorldTask", $"Default channel of a new guild ({guild.Name}) is null.");
+                await logger.Log(LogSeverity.Warning, "Onboarding > HelloWorldTask", $"Default channel of a new guild ({guild.Name}) is null.");
                 return;
             }
 

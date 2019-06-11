@@ -1,8 +1,9 @@
-﻿/* using System.Threading.Tasks;
+﻿/*using System.Threading.Tasks;
 using Bot.Extensions;
 using Bot.Features.GlobalAccounts;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace Bot.Modules
 {
@@ -111,7 +112,7 @@ namespace Bot.Modules
         [Command("SetRoleOnJoin")]
         [Alias("RoleOnJoin")]
         [RequireUserPermission(GuildPermission.ManageRoles)]
-        public async Task SetRoleOnJoin(string role = null)
+        public async Task SetRoleOnJoin([Remainder] SocketRole role)
         {
 
             string text;
@@ -128,8 +129,21 @@ namespace Bot.Modules
             }
 
             _globalGuildAccounts.SaveAccounts(Context.Guild.Id);
+            guild.Modify(g => g.SetRoleOnJoin(role), _globalGuildAccounts);
             await ReplyAsync(text);
 
+        }
+        public async Task GiveRole(SocketGuildUser user)
+        {
+            var guild = _globalGuildAccounts.GetById(user.Guild.Id);
+            if (guild.RoleOnJoin != null)
+            {
+                await user.AddRoleAsync(guild.RoleOnJoin);
+            }
+            else
+            {
+                await ReplyAsync("test");
+            }
         }
     }
 } */

@@ -77,6 +77,7 @@ namespace Bot.Handlers
 
         public async Task CheckForDM(SocketMessage parameterMessage)
         {
+            var channel = _client.GetChannel(587746737175789585) as SocketTextChannel;
             var message = parameterMessage as SocketUserMessage;
             int argPos = 0;
             if ((message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.HasStringPrefix("k!", ref argPos))) return;
@@ -84,8 +85,13 @@ namespace Bot.Handlers
             if (message.Channel is IDMChannel && message.Author != _client.CurrentUser)
             {
                 var info = await _client.GetApplicationInfoAsync();
-                var DMOwner = await info.Owner.GetOrCreateDMChannelAsync();
-                await DMOwner.SendMessageAsync($"I got a message from {message.Author}, here it is:\n \n" + message.Content);
+                var emb = new EmbedBuilder()
+                    .WithColor(Color.Blue)
+                    .WithTitle($"New DM: ")
+                    .WithDescription($"<@{message.Author.Id}>: {message.Content}")
+                    .WithTimestamp(message.Timestamp)
+                    .WithFooter($"From: {message.Author}", message.Author.GetAvatarUrl());
+                await channel.SendMessageAsync("", false, emb.Build());
             }
         }
 

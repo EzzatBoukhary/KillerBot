@@ -71,10 +71,10 @@ namespace Bot.Modules
             
 
         }
-        
 
         
-       [Command("Ping", RunMode = RunMode.Async)]
+
+        [Command("Ping", RunMode = RunMode.Async)]
         [Remarks("Returns Gateway latency, Response latency and Delta (response - gateway).")]
         public async Task Ping()
         {
@@ -124,12 +124,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = " **== Minor Release ==** `1.2.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Warn System \nCommands: `warn`,`warnings`,`removewarn`. More will come on later updates.  \n \n<:KBdot:580470791251034123> Added <userdiscriminator> as an option for the join-leave messages. \n \n<:KBdot:580470791251034123> Bot owner command `add-money` \n \n<:KBdot:580470791251034123> Support server-related: Added logging for high pings in `connection-logs` channel. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug making the announcements channel to be unset when bot restarts. \n \n<:KBdot:580470791251034123> Made `ping` command embed color related to the ping. \n \n<:KBdot:580470791251034123> Small changes to `k!money` command's replies. \n \n<:KBdot:580470791251034123> Small changes to some economy commands and `help (module)` command.";
+            embed.Description = " **== Minor Release ==** `v1.3.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Blog System \nCommands: `blog create`,`blog post`,`blog subscribe`,`blog unsubscribe`. More will come on later updates.  \n \n<:KBdot:580470791251034123> New `status` and `info` commands. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Added nitro detection and status emojis to `userinfo` command. \n \n<:KBdot:580470791251034123> Small change to `botinfo` command \n \n<:KBdot:580470791251034123> Made guild number change automatically in game status and did small changes to ping logging. \n \n<:KBdot:580470791251034123> Changed `report` command to send reports to a specific channel in the bot's server.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: 02/06/2019 10:51 PM GMT");
+                x.WithText("Last updated: June 11th - 2019 7:51 PM GMT");
 
 
 
@@ -183,7 +183,13 @@ namespace Bot.Modules
             }
             
         }
-    
+    [Command("status")]
+        [Summary("Wondering about the bot's status?")]
+        [Remarks("Sends a link to the bot's support server with updates about the status of the bot and connection")]
+        public async Task StatusAsync()
+        {
+            await ReplyAsync("Join the bot's support server to know all the information about the status of the bot and connection: https://discord.gg/DNqAShq");
+        }
 
     [Command("Avatar")]
         [Summary("Shows the mentioned user's avatar, or yours if no one is mentioned.")]
@@ -256,7 +262,7 @@ namespace Bot.Modules
             }
             await ReplyAsync(result);
         }
-
+        
         [Command("userinfo")]
         [Cooldown(3)]
         [Summary("Gets information about the specified user")]
@@ -275,14 +281,16 @@ namespace Bot.Modules
                 emb.Color = highestRole.Color;
 
             // Display if the user is a bot or a webhook
+            var picture = user.GetAvatarUrl();
+            string nitro = "<:KBNitro:587753434812514324> (Possible nitro user)";
             EmbedAuthorBuilder author = new EmbedAuthorBuilder();
             author.Name = user.Username;
+           
             if (user.IsBot)
                 author.Name += "(Bot)";
             else if (user.IsWebhook)
                 author.Name += " (Webhook)";
-           
-
+            
             emb.Author = author;
 
             // If the user has a default avatar
@@ -302,6 +310,92 @@ namespace Bot.Modules
 
             emb.Description = $"User information for {user.Username}#{user.Discriminator} | {user.Id}";
 
+            //GIF avatar looking
+            if (picture == $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.gif?size=128")
+            {
+                emb.Description += $" {nitro}";
+            }
+
+            //Tags looking for nitro
+            else if (user.Discriminator == "0001")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0002")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0003")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0004")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0005")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0006")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0007")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0008")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0009")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0010")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "6969")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "9999")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "1337")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0420")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0069")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "4200")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "6666")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "6669")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "4200")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "1111")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "2222")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "3333")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "4444")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "5555")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "7777")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "8888")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "6942")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "4269")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "1000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "2000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "3000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "4000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "5000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "6000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "7000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "8000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "9000")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0007")
+                emb.Description += $" {nitro}";
+            else if (user.Discriminator == "0070")
+                emb.Description += $" {nitro}";
+
             emb.AddField("Created account at", user.CreatedAt.ToString());
 
             emb.AddField("Joined server at", ((DateTimeOffset)user.JoinedAt).ToString());
@@ -315,9 +409,26 @@ namespace Bot.Modules
 
             if (string.IsNullOrEmpty(userPermissions) == false)
                 emb.AddField("Permissions", userPermissions);
-            
 
-            emb.AddField("Status", user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString());
+            string statusemoji = "";
+            if (user.Status == UserStatus.Online)
+            {
+                statusemoji = "<:KBOnline:587753462477881468>";
+            }
+            if (user.Status == UserStatus.Idle)
+            {
+                statusemoji = "<:KBaway:587753408363102239>";
+            }
+            if (user.Status == UserStatus.DoNotDisturb)
+            {
+                statusemoji = "<:KBdnd:587753420543230019>";
+            }
+            if (user.Status == UserStatus.Offline)
+            {
+                statusemoji = "<:KBOffline:587753447902937109>";
+            }
+
+            emb.AddField($"Status {statusemoji}", user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString());
 
             await ReplyAsync("", false, emb.Build());
         }
@@ -387,9 +498,8 @@ namespace Bot.Modules
         [Summary("Send a report about a bug to the bot owner. Spam/troll is not tolerated.")]
         public async Task BugReport([Remainder] string report)
         {
-
+            var channel = Context.Client.GetChannel(588015155015843903) as SocketTextChannel;
             var application = await Context.Client.GetApplicationInfoAsync();
-            var message = await application.Owner.GetOrCreateDMChannelAsync();
 
             var embed = new EmbedBuilder()
             {
@@ -398,12 +508,20 @@ namespace Bot.Modules
 
             embed.Description = $"{report}";
             embed.WithFooter(new EmbedFooterBuilder().WithText($"Message from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {Context.Guild.Name}"));
-            await message.SendMessageAsync("", false, embed.Build());
-            embed.Description = $"You have sent a message to the Bot owner (Panda#8822). He will read the message soon.";
+            var reportmsg = channel.SendMessageAsync("", false, embed.Build());
+            if (Global.MessagesIdToTrack == null)
+            {
+                Global.MessagesIdToTrack = new Dictionary<ulong, string>();
+            }
+
+            Global.MessagesIdToTrack.Add(reportmsg.Result.Id, report);
+            await reportmsg.Result.AddReactionAsync(new Emoji("✅"));
+            await reportmsg.Result.AddReactionAsync(new Emoji("❌"));
+            embed.Description = $"You have sent a bug report to KillerBot HQ. It will be reviewed soon.";
 
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
-
+       
 
         [Command("UserCount")]
         [Cooldown(3)]

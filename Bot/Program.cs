@@ -48,7 +48,7 @@ namespace Bot
 
                 do
                 {
-                    Console.WriteLine("Press Q to exit");
+                    Console.WriteLine("Press Q to stop KillerBot.");
 
                 }
                 while (Console.ReadKey(true).Key != ConsoleKey.Q);
@@ -84,7 +84,7 @@ namespace Bot
             serviceCollection.AddSingleton<IDailyMiunies, Daily>();
             serviceCollection.AddSingleton<IMiuniesTransfer, Transfer>();
 
-            // serviceCollection.AddSingleton<BlogHandler>();
+            serviceCollection.AddSingleton<BlogHandler>();
             serviceCollection.AddSingleton<GlobalGuildAccounts>();
             serviceCollection.AddSingleton<GlobalUserAccounts>();
             serviceCollection.AddSingleton<Announcements>();
