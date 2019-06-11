@@ -142,7 +142,7 @@ namespace Bot.Modules
             {
                 messages.RemoveAt(messageIndex - 1);
                 guildAcc.Modify(g => g.SetLeaveMessages(messages), _globalGuildAccounts);
-                response =  $"Successfully removed message #{messageIndex} as possible Welcome Message!";
+                response =  $"Successfully removed message #{messageIndex} as possible Leave Message!";
             }
 
             await ReplyAsync(response);
