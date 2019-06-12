@@ -113,7 +113,7 @@ namespace Bot.Modules
             await Context.Channel.SendMessageAsync("", false, embed);
         }
 
-        [Command("Unsubscribe"), Remarks("Remove a subscription from a named block")]
+        [Command("Unsubscribe"), Remarks("Remove a subscription from a named blog")]
         public async Task UnSubscribe(string name)
         {
 
