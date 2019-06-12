@@ -168,12 +168,12 @@ namespace Bot.Handlers
             var channel = _client.GetChannel(584836200414576652) as SocketTextChannel;
             if (latencyAfter > 20000)
             {
-                Console.WriteLine($"`{DateTime.Now}` - KillerBot is currently suffering from a crash attempt! ({latencyAfter} ms)");
+                Console.WriteLine($"{DateTime.Now} - KillerBot is currently suffering from a crash attempt! ({latencyAfter} ms)");
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently suffering from a crash attempt! :no_entry: :rotating_light: ({latencyAfter} ms)");
             }
             else if (latencyAfter > 5000)
             {
-                Console.WriteLine($"`{DateTime.Now}` - KillerBot is currently having a possible crash attempt! ({latencyAfter} ms)");
+                Console.WriteLine($"{DateTime.Now} - KillerBot is currently having a possible crash attempt! ({latencyAfter} ms)");
 
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having a possible crash attempt! :warning: ({latencyAfter} ms)");
             }
@@ -184,7 +184,7 @@ namespace Bot.Handlers
             else if (latencyBefore > 5000 & latencyAfter < 200)
             {
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
-                Console.WriteLine($"`{DateTime.Now}` - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
+                Console.WriteLine($"{DateTime.Now} - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
             }
         }
 

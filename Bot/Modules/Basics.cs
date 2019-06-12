@@ -124,12 +124,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = " **== Minor Release ==** `v1.3.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Blog System \nCommands: `blog create`,`blog post`,`blog subscribe`,`blog unsubscribe`. More will come on later updates.  \n \n<:KBdot:580470791251034123> New `status` and `info` commands. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Added nitro detection and status emojis to `userinfo` command. \n \n<:KBdot:580470791251034123> Small change to `botinfo` command \n \n<:KBdot:580470791251034123> Made guild number change automatically in game status and did small changes to ping logging. \n \n<:KBdot:580470791251034123> Changed `report` command to send reports to a specific channel in the bot's server.";
+            embed.Description = " **== FIX ==** `v1.3.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Temporary fix for k!help command. \n \n<:KBdot:580470791251034123> Fixed a bug in k!userinfo command (startindex error) \nPlease report futher bugs using k!report";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 11th - 2019 7:51 PM GMT");
+                x.WithText("Last updated: June 12th - 2019 8:03 PM GMT");
 
 
 
@@ -455,6 +455,12 @@ namespace Bot.Modules
             if (user.GuildPermissions.BanMembers)
                 permissions += "Ban Memebers, ";
 
+            if (user.GuildPermissions.SendMessages)
+                permissions += "Send Messages, ";
+            
+            if (user.GuildPermissions.ViewChannel)
+                permissions += "View channels, ";
+
             if (user.GuildPermissions.DeafenMembers)
                 permissions += "Deafen Members, ";
 
@@ -485,11 +491,17 @@ namespace Bot.Modules
             if (user.GuildPermissions.MentionEveryone)
                 permissions += "Mention Everyone, ";
 
+            if (user.GuildPermissions.ViewAuditLog)
+                permissions += "Audit log, ";
+
             if (user.GuildPermissions.MoveMembers)
                 permissions += "Move Members, ";
 
             if (user.GuildPermissions.MuteMembers)
                 permissions += "Mute Members, ";
+
+            if (string.IsNullOrEmpty(permissions))
+                permissions += "No permissions. ";
 
             return permissions.Remove(permissions.Length - 2);
         }

@@ -37,29 +37,29 @@ namespace Bot.Modules
             _listManager = listManager;
         }
 
-         /* [Cooldown(15)]
-          [Command("help"), Alias("h"),
-           Remarks(
-               "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
-          public async Task Help()
-          {
-              await Context.Channel.SendMessageAsync("Check your DMs.");
+        /* [Cooldown(15)]
+         [Command("help"), Alias("h"),
+          Remarks(
+              "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
+         public async Task Help()
+         {
+             await Context.Channel.SendMessageAsync("Check your DMs.");
 
-              var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+             var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
 
-              var contextString = Context.Guild?.Name ?? "DMs with me";
-              var emb = new EmbedBuilder()
-                  .WithTitle("These are the commands you can use:")
-                  .WithColor(Color.Red)
-                  .WithDescription("**__Prefix Commands:__** \nprefix add \nprefix remove \nprefix list \n \n**__Moderation Commands:__**" + "\nkick \nBan \nunban \nmute \nunmute \nchangenick \ncreatetext \ncreatevoice \npurge \nannounce \n \n**__Basic Commands__:** \nHello \nversion \ninvite \nserver \nuptime \nfeedback \necho \naccount info \naccount commandhistory \nuserinfo \nserverinfo \nping \nusercount \nbotinfo \nweather <city> \nreport, bugreport, bug, reportbug \n8ball \n \n**__Join-leave announcements:__** \n announcements setchannel \nannouncements unsetchannel \nwelcome add \nwelcome list \nwelcome remove \nleave add \nleave list \nleave remove \n \n**__Fun/Misc Commands:__** \nremind \nremind list \nremind remove \nflip or flipcoin \nrps \nquote \navatar \nchoose \ncalculate (do `help calculate` for more info) \n \n**Tags:** \ntag new \ntag edit \ntag remove \ntag list \nprivatetag/ptag new \nptag edit \nptag remove \nptag list \n \n**Combat:** \nfight \nslash \ngiveup \n \n**Auctions:** \nauction \nbid \nauctioncheck \nauctionend");
+             var contextString = Context.Guild?.Name ?? "DMs with me";
+             var emb = new EmbedBuilder()
+                 .WithTitle("These are the commands you can use:")
+                 .WithColor(Color.Red)
+                 .WithDescription("**__Prefix Commands:__** \nprefix add \nprefix remove \nprefix list \n \n**__Moderation Commands:__**" + "\nkick \nBan \nunban \nmute \nunmute \nchangenick \ncreatetext \ncreatevoice \npurge \nannounce \n \n**__Basic Commands__:** \nHello \nversion \ninvite \nserver \nuptime \nfeedback \necho \naccount info \naccount commandhistory \nuserinfo \nserverinfo \nping \nusercount \nbotinfo \nweather <city> \nreport, bugreport, bug, reportbug \n8ball \n \n**__Join-leave announcements:__** \n announcements setchannel \nannouncements unsetchannel \nwelcome add \nwelcome list \nwelcome remove \nleave add \nleave list \nleave remove \n \n**__Fun/Misc Commands:__** \nremind \nremind list \nremind remove \nflip or flipcoin \nrps \nquote \navatar \nchoose \ncalculate (do `help calculate` for more info) \n \n**Tags:** \ntag new \ntag edit \ntag remove \ntag list \nprivatetag/ptag new \nptag edit \nptag remove \nptag list \n \n**Combat:** \nfight \nslash \ngiveup \n \n**Auctions:** \nauction \nbid \nauctioncheck \nauctionend");
 
 
-              await dmChannel.SendMessageAsync("", false, emb.Build());
-          } */
-    
-      
-       
-       
+             await dmChannel.SendMessageAsync("", false, emb.Build());
+         } */
+
+
+
+
         [Command("help"), Alias("h"),
             Remarks(
                 "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
@@ -72,51 +72,66 @@ namespace Bot.Modules
 
             var contextString = Context.Guild?.Name ?? "DMs with me";
             var builder = new EmbedBuilder()
-           {
-               Title = "Help",
-               Description = $"These are the commands you can use in {contextString}",
-               Color = new Color(114, 137, 218)
-           };
+            {
+                Title = "Help",
+                Description = $"These are the commands you can use in {contextString}",
+                Color = new Color(114, 137, 218)
+            };
 
-           foreach (var module in _service.Modules)
-           {
-               await AddModuleEmbedField(module, builder);
-           }
+            foreach (var module in _service.Modules)
+            {
+                await AddModuleEmbedField(module, builder);
+            }
 
-           // We have a limit of 6000 characters for a message, so we are taking first ten fields
-           // and then sending the message. In the current state it will send 2 messages.
+            // We have a limit of 6000 characters for a message, so we are taking first ten fields
+            // and then sending the message. In the current state it will send 2 messages.
 
-           var fields = builder.Fields.ToList();
-           while(builder.Length > 6000)
-           {
-               builder.Fields.RemoveRange(0, fields.Count);
-               var firstSet = fields.Take(_fieldRange);
-               builder.Fields.AddRange(firstSet);
-               if (builder.Length > 6000)
-               {
-                   _fieldRange--;
-                   continue;
-               }
-               await dmChannel.SendMessageAsync("", false, builder.Build());
-               fields.RemoveRange(0, _fieldRange);
-               builder.Fields.RemoveRange(0, _fieldRange);
-               builder.Fields.AddRange(fields);
-           }
+            var fields = builder.Fields.ToList();
+            while (builder.Length > 6000)
+            {
+                builder.Fields.RemoveRange(0, fields.Count);
+                var firstSet = fields.Take(_fieldRange);
+                builder.Fields.AddRange(firstSet);
+                if (builder.Length > 6000)
+                {
+                    _fieldRange--;
+                    continue;
+                }
+                await dmChannel.SendMessageAsync("", false, builder.Build());
+                fields.RemoveRange(0, _fieldRange);
+                builder.Fields.RemoveRange(0, _fieldRange);
+                builder.Fields.AddRange(fields);
+            }
 
-           await dmChannel.SendMessageAsync("", false, builder.Build());
+            await dmChannel.SendMessageAsync("", false, builder.Build());
 
-           // Embed are limited to 24 Fields at max. So lets clear some stuff
-           // out and then send it in multiple embeds if it is too big.
-           builder.WithTitle("")
-               .WithDescription("")
-               .WithAuthor("");
-           while (builder.Fields.Count > 24)
-           {
-               builder.Fields.RemoveRange(0, 25);
-               await dmChannel.SendMessageAsync("", false, builder.Build());
+            while (builder.Length > 6000)
+            {
+                builder.Fields.RemoveRange(0, fields.Count);
+                var secondset = fields.Take(_fieldRange);
+                builder.Fields.AddRange(secondset);
+                if (builder.Length > 6000)
+                {
+                    _fieldRange--;
+                    continue;
+                }
+                await dmChannel.SendMessageAsync("", false, builder.Build());
+                fields.RemoveRange(0, _fieldRange);
+                builder.Fields.RemoveRange(0, _fieldRange);
+                builder.Fields.AddRange(fields);
+            }
+            // Embed are limited to 24 Fields at max. So lets clear some stuff
+            // out and then send it in multiple embeds if it is too big.
+            builder.WithTitle("")
+                .WithDescription("")
+                .WithAuthor("");
+            while (builder.Fields.Count > 24)
+            {
+                builder.Fields.RemoveRange(0, 25);
+                await dmChannel.SendMessageAsync("", false, builder.Build());
 
-           }
-       } 
+            }
+        }
 
         [Command("version"), Alias("ver")]
         [Remarks("Returns the current version of the bot.")]
@@ -125,7 +140,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.3.0`");
+            builder.AddField("Version", $"The current version of the bot is: `1.3.1`");
             await ReplyAsync("", false, builder.Build());
         }
 
@@ -212,8 +227,8 @@ namespace Bot.Modules
                 if (!result.IsSuccess || duplicateChecker.Contains(cmd.Aliases.First())) continue;
                 duplicateChecker.Add(cmd.Aliases.First());
                 var cmdDescription = $"`{cmd.Aliases.First()}`";
-                if (!string.IsNullOrEmpty(cmd.Summary))
-                    cmdDescription += $" | {cmd.Summary}";
+              //  if (!string.IsNullOrEmpty(cmd.Summary))
+                //   cmdDescription += $" | {cmd.Summary}";
                 if (!string.IsNullOrEmpty(cmd.Remarks))
                     cmdDescription += $" | {cmd.Remarks}";
                 if (cmdDescription != "``")
