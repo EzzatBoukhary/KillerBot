@@ -124,12 +124,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = " **== FIX ==** `v1.3.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Temporary fix for k!help command. \n \n<:KBdot:580470791251034123> Fixed a bug in k!userinfo command (startindex error) \nPlease report futher bugs using k!report";
+            embed.Description = $" **== Minor Release ==** `v1.4.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> `k!tempmute` command. \n \n<:KBdot:580470791251034123> `k!roleinfo` and bot owner commands. \n \n<:KBdot:580470791251034123> `k!urbandictionary` command. \nThis was added in v1.3.0 but wasn't mentioned in the changelog. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Reminder system: Made a new method for adding reminders. \nUsage Example: k!remind TEXT in 1d 15m 30s \n \n<:KBdot:580470791251034123> Revamped `k!weather` command and added cooldowns to some commands. \n \n<:KBdot:580470791251034123> Small changes to `k!userinfo`,`k!mute`,`k!unmute`,`k!forceleave (bot owner)` commands.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 12th - 2019 8:03 PM GMT");
+                x.WithText("Last updated: June 23rd - 2019 11:00 PM GMT");
 
 
 
@@ -212,7 +212,7 @@ namespace Bot.Modules
              });
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
-
+       
         [Command("serverinfo")]
         [Cooldown(3)]
         [Alias("sinfo","aboutserver")]
@@ -238,7 +238,110 @@ namespace Bot.Modules
             embed.Description = $"**Server name**: {gld.Name} \n \n **Created at**: {c} \n \n **Server owner**: {o} \n \n **Server region**: {v} \n \n **Voice channels**: {vc} \n \n **Text channels**: {tc} \n \n **Server ID**: {id} \n \n **Number of users** : {us} \n \n **Number of roles** : {r} \n \n **Connection state**: {con} \n \n **Verification level**: {lev}";
             await ReplyAsync("", false, embed.Build());
         }
+        [Command("roleinfo"), Summary("Returns info about a role."),Alias("RI","role")]
+        [RequireContext(ContextType.Guild)]
+        public async Task Role([Remainder, Summary("The role to return information about.")] string roleName)
+        {
 
+            EmbedBuilder embed = new EmbedBuilder();
+            StringBuilder builder = new StringBuilder();
+
+            IMessage message = Context.Message;
+            IGuild guild = Context.Guild;
+            IMessageChannel channel = Context.Channel;
+
+            IReadOnlyCollection<IRole> rolesReadOnly = guild.Roles;
+            IRole tgt = null;
+
+            List<IRole> roleList = rolesReadOnly.ToList();
+
+            foreach (IRole role in roleList)
+            {
+                if (role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
+                {
+                    tgt = role;
+                    break;
+                }
+                else
+                {
+                    continue;
+                }
+            }
+
+            if (tgt == null)
+            {
+                await Context.Channel.SendMessageAsync($"Unable to find role by the name of `{roleName}`.");
+                return;
+            }
+            else
+            {
+                await channel.TriggerTypingAsync();
+
+                embed.Title = $"{tgt.Name}";
+                embed.Color = tgt.Color;
+                embed.Footer = new EmbedFooterBuilder()
+                {
+                    Text = $"Created on: {tgt.CreatedAt.ToUniversalTime().ToString()}"
+                };
+                embed.Title = "=== ROLE INFORMATION ===";
+                embed.Timestamp = DateTime.UtcNow;
+
+                embed.AddField(x => {
+                    x.Name = $"Name";
+                    x.Value = $"{tgt.Name}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x => {
+                    x.Name = $"ID";
+                    x.Value = $"{tgt.Id}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x => {
+                    x.Name = $"Hoisted";
+                    x.Value = $"{tgt.IsHoisted}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x => {
+                    x.Name = $"Managed";
+                    x.Value = $"{tgt.IsManaged}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x => {
+                    x.Name = $"Mentionable";
+                    x.Value = $"{tgt.IsMentionable}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x => {
+                    x.Name = $"Position";
+                    x.Value = $"{tgt.Position}";
+                    x.IsInline = true;
+                });
+                embed.AddField(x => {
+                    x.Name = $"Color";
+                    x.Value = $"{tgt.Color.R}, {tgt.Color.G}, {tgt.Color.B}";
+                    x.IsInline = true;
+                });
+
+                builder.Clear();
+                string perms = "";
+                if (tgt.Permissions.ToString().Length < 4)
+                {
+                    perms = "No perms";
+                }
+                foreach (GuildPermission perm in tgt.Permissions.ToList())
+                {
+                    perms += $"`{perm.ToString()}` ";
+                    
+                }
+                embed.AddField(x => {
+                    x.Name = $"Permissions";
+                    x.Value = $"{perms}";
+                    x.IsInline = false;
+                });
+
+                await channel.SendMessageAsync("", false, embed.Build());
+            }
+        }
         [Command("mock"), Summary("rEpEaTs yOuR tExT lIkE tHiS.")]
         public async Task Mock([Remainder] string input = "")
         {
@@ -294,20 +397,19 @@ namespace Bot.Modules
             emb.Author = author;
 
             // If the user has a default avatar
+            string useravatar = "";
             if (string.IsNullOrEmpty(user.AvatarId))
-                emb.ThumbnailUrl = $"https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
+                useravatar = $"https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
             else
-                emb.ThumbnailUrl = $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.png";
-
-            EmbedFooterBuilder footer = new EmbedFooterBuilder();
-            footer.Text = $"User info requested by {Context.User.Username}";
+                useravatar = user.GetAvatarUrl();
+            emb.WithThumbnailUrl(useravatar);
+            string userpic = "";
             // If the user has a default avatar
             if (string.IsNullOrEmpty(Context.User.AvatarId))
-                footer.IconUrl = $"https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
+                userpic = $"https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
             else
-                footer.IconUrl = $"https://cdn.discordapp.com/avatars/{Context.User.Id}/{Context.User.AvatarId}.png";
-            emb.Footer = footer;
-
+                userpic = Context.User.GetAvatarUrl();
+            emb.WithFooter($"User info requested by {Context.User.Username}", userpic);
             emb.Description = $"User information for {user.Username}#{user.Discriminator} | {user.Id}";
 
             //GIF avatar looking
@@ -404,6 +506,7 @@ namespace Bot.Modules
             if (string.IsNullOrEmpty(userRoles) == false)
                 emb.AddField("Role(s)", userRoles);
 
+           
             // Display the list of all of user's permissions
             string userPermissions = GetUserPermissions(user);
 
@@ -427,8 +530,20 @@ namespace Bot.Modules
             {
                 statusemoji = "<:KBOffline:587753447902937109>";
             }
+            var status = $"{(user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString())} {statusemoji}";
+            emb.AddField($"Status", status);
 
-            emb.AddField($"Status {statusemoji}", user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString());
+            string KBTeam = "";
+            var ID = user.Id.ToString();
+            // Display the KB team position if found
+            if (ID == "333988268439764994")
+                KBTeam += "KB Support";
+            if (ID == "238353818125991936")
+                KBTeam += "KBHQ Staff";
+            if (ID == "223530903773773824")
+                KBTeam += "Bot owner";
+            if (string.IsNullOrEmpty(KBTeam) == false)
+                emb.AddField("KillerBot Team", KBTeam);
 
             await ReplyAsync("", false, emb.Build());
         }

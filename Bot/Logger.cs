@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Bot.Configuration;
 using Discord;
+using Discord.WebSocket;
 
 namespace Bot
 {
@@ -44,9 +45,11 @@ namespace Bot
 
         private void LogConsole(string message, LogSeverity severity)
         {
+
             Console.ForegroundColor = SeverityToConsoleColor(severity);
             Console.WriteLine(message);
             Console.ResetColor();
+            LogFile(message);
         }
 
         private ConsoleColor SeverityToConsoleColor(LogSeverity severity)

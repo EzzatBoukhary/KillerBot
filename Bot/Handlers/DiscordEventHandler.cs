@@ -127,7 +127,7 @@ namespace Bot.Handlers
 
         private async Task Disconnected(Exception exception)
         {
-            
+
         }
 
         private async Task GuildAvailable(SocketGuild guild)
@@ -165,26 +165,24 @@ namespace Bot.Handlers
 
         private async Task LatencyUpdated(int latencyBefore, int latencyAfter)
         {
+            
             var channel = _client.GetChannel(584836200414576652) as SocketTextChannel;
             if (latencyAfter > 20000)
             {
-                Console.WriteLine($"{DateTime.Now} - KillerBot is currently suffering from a crash attempt! ({latencyAfter} ms)");
+                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently suffering from a crash attempt! ({latencyAfter} ms)");
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently suffering from a crash attempt! :no_entry: :rotating_light: ({latencyAfter} ms)");
+
             }
             else if (latencyAfter > 5000)
             {
-                Console.WriteLine($"{DateTime.Now} - KillerBot is currently having a possible crash attempt! ({latencyAfter} ms)");
-
+                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently having a possible crash attempt! ({latencyAfter} ms)");
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having a possible crash attempt! :warning: ({latencyAfter} ms)");
             }
-            else if (latencyBefore > 1000 & latencyAfter > 1000)
-            {
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having major issues. ({latencyAfter} ms)");
-            }
+           
             else if (latencyBefore > 5000 & latencyAfter < 200)
             {
+                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot survived possible crash attempt. ({latencyAfter} ms)");
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
-                Console.WriteLine($"{DateTime.Now} - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
             }
         }
 
@@ -201,7 +199,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.2.0 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.4.0 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
 
         }

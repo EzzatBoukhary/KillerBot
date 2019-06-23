@@ -36,6 +36,7 @@ namespace Bot.Modules
                     $"Set the bot's stream to **{streamName}**, and the Twitch URL to **[{streamer}](https://twitch.tv/{streamer})**.")
                ;
         }
+       
         [Command("guildlist")]
         [RequireOwner]
         public async Task GuildList()
@@ -46,7 +47,7 @@ namespace Bot.Modules
                 var guilds = (Context.Client as DiscordSocketClient).Guilds;
                 foreach (var g in guilds)
                 {
-                    guildList += $"Name: {g.Name}\n Owner: {g.Owner} \n ID: {g.Id} \n \n";
+                    guildList += $"Name: {g.Name}\n ID: {g.Id} \n Owner: {g.Owner} \n Owner ID: {g.OwnerId} \n \n";
                 }
                 File.WriteAllText("guildlist.txt", guildList);
                 await Context.Channel.SendFileAsync("guildlist.txt", null, false, null);
@@ -54,10 +55,10 @@ namespace Bot.Modules
             catch (Exception e)
             {
                 Console.WriteLine(e);
-               
+
             }
         }
-       
+
         [Command("setgame"), Alias("ChangeGame", "SetGame")]
         [Remarks("Change what the bot is currently playing.")]
         [RequireOwner]
@@ -67,49 +68,107 @@ namespace Bot.Modules
             await ReplyAsync($"Changed game to `{gamename}`");
         }
         [Command("ForceLeave")]
-        [Remarks("Usage: k!prefix forceleave {serverName}")]
+        [Remarks("Usage: k!prefix forceleave {serverID}")]
         [RequireOwner]
-        public async Task ForceLeaveAsync([Remainder] string serverName)
+        public async Task ForceLeaveAsync(ulong ServerId, [Remainder] string msg)
         {
-            var target = Context.Client.Guilds.FirstOrDefault(g => g.Name == serverName);
-            if (target is null)
+            var target = Context.Client.Guilds.FirstOrDefault(g => g.Id == ServerId);
+            if (string.IsNullOrWhiteSpace(msg))
+                await ReplyAsync("You must provide a reason for leaving the server.");
+            var client = Context.Client;
+            var gld = client.GetGuild(ServerId);
+            var ch = gld.DefaultChannel;
+            var embed = new EmbedBuilder()
             {
-                EmbedBuilder builder1 = new EmbedBuilder();
-                builder1.Color = new Color(114, 137, 218);
-                builder1.AddField("ForceLeave", $"I'm not in the guild **{serverName}**.");
-                await ReplyAsync("", false, builder1.Build());
-
-
+                Description = $"KillerBot has been forced to leave this Server by its owner.\n**Reason:** {msg}",
+                Color = new Color(255, 0, 0),
+                Author = new EmbedAuthorBuilder()
+                {
+                    Name = Context.User.Username,
+                    IconUrl = Context.User.GetAvatarUrl()
+                }
+            };
+            try
+            {
+                await ch.SendMessageAsync("", embed: embed.Build());
             }
-
-            await target.LeaveAsync();
-            EmbedBuilder builder = new EmbedBuilder();
-            builder.Color = new Color(114, 137, 218);
-            builder.AddField("ForceLeave", $"Successfully left **{target.Name}**");
-            await ReplyAsync("", false, builder.Build());
+            catch
+            {
+                await ReplyAsync("Missing permissions of sending the leave message to the default channel.");
+            }
+            
+            await Task.Delay(5000);
+            await gld.LeaveAsync();
+            await ReplyAsync($"KillerBot has left {ServerId}.");
 
         }
+        [Command("shutdown")]
+        [Summary("Turns off KillerBot")]
+        [RequireOwner]
+        public async Task Quit()
+        {
+            var todel = await ReplyAsync("Shutting down...");
+            var channel = Context.Client.GetChannel(550072406505553921) as SocketTextChannel;
+            var todol = channel.SendMessageAsync("<:KBfail:580129304592252995>");
+            var task = Task.Run(async () =>
+            {
+
+                await Task.Delay(1000);
+                Environment.Exit(0);
+               
+            });
+        }
+        [Command("logs")]
+        [Summary("Show KillerBot logs")]
+        [RequireOwner]
+        public async Task ShowLogs()
+        {
+            var folder = Constants.LogFolder;
+            var fileName = $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}.log";
+            await Context.Channel.SendFileAsync($"{folder}/{fileName}");
+        }
+
         [Command("add-coins"),Alias("add-money")]
         [Remarks("Adds specified money to a specific user. Bot owner only.")]
         [RequireOwner]
-        public async Task givecoins(SocketGuildUser user = null, ulong amount = 0)
+        public async Task givecoins(ulong user, ulong amount = 0)
         {
-            if (user == null)
-                throw new ArgumentException("Please mention a user.");
+            
             if (amount == 0)
                 throw new ArgumentException("Please specify an amount which is more than 0");
-            var account = _globalUserAccounts.GetById(user.Id);
+            var account = _globalUserAccounts.GetById(user);
             var emb = new EmbedBuilder();
             account.Coins += amount;
             _globalUserAccounts.SaveAccounts();
             emb.WithColor(Color.Green);
             emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
             emb.WithCurrentTimestamp();
-            emb.WithDescription($"**{user}** has received **{amount} coins**. <a:KBtick:580851374070431774> ");
+            emb.WithDescription($"The user of ID **{account.Id}** has received **{amount} coins**. <a:KBtick:580851374070431774> ");
+            emb.WithFooter($"New balance: {account.Coins} coins");
             await ReplyAsync("", false, emb.Build());
         }
-        
 
+        [Command("remove-coins"), Alias("remove-money")]
+        [Remarks("Remove specified money from a specific user. Bot owner only.")]
+        [RequireOwner]
+        public async Task removecoins(ulong user, ulong amount = 0)
+        {
+            if (amount == 0)
+                throw new ArgumentException("Amount specified is can't be 0");
+            var account = _globalUserAccounts.GetById(user);
+
+            if (amount > account.Coins)
+                throw new ArgumentException($"Amount specified is not available ({amount} > {account.Coins})");
+            var emb = new EmbedBuilder();
+            account.Coins -= amount;
+            _globalUserAccounts.SaveAccounts();
+            emb.WithColor(Color.Red);
+            emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
+            emb.WithCurrentTimestamp();
+            emb.WithDescription($"The user of ID **{user}** forcefully lost **{amount} coins**. <a:KBtick:580851374070431774> ");
+            emb.WithFooter($"New balance: {account.Coins} coins");
+            await ReplyAsync("", false, emb.Build());
+        }
         [Command("setAvatar"), Remarks("Sets the bots Avatar")]
         [RequireOwner]
         public async Task SetAvatar(string link)

@@ -4,6 +4,7 @@ using System;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json;
+using Bot.Preconditions;
 
 namespace Bot
 {
@@ -146,12 +147,15 @@ namespace Bot
             return result;
         }
         [Command("weather")]
+       // [Cooldown(8)]
+        [Ratelimit(2, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Shows weather info about a certain city.")]
         public async Task WeatherAsync([Remainder] string city = null)
         {
             WeatherDataCurrent.WeatherReportCurrent weather;
             weather = JsonConvert.DeserializeObject<WeatherDataCurrent.WeatherReportCurrent>(GetWeatherAsync(city).Result);
             //Loading classes
+            var Country = weather.Sys.Country;
             double longi = weather.Coord.Lon;
             double lati = weather.Coord.Lat;    
             double Tempi = weather.Main.Temp;
@@ -163,75 +167,43 @@ namespace Bot
             double degW = weather.Wind.Deg;
             var Cloud = weather.Clouds.All;
             var ID = weather.Sys.Id;
-            var test = weather.Weather[0].Icon;
-            var desc = weather.Weather[0].Description;
-            var c = weather.Name;
+            var Icon = weather.Weather[0].Icon;
+            var Report = weather.Weather[0].Description;
+            var City = weather.Name;
           
             //Done
             var embed = new EmbedBuilder();
-            embed.Title = ($"Weather Report for {city}");
+            embed.Title = ($"Weather Report for {City}, {Country}");
             embed.ThumbnailUrl = "http://openweathermap.org/img/w/" + weather.Weather[0].Icon + ".png\n";
             var application = await Context.Client.GetApplicationInfoAsync();
-            embed.WithColor(new Color(0x4900ff))
+            embed.WithColor(Color.Blue)
 
                  .AddField(y =>
 
                  {
 
-                     y.Name = "Name:";
-                     y.Value = c;
+                     y.Name = "City name | Country:";
+                     y.Value = $"{City} | {Country}";
                      y.IsInline = true;
                  })
+
                  .AddField(y =>
 
                  {
 
-                     y.Name = "Coordinates:";
-                     y.Value = ($"Longitude: {longi} \nLatitude: {lati}");
+                     y.Name = "City ID:";
+                     y.Value = $"# {ID}";
                      y.IsInline = true;
                  })
-                
+
                  .AddField(y =>
 
                  {
 
-                     y.Name = "City ID #";
-                     y.Value = ID;
+                     y.Name = "Description:";
+                     y.Value = Report;
                      y.IsInline = true;
                  })
-
-    .AddField(y =>
-
-    {
-
-        y.Name = "Current Temperature:";
-        y.Value = ($" {Tempi - 273} C \n{ 1.8 * (Tempi - 273) + 32} F");
-        y.IsInline = true;
-    })
-     .AddField(y =>
-
-     {
-
-         y.Name = "Low Temperature:";
-         y.Value = ($" {Tempmi - 273} C \n{ 1.8 * (Tempmi - 273) + 32} F");
-         y.IsInline = true;
-     })
-      .AddField(y =>
-
-      {
-
-          y.Name = "High Temperature:";
-          y.Value = ($" {Tempmx - 273} C \n{ 1.8 * (Tempmx - 273) + 32} F");
-          y.IsInline = true;
-      })
-       .AddField(y =>
-
-       {
-
-           y.Name = "Wind:";
-           y.Value = ($"Wind Deg: {degW} \nWind Speed: {WindS}m/s");
-           y.IsInline = true;
-       })
 
         .AddField(y =>
 
@@ -241,6 +213,59 @@ namespace Bot
             y.Value = ($"{Humiditi}% ");
             y.IsInline = true;
         })
+               
+
+    .AddField(y =>
+
+    {
+
+        y.Name = "🌡 Current Temperature:";
+        y.Value = ($" {Tempi - 273} C \n{ 1.8 * (Tempi - 273) + 32} F");
+        y.IsInline = true;
+    })
+      .AddField(y =>
+
+      {
+
+          y.Name = "☁ Clouds:";
+          y.Value = ($"{Cloud}% ");
+          y.IsInline = true;
+      })
+     
+     .AddField(y =>
+
+     {
+
+         y.Name = "📉 Low Temperature:";
+         y.Value = ($" {Tempmi - 273} C \n{ 1.8 * (Tempmi - 273) + 32} F");
+         y.IsInline = true;
+     })
+      .AddField(y =>
+
+      {
+
+          y.Name = "📈 High Temperature:";
+          y.Value = ($" {Tempmx - 273} C \n{ 1.8 * (Tempmx - 273) + 32} F");
+          y.IsInline = true;
+      })
+        .AddField(y =>
+
+        {
+
+            y.Name = "🌬 Wind:";
+            y.Value = ($"Wind Degree: {degW}° \nWind Speed: {WindS}m/s");
+            y.IsInline = true;
+        })
+
+         .AddField(y =>
+
+         {
+
+             y.Name = "🗺 Coordinates:";
+             y.Value = ($"Longitude: {longi} \nLatitude: {lati}");
+             y.IsInline = true;
+         })
+
             .AddField(y =>
 
              {
@@ -248,25 +273,8 @@ namespace Bot
                  y.Name = "Pressure:";
                  y.Value = ($"{Pressurei}hpa");
                  y.IsInline = true;
-             })
-             
-               .AddField(y =>
-
-               {
-
-                   y.Name = "Description:";
-                   y.Value = desc;
-                   y.IsInline = true;
-               })
-             .AddField(y =>
-
-              {
-
-                  y.Name = "Clouds:";
-                  y.Value = ($"{Cloud}% ");
-                  y.IsInline = true;
-              });
-
+             });
+           
             await ReplyAsync("", false, embed.Build());
         }
     }
