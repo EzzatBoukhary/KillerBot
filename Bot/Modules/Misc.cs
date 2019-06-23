@@ -135,12 +135,12 @@ namespace Bot.Modules
 
         [Command("version"), Alias("ver")]
         [Remarks("Returns the current version of the bot.")]
-        [Cooldown(5)]
+        [Cooldown(3)]
         public async Task Version()
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.3.1`");
+            builder.AddField("Version", $"The current version of the bot is: `1.4.0`");
             await ReplyAsync("", false, builder.Build());
         }
 
@@ -307,7 +307,8 @@ namespace Bot.Modules
 
 
          [Command("ud"),Alias("urbandictionary"), Summary("Gives you the definition of your word on Urban Dictionary.")]
-          [RequireBotPermission(ChannelPermission.EmbedLinks)]
+        [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.None)]
+        [RequireBotPermission(ChannelPermission.EmbedLinks)]
           public async Task UrbanDictionary([Remainder] string word)
           {
               UrbanService client = new UrbanService();
@@ -332,11 +333,13 @@ namespace Bot.Modules
             await ReplyAsync("", false, embed.Build());
 
            
-          } 
+          }
+      
 
         //8ball
         [Command("8ball"), Summary("Answers all your questions in life.")]
         [Alias("8b", "ask")]
+        [Ratelimit(10, 1, Measure.Minutes, RatelimitFlags.None)]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task EightBall([Remainder] string question = null)
         {
@@ -369,7 +372,7 @@ namespace Bot.Modules
         }
 
         [Command("botinfo")]
-        [Cooldown(3)]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Shows All Bot Info.")]
         public async Task Info()
         {
@@ -451,6 +454,7 @@ namespace Bot.Modules
         private static string GetHeapSize() => Math.Round(GC.GetTotalMemory(true) / (1024.0 * 1024.0), 2).ToString();
 
         [Command("info")]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         public async Task InfoBot()
         {
             using (var process = Process.GetCurrentProcess())
@@ -490,7 +494,7 @@ namespace Bot.Modules
         // RPS
 
         [Command("rps")]
-
+        [Cooldown(3)]
         [Summary("Do this command to know more info about the game. for example `rps r` for rock, `rps p` for paper and `rps s` for scissors.'")]
 
         [Remarks("rock paper scissors!")]

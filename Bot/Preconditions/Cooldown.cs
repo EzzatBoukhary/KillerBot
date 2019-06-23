@@ -60,7 +60,6 @@ namespace Bot.Preconditions
             {
                 _cooldowns.TryAdd(key, DateTime.UtcNow.Add(CooldownLength));
             }
-
             return Task.FromResult(PreconditionResult.FromSuccess());
         }
     }

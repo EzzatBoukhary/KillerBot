@@ -49,16 +49,17 @@ namespace Bot.Modules
             _globalUserAccounts = globalUserAccounts;
         }
 
-       /* [Command("testR"), Alias("New", "Add"), Priority(0), Remarks("Add a reminder")]
+        [Command(""), Priority(0), Remarks("Add a reminder")]
+        [Summary("How to use: e.g: `k!remind DO THE THING! :rage: in 2d 23h 3m 12s` __in__ is very important to be there. ")]
         public async Task AddReminder([Remainder] string args)
         {
             string[] splittedArgs = null;
             if (args.Contains(" in ")) splittedArgs = args.Split(new string[] {" in "}, StringSplitOptions.None);
              if (splittedArgs == null || splittedArgs.Length < 2)
             {
-                await ReplyAsync("I think you are confused about how to use this command... aren't you?\n" +
-                                 "Let me REMIND you it is: `remind DO THE THING! :rage: in 2d 23h 3m 12s`\n" +
-                                 "And the ` in ` before the timeparameters is very important you little dumbo you...");
+                await ReplyAsync("I think you need help on how to use the command.. don't you?\n" +
+                                 "Let me REMIND you how to do so: `k!remind DO THE THING! :rage: in 2d 23h 3m 12s`\n" +
+                                 "And the ` in ` before the time parameters is very important!");
                 return;
             } 
 
@@ -85,7 +86,7 @@ namespace Bot.Modules
 
             var bigmess2 =
                 $"{reminderString}\n\n" +
-                $"We will send you a DM in  __**{localTime}**__ `by {timezone}`\n";
+                $"I will send you a DM in  __**{localTime}**__ `by {timezone}`\n";
 
             var embed = new EmbedBuilder();
             embed.WithAuthor(Context.User);
@@ -95,12 +96,11 @@ namespace Bot.Modules
             embed.AddField($"**____**", $"{bigmess2}");
 
             ReplyAsync("", false, embed.Build());
-        } */
+        } 
 
-        [Command("")]
-        [Alias("RemindOn")]
+        [Command("remindAt")]
         [Priority(1)]
-        [Remarks("Add a reminder On")]
+        [Remarks("Add a reminder on a specific date and time (UTC/GMT+0)")]
         [Summary("How to use: e.g: `remind 2019-03-12 ANY_TEXT at 14:22` __at__ is very important (UTC time) to be there as well as the yyyy-mm-dd format. ")]
         public async Task AddReminderOn(string timeOn, [Remainder] string args)
         {
@@ -145,7 +145,7 @@ namespace Bot.Modules
 
             var bigmess2 =
                 $"{reminderString}\n\n" +
-                $"We will send you a DM in  __**{myDate + hourTime}**__ `by {timezone}`\n";
+                $"I will send you a DM in  __**{myDate + hourTime}**__ `by {timezone}`\n";
 
             var embed = new EmbedBuilder();
             embed.WithAuthor(Context.User);

@@ -198,6 +198,7 @@ namespace Bot.Modules
         }
 
         [Command("showslots"), Summary("Shows the configuration of the current slot machine")]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         [Alias("showslot")]
         public async Task ShowSlot()
         {

@@ -43,6 +43,7 @@ namespace Bot.Modules
 
 
         [Command("fight")]
+        [Cooldown(3)]
         [Alias("Fight")]
         [Summary("starts a fight with the @Mention user (example: `fight @Panda#8822`")]
         public async Task Fight(IUser user)

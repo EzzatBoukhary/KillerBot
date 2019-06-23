@@ -42,6 +42,7 @@ namespace Bot.Modules
         {
             try
             {
+                await Context.Message.DeleteAsync();
                 var messages = await Context.Channel.GetMessagesAsync(amountOfMessagesToDelete + 1).FlattenAsync();
                 await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
                 var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
@@ -60,12 +61,14 @@ namespace Bot.Modules
         [Command("purge")]
         [Remarks("Purges A User's Last Messages. Default Amount To Purge Is 100")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task Clear(SocketGuildUser user, int amountOfMessagesToDelete = 100)
         {
+            await Context.Message.DeleteAsync();
             if (user == Context.User)
                 amountOfMessagesToDelete++; //Because it will count the purge command as a message
 
-            var messages = await Context.Message.Channel.GetMessagesAsync(amountOfMessagesToDelete).FlattenAsync();
+            var messages = await Context.Message.Channel.GetMessagesAsync(amountOfMessagesToDelete + 1).FlattenAsync();
 
             var result = messages.Where(x => x.Author.Id == user.Id && x.CreatedAt >= DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(14)));
 
@@ -110,7 +113,6 @@ namespace Bot.Modules
             await user.KickAsync($"{Context.User}: {reason}");
             await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT KICKED*** :ok_hand: ");
             await Context.Channel.SendMessageAsync("", false, embed.Build()); ///sends embed///
-            Console.WriteLine($"{DateTime.Now}: {user} was kicked in {Context.Guild}");
             
         }
        
@@ -163,14 +165,17 @@ namespace Bot.Modules
             embed.Description = $"**Username: ** {user.Username} || {user.Discriminator}\n**Muted by: ** {Context.User}\n**Reason: **{reason}";
             await ReplyAsync("", false, embed.Build());
 
+            try
+            {
                 var embed2 = new EmbedBuilder();
                 embed2.Description = ($"You've been muted from **{Context.Guild.Name}** for **{reason}**.");
                 var dmChannel = await user.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync("", false, embed2.Build());
-
-    }
+            }
+            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
+        }
         //=====mute with time=====
-        [Command("timemute")]
+        [Command("tempmute")]
         [Remarks("Mutes A User")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task MuteTime([NoSelf][RequireBotHigherHirachy] SocketGuildUser user = null, int time = 1, [Remainder] string reason = null)
@@ -184,25 +189,19 @@ namespace Bot.Modules
             }
 
             var muteRole = await GetMuteRole(user.Guild);
-            if (!user.Roles.Any(r => r.Id == muteRole.Id))
-                await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            var usr = Context.Guild.GetUser(user.Id);
-
-            // await (usr as IGuildUser).ModifyAsync(x => x.Mute = true);
-            await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
             var embed = new EmbedBuilder();
             embed.Color = new Color(206, 47, 47);
             embed.Title = "=== Muted User ===";
-            embed.Description = $"**Username: ** {user.Username} || {user.Discriminator}\n**Muted by: ** {Context.User}\n**Reason: **{reason}";
+            embed.Description = $"**Username: ** {user.Username} || {user.Discriminator}\n**Muted by: ** {Context.User}\n**Reason: **{reason}\n**Duration: **{time}m";
             
 
             var embed2 = new EmbedBuilder();
-            embed2.Description = ($"You've been muted from **{Context.Guild.Name}** for **{reason}**.");
+            embed2.Description = ($"You've been muted for {time}m from **{Context.Guild.Name}**: **{reason}**");
             var dmChannel = await user.GetOrCreateDMChannelAsync();
 
             if (time == 0)
             {
-                var use = await Context.Channel.SendMessageAsync("Use: ``k!mute @user {time in minutes} {reason}``");
+                var use = await Context.Channel.SendMessageAsync("Time has to be more than 0! \nUsage:``k!mute @user {time in minutes} {reason}`` reason is optional.");
                 await Task.Delay(5000);
                 await use.DeleteAsync();
             }
@@ -212,12 +211,17 @@ namespace Bot.Modules
                     await user.AddRoleAsync(muteRole).ConfigureAwait(false);
                 await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
                 await ReplyAsync("", false, embed.Build());
-                await dmChannel.SendMessageAsync("", false, embed2.Build());
-                await Task.Delay(time);
+                try
+                {
+                    await dmChannel.SendMessageAsync("", false, embed2.Build());
+                }
+                catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
+                await Task.Delay(time*60000);
                 await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
-                await ReplyAsync("User has been unmuted. <a:KBtick:580851374070431774> ");
+                await ReplyAsync($"**{user}** has been unmuted. <a:KBtick:580851374070431774> ");
             }
-        } 
+        }
+       
         //======end of time mute======
 
 
@@ -227,9 +231,14 @@ namespace Bot.Modules
         public async Task Unmute([NoSelf][RequireBotHigherHirachy] SocketGuildUser user)
         {
             //await Context.Guild.GetUser(user.Id).ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
-
-            await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false); 
-            await ReplyAsync("User has been unmuted. <a:KBtick:580851374070431774> ");
+            var muteRole = await GetMuteRole(user.Guild);
+            if (user.Roles.Any(r => r.Id == muteRole.Id))
+            {
+                await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
+                await ReplyAsync($"**{user}** has been unmuted. <a:KBtick:580851374070431774> ");
+            }
+            else
+                throw new ArgumentException("User is not muted");
         }
 
         [Command("Ban"), Summary("Usage: Ban @Username {Days to prune messages} Reason"), Remarks("Bans a user from the guild")]
@@ -239,8 +248,6 @@ namespace Bot.Modules
         {
             if (user == null)
                 throw new ArgumentException("You must mention a user! <:KBfail:580129304592252995>");
-            if (pruneDays == null)
-                throw new ArgumentException("You must mention how many days of the user's messages you would like to prune.");
             if (string.IsNullOrEmpty(reason))
             {
                 reason = "[No reason was provided]";
@@ -269,7 +276,6 @@ namespace Bot.Modules
             await gld.AddBanAsync(user, pruneDays, $"{Context.User}: {reason}");
             await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT BANNED*** :hammer: ");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
-            Console.WriteLine($"{DateTime.Now}: {user} was banned in {Context.Guild}");
         }
         [Command("unban")]
         [Remarks("Unban A User")]
