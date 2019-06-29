@@ -124,12 +124,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.4.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> `k!tempmute` command. \n \n<:KBdot:580470791251034123> `k!roleinfo` and bot owner commands. \n \n<:KBdot:580470791251034123> `k!urbandictionary` command. \nThis was added in v1.3.0 but wasn't mentioned in the changelog. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Reminder system: Made a new method for adding reminders. \nUsage Example: k!remind TEXT in 1d 15m 30s \n \n<:KBdot:580470791251034123> Revamped `k!weather` command and added cooldowns to some commands. \n \n<:KBdot:580470791251034123> Small changes to `k!userinfo`,`k!mute`,`k!unmute`,`k!forceleave (bot owner)` commands.";
+            embed.Description = $" **== Minor Release ==** `v1.5.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Economy Bank System: \n`k!deposit`, `k!withdraw` and `k!rob` commands. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Due to the bank system being added, the following was edited: \n`k!top` and `k!account info` got changed to show the net worth and `k!money` got changed to show everything. \n \n<:KBdot:580470791251034123> Added ',' between perms in `k!roleinfo` command and made small changes to `k!userinfo` command. \n \n<:KBdot:580470791251034123> Bot owner commands: \nFixed `k!logs` and changed `k!add-money` & `k!remove-money` to have an bank or wallet parameters.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 23rd - 2019 11:00 PM GMT");
+                x.WithText("Last updated: June 29th - 2019 12:13 AM GMT");
 
 
 
@@ -330,7 +330,7 @@ namespace Bot.Modules
                 }
                 foreach (GuildPermission perm in tgt.Permissions.ToList())
                 {
-                    perms += $"`{perm.ToString()}` ";
+                    perms += $"`{perm.ToString()}`, ";
                     
                 }
                 embed.AddField(x => {
@@ -383,19 +383,8 @@ namespace Bot.Modules
             if (highestRole != null)
                 emb.Color = highestRole.Color;
 
-            // Display if the user is a bot or a webhook
             var picture = user.GetAvatarUrl();
             string nitro = "<:KBNitro:587753434812514324> (Possible nitro user)";
-            EmbedAuthorBuilder author = new EmbedAuthorBuilder();
-            author.Name = user.Username;
-           
-            if (user.IsBot)
-                author.Name += "(Bot)";
-            else if (user.IsWebhook)
-                author.Name += " (Webhook)";
-            
-            emb.Author = author;
-
             // If the user has a default avatar
             string useravatar = "";
             if (string.IsNullOrEmpty(user.AvatarId))
@@ -410,8 +399,11 @@ namespace Bot.Modules
             else
                 userpic = Context.User.GetAvatarUrl();
             emb.WithFooter($"User info requested by {Context.User.Username}", userpic);
-            emb.Description = $"User information for {user.Username}#{user.Discriminator} | {user.Id}";
-
+            emb.Description = $"{user.Username}#{user.Discriminator} | {user.Id}";
+            if (user.IsBot)
+                emb.Description += "<:Bot:593232908735741989>";
+            emb.WithTitle("=== USER INFORMATION ===");
+            emb.WithCurrentTimestamp();
             //GIF avatar looking
             if (picture == $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.gif?size=128")
             {
@@ -498,8 +490,8 @@ namespace Bot.Modules
             else if (user.Discriminator == "0070")
                 emb.Description += $" {nitro}";
 
-            emb.AddField("Created account at", user.CreatedAt.ToString());
-
+            emb.AddField("Created account at", $"{user.CreatedAt.ToString()} (dd/mm/yyyy)");
+            
             emb.AddField("Joined server at", ((DateTimeOffset)user.JoinedAt).ToString());
 
             // Display the list of all of user's roles
@@ -568,7 +560,7 @@ namespace Bot.Modules
             }
 
             if (user.GuildPermissions.BanMembers)
-                permissions += "Ban Memebers, ";
+                permissions += "Ban Members, ";
 
             if (user.GuildPermissions.SendMessages)
                 permissions += "Send Messages, ";

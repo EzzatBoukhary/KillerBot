@@ -27,7 +27,6 @@ namespace Bot
        
         // Exception messages
         public static readonly string ExDailyTooSoon = "Cannot give daily sooner than 24 hours after the last one.";
-        public static readonly string ExWorkTooSoon = "You can't work more than once in less than an hour.";
         public static readonly string ExTransferSameUser = "Cannot transfer coins to the same user.";
         public static readonly string ExTransferToKB = "Cannot transfer coins to myself.";
         public static readonly string ExTransferNotEnoughFunds = "Cannot transfer coins, not enough funds.";

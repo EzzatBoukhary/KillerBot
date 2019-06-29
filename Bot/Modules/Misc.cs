@@ -140,7 +140,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.4.0`");
+            builder.AddField("Version", $"The current version of the bot is: `1.5.0`");
             await ReplyAsync("", false, builder.Build());
         }
 
@@ -240,7 +240,7 @@ namespace Bot.Modules
             var testLength = builtString.Length;
             if (testLength >= 1024)
             {
-                throw new ArgumentException("Value cannot exceed 1024 characters");
+                throw new ArgumentException("Value cannot exceed 1024 characters, please do `k!report help command value limit exceeded limit` if you see this message!");
             }
             var moduleNotes = "";
             if (!string.IsNullOrEmpty(module.Summary))
@@ -303,8 +303,6 @@ namespace Bot.Modules
             await Context.Channel.SendMessageAsync("", false, embed);
             await Context.Message.DeleteAsync();
         }
-
-
 
          [Command("ud"),Alias("urbandictionary"), Summary("Gives you the definition of your word on Urban Dictionary.")]
         [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.None)]

@@ -26,10 +26,11 @@ namespace Bot.Modules
         private int _fieldRange = 10;
         private CommandService _service;
         private readonly GlobalGuildAccounts _globalGuildAccounts;
-
-        public Admin(GlobalGuildAccounts globalGuildAccounts)
+        private readonly Logger _logger;
+        public Admin(GlobalGuildAccounts globalGuildAccounts, Logger logger)
         {
             _globalGuildAccounts = globalGuildAccounts;
+            _logger = logger;
         }
 
 
@@ -51,7 +52,7 @@ namespace Bot.Modules
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Couldn't delete message on {Context.Guild.Name}, Error: {ex.Message}");
+                await _logger.Log(LogSeverity.Warning, "Error", $"Couldn't delete message in {Context.Guild.Name} for: {ex.Message}");
                 await ReplyAsync($"<:KBfail:580129304592252995> Error: {ex.Message}");
             }
         

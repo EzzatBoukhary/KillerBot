@@ -15,6 +15,10 @@ namespace Bot.Entities
 
         public ulong Coins { get; set; } = 1;
 
+        public ulong BankCoins { get; set; } = 0;
+
+        public ulong NetWorth => Coins + BankCoins;
+
         public DateTime LastDaily { get; set; } = DateTime.UtcNow.AddDays(-2);
 
         public DateTime LastMessage { get; set; } = DateTime.UtcNow;

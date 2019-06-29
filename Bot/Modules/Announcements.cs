@@ -49,7 +49,7 @@ namespace Bot.Modules
         [Command("add"), RequireUserPermission(GuildPermission.Administrator)]
         [Remarks("Example: `welcome add <usermention>, welcome to **<guildname>**! " +
                  "Try using ```@<botname>#<botdiscriminator> help``` for all the commands of <botmention>!`\n" +
-                 "Possible placeholders are: `<usermention>`, `<username>`, `<guildname>`, " +
+                 "Possible placeholders are: `<usermention>`, `<username>`, `<userdiscriminator>`, `<guildname>`, " +
                  "`<botname>`, `<botdiscriminator>`, `<botmention>` ")]
         public async Task AddWelcomeMessage([Remainder] string message)
         {
@@ -114,7 +114,7 @@ namespace Bot.Modules
 
         [Command("add"), RequireUserPermission(GuildPermission.Administrator)]
         [Remarks("Example: `leave add Oh noo! <usermention>, left <guildname>...`\n" +
-                 "Possible placeholders are: `<usermention>`, `<username>`, `<guildname>`, " +
+                 "Possible placeholders are: `<usermention>`, `<username>`, `<userdiscriminator>`, `<guildname>`, " +
                  "`<botname>`, `<botdiscriminator>`, `<botmention>`")]
         public async Task AddLeaveMessage([Remainder] string message)
         {

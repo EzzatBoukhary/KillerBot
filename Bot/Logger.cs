@@ -32,7 +32,7 @@ namespace Bot
 
         private void LogFile(string message)
         {
-            var fileName = $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}.log";
+            var fileName = "Logs.log";
             var folder = Constants.LogFolder;
 
             if (!Directory.Exists(folder))

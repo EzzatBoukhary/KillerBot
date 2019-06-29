@@ -124,22 +124,35 @@ namespace Bot.Modules
         public async Task ShowLogs()
         {
             var folder = Constants.LogFolder;
-            var fileName = $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}.log";
+            var fileName = "Logs.log";
             await Context.Channel.SendFileAsync($"{folder}/{fileName}");
         }
 
         [Command("add-coins"),Alias("add-money")]
-        [Remarks("Adds specified money to a specific user. Bot owner only.")]
+        [Summary("Adds specified money to a specific user. Bot owner only.")]
         [RequireOwner]
-        public async Task givecoins(ulong user, ulong amount = 0)
+        public async Task addcoins(ulong user,string source ,ulong amount = 0)
         {
             
             if (amount == 0)
                 throw new ArgumentException("Please specify an amount which is more than 0");
             var account = _globalUserAccounts.GetById(user);
             var emb = new EmbedBuilder();
-            account.Coins += amount;
-            _globalUserAccounts.SaveAccounts();
+            if (source == "wallet")
+            {
+                account.Coins += amount;
+                _globalUserAccounts.SaveAccounts();
+            }
+            else if (source == "bank")
+            {
+                account.BankCoins += amount;
+                _globalUserAccounts.SaveAccounts();
+            }
+            else
+            {
+                throw new ArgumentException("Source should be either wallet or bank");
+            }
+           
             emb.WithColor(Color.Green);
             emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
             emb.WithCurrentTimestamp();
@@ -149,9 +162,9 @@ namespace Bot.Modules
         }
 
         [Command("remove-coins"), Alias("remove-money")]
-        [Remarks("Remove specified money from a specific user. Bot owner only.")]
+        [Summary("Remove specified money from a specific user. Bot owner only.")]
         [RequireOwner]
-        public async Task removecoins(ulong user, ulong amount = 0)
+        public async Task removecoins(ulong user, string source, ulong amount = 0)
         {
             if (amount == 0)
                 throw new ArgumentException("Amount specified is can't be 0");
@@ -160,8 +173,20 @@ namespace Bot.Modules
             if (amount > account.Coins)
                 throw new ArgumentException($"Amount specified is not available ({amount} > {account.Coins})");
             var emb = new EmbedBuilder();
-            account.Coins -= amount;
-            _globalUserAccounts.SaveAccounts();
+            if (source == "wallet")
+            {
+                account.Coins -= amount;
+                _globalUserAccounts.SaveAccounts();
+            }
+            else if (source == "bank")
+            {
+                account.BankCoins -= amount;
+                _globalUserAccounts.SaveAccounts();
+            }
+            else
+            {
+                throw new ArgumentException("Source should be either wallet or bank");
+            }
             emb.WithColor(Color.Red);
             emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
             emb.WithCurrentTimestamp();

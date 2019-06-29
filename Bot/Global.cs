@@ -52,56 +52,6 @@ namespace Bot
                 .Replace("<botname>", Client.CurrentUser.Username);
         }
 
-        public static string GetMiuniesCountReaction(ulong value, string mention)
-        {
-            if (value > 100000)
-            {
-                return $"Wow, {mention}! You're either cheating or you're really dedicated.";
-            }
-            if (value > 50000)
-            {
-                return $"You must be here often to get that amount, {mention}. Thinkin of givin some out?";
-            }
-            if (value > 20000)
-            {
-                return $"That's enough to buy a house... \n\nFor me, not for you, shut up, {mention}!";
-            }
-            if (value > 10000)
-            {
-                return $"{mention} is kinda getting rich. Do we rob them or what?";
-            }
-            if (value > 5000)
-            {
-                return $"Is it just me or is {mention} taking this economy a little too seriously?";
-            }
-            if (value > 2500)
-            {
-                return $"Great, {mention}! Now you give me those coins.";
-            }
-            if (value > 1100)
-            {
-                return $"Looks like {mention} is showing their wealth on the internet again.";
-            }
-            if (value > 800)
-            {
-                return $"Alright, {mention}. Put the coins away and nobody gets hurt.";
-            }
-            if (value > 550)
-            {
-                return $"I like how {mention} thinks that's impressive.";
-            }
-            if (value > 200)
-            {
-                return $"Ouch, {mention}! If I knew that is all you've got, I would just DM you the amount. Embarrassing!";
-            }
-            if (value == 0)
-            {
-                return $"Yea, {mention} is broke. What a surprise.";
-            }
-
-            return $"Yea, {mention} you still have a lot to go.";
-        }
-
         public static async Task<string> SendWebRequest(string requestUrl)
         {
             using (var client = new HttpClient(new HttpClientHandler()))

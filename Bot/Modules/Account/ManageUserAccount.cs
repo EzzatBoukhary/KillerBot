@@ -34,7 +34,7 @@ namespace Bot.Modules.Account
                 .AddField("Joined at: ", user.JoinedAt.Value.DateTime.ToString())
                 .AddField("Last message:", userAccount.LastMessage.ToString(), true)
                 .AddField("Number of reminders: ", userAccount.Reminders.Count, true)
-                .AddField("Coins: ", userAccount.Coins.ToString())
+                .AddField("Coins: ", userAccount.NetWorth.ToString())
                 .WithColor(Color.Blue)
                 .WithCurrentTimestamp()
                 .WithFooter($"Requested by {Context.User.Username}", Context.User.GetAvatarUrl())

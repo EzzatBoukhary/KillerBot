@@ -50,7 +50,7 @@ namespace Bot.Preconditions
                 // Display message if command is on cooldown
                 if (difference.Ticks > 0)
                 {
-                    return Task.FromResult(PreconditionResult.FromError($"Cooldown, try again in {difference.ToString(@"mm\:ss")}"));
+                    return Task.FromResult(PreconditionResult.FromError($"Cooldown, try again in {difference.ToString(@"hh\:mm\:ss")}"));
                 }
                 // Update cooldown time
                 var time = DateTime.UtcNow.Add(CooldownLength);
