@@ -393,10 +393,9 @@ namespace Bot.Modules
         [Command("warn")]
         [Alias("strike")]
         [Summary("Direct message a user with a warning")]
-        [Remarks("If you warn reason is a sentence you should put `\"(reason)\"`")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task Warn(SocketGuildUser user = null, string reason = null)
+        public async Task Warn(SocketGuildUser user = null, [Remainder] string reason = null)
         {
            
             //If no reason is provided

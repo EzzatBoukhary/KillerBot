@@ -158,6 +158,10 @@ namespace Bot.Modules
             {
                 GetCoinsCountReaction = $"Yea, {target.Username} is broke. What a surprise.";
             }
+            else if (account.NetWorth < 0)
+            {
+                GetCoinsCountReaction = $"Well, looks like {target.Username} is in debt now.";
+            }
             else
                 GetCoinsCountReaction = $"Yea, {target.Username} you still have a lot to go.";
             //END
@@ -246,8 +250,10 @@ namespace Bot.Modules
         [Command("Transfer")]
         [Remarks("Transfers specified amount of your coins to the mentioned person.")]
         [Alias("Give", "Gift")]
-        public async Task TransferMinuies(IGuildUser target, ulong amount)
+        public async Task TransferMinuies(IGuildUser target, long amount)
         {
+            if (amount < 0)
+                throw new ArgumentException("<:KBfail:580129304592252995> Nice try giving the user a negative amount of coins. Sorry but no can do.");
             if (amount == 0)
                 throw new ArgumentException("<:KBfail:580129304592252995> Oh wow, you really wanna transfer 0 coins to the user? Not cool. (amount should be more than 0)");
             if (target.IsBot == true)
@@ -319,7 +325,7 @@ namespace Bot.Modules
         {
             var account = _globalUserAccounts.GetById(Context.User.Id);
             var emb = new EmbedBuilder();
-            var result = (ulong)Global.Rng.Next(Constants.WorkRewardMinMax.Item1, Constants.WorkRewardMinMax.Item2 + 1);
+            var result = Global.Rng.Next(Constants.WorkRewardMinMax.Item1, Constants.WorkRewardMinMax.Item2 + 1);
             account.Coins += result;
             _globalUserAccounts.SaveAccounts();
             emb.WithColor(Color.Green);
@@ -375,10 +381,10 @@ namespace Bot.Modules
         }
         [Command("rob")]
         [Alias("steal")]
-        [Cooldown(86400)]
         [Remarks("Really want that money that person has? go for it, but don't get caught!")]
         public async Task Rob([NoSelf] IGuildUser target)
         {
+            
             string[] FailSuccess = new string[]
        {
       $"{Context.User} has robbed {target} " ,
@@ -387,34 +393,67 @@ namespace Bot.Modules
        };
             var robbed = _globalUserAccounts.GetById(target.Id);
             var robber = _globalUserAccounts.GetById(Context.User.Id);
+            var sinceLastRobbery = DateTime.UtcNow - robber.LastRobbery;
+
+            if (sinceLastRobbery.TotalHours < 24)
+            {
+                var e = new InvalidOperationException(Constants.ExRobberyTooSoon);
+                e.Data.Add("sinceLastRobbery", sinceLastRobbery);
+                throw e;
+            }
             if (target.IsBot == true)
                 throw new ArgumentException("<:KBfail:580129304592252995> Cannot rob bots.");
 
             if (robbed.Coins < 1)
                 await ReplyAsync("User has no money to rob :shrug:");
+
+            //If robbed user has money
             else
             {
                 Random rnd = new Random();
                 int randomMessage = rnd.Next(1, 101);
                 randomMessage = randomMessage <= 70 ? 1 : 0;
                 string RobbingResult = FailSuccess[randomMessage];
+
+
                 if (randomMessage ==  1) //ROBBERY FAILS
                 {
-                    ulong amount = (ulong)((float)robber.Coins * (rnd.Next(15, 26) / 100.0)); //How much can the robber lose money.
-
+                    long amount = (long)((float)robber.Coins * (rnd.Next(15, 26) / 100.0)); //How much can the robber lose money.
                     EmbedBuilder fail = new EmbedBuilder();
                     fail.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
-                    fail.WithDescription(RobbingResult + $"and was fined {amount} coin(s)");
                     fail.WithColor(new Color(255, 0, 0));
                     fail.WithCurrentTimestamp();
-                    robber.Coins -= amount;
+
+
+                    if (robber.Coins > 0) // If wallet has coins and not debt
+                    {
+                        robber.Coins -= amount;
+                        fail.WithDescription(RobbingResult + $"and was fined {amount} coin(s)");
+                    }
+
+
+                    else if (robber.Coins == 0 && robber.BankCoins == 0) // If the robber is completely broke.
+                    {
+                        fail.WithDescription(RobbingResult + $"and due to being broke, the police gave them just a warning.");
+                    }
+
+
+                    else if (robber.BankCoins != 0) // If the robber has no money in their wallet but does in the bank.
+                    {
+                        long amountbank = (long)((float)robber.BankCoins * (rnd.Next(15, 26) / 100.0));
+                        robber.Coins -= amountbank;
+                        fail.WithDescription(RobbingResult + $"and was fined {amountbank} coin(s)");
+                    }
+
+
                     _globalUserAccounts.SaveAccounts();
-                    fail.WithFooter($"New balance: {robber.Coins}", Context.User.GetAvatarUrl());
+                    robber.LastRobbery = DateTime.UtcNow;
+                    fail.WithFooter($"New Wallet balance: {robber.Coins}", Context.User.GetAvatarUrl());
                     await ReplyAsync("", false, fail.Build());
                 }
                 else  //ROBBERYS SUCCEEDS
                 {
-                    ulong amount = (ulong)((float)robbed.Coins * (rnd.Next(10, 31) / 100.0)); //How much can the robber steal money.
+                    long amount = (long)((float)robbed.Coins * (rnd.Next(10, 31) / 100.0)); //How much can the robber steal money.
 
                     EmbedBuilder success = new EmbedBuilder();
                     success.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
@@ -423,12 +462,14 @@ namespace Bot.Modules
                     success.WithCurrentTimestamp();
                     robber.Coins += amount;
                     robbed.Coins -= amount;
+                    robber.LastRobbery = DateTime.UtcNow;
                     _globalUserAccounts.SaveAccounts();
-                    success.WithFooter($"New balance: {robber.Coins}", Context.User.GetAvatarUrl());
+                    success.WithFooter($"New Wallet balance: {robber.Coins}", Context.User.GetAvatarUrl());
                     await ReplyAsync("", false, success.Build());
                 }
+
             }
-            
+                
         }
         //Rob command ends here.
     }

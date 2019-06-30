@@ -131,7 +131,7 @@ namespace Bot.Modules
         [Command("add-coins"),Alias("add-money")]
         [Summary("Adds specified money to a specific user. Bot owner only.")]
         [RequireOwner]
-        public async Task addcoins(ulong user,string source ,ulong amount = 0)
+        public async Task addcoins(ulong user,string source ,long amount = 0)
         {
             
             if (amount == 0)
@@ -164,7 +164,7 @@ namespace Bot.Modules
         [Command("remove-coins"), Alias("remove-money")]
         [Summary("Remove specified money from a specific user. Bot owner only.")]
         [RequireOwner]
-        public async Task removecoins(ulong user, string source, ulong amount = 0)
+        public async Task removecoins(ulong user, string source, long amount = 0)
         {
             if (amount == 0)
                 throw new ArgumentException("Amount specified is can't be 0");

@@ -15,7 +15,7 @@ namespace Bot.Features.Economy
             this.discordClient = discordClient;
         }
 
-        public void UserToUser(ulong sourceUserId, ulong targetUserId, ulong amount)
+        public void UserToUser(ulong sourceUserId, ulong targetUserId, long amount)
         {
             if (sourceUserId == targetUserId) { throw new InvalidOperationException(Constants.ExTransferSameUser); }
             
@@ -31,6 +31,11 @@ namespace Bot.Features.Economy
             transferTarget.Coins += amount;
 
             globalUserAccountProvider.SaveAccounts(transferSource.Id, transferTarget.Id);
+        }
+
+        public void UserToUser(ulong sourceUserId, ulong targetUserId, ulong amount)
+        {
+            throw new NotImplementedException();
         }
     }
 }

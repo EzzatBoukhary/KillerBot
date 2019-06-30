@@ -10,7 +10,7 @@ namespace Bot
         internal static readonly string ServerAccountsFolder = "servers";
         internal static readonly string LogFolder = "logs";
         internal static readonly string InvisibleString = "\u200b";
-        public const ulong DailyMuiniesGain = 250;
+        public const long DailyMuiniesGain = 250;
         public const int WorkRewardCooldown = 3600;
         public const int MessageRewardCooldown = 30;
         public const int MessageRewardMinLenght = 20;
@@ -27,6 +27,7 @@ namespace Bot
        
         // Exception messages
         public static readonly string ExDailyTooSoon = "Cannot give daily sooner than 24 hours after the last one.";
+        public static readonly string ExRobberyTooSoon = "You can only rob once within 24 hours.";
         public static readonly string ExTransferSameUser = "Cannot transfer coins to the same user.";
         public static readonly string ExTransferToKB = "Cannot transfer coins to myself.";
         public static readonly string ExTransferNotEnoughFunds = "Cannot transfer coins, not enough funds.";

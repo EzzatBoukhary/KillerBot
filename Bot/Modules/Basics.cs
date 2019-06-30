@@ -124,12 +124,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.5.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Economy Bank System: \n`k!deposit`, `k!withdraw` and `k!rob` commands. \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Due to the bank system being added, the following was edited: \n`k!top` and `k!account info` got changed to show the net worth and `k!money` got changed to show everything. \n \n<:KBdot:580470791251034123> Added ',' between perms in `k!roleinfo` command and made small changes to `k!userinfo` command. \n \n<:KBdot:580470791251034123> Bot owner commands: \nFixed `k!logs` and changed `k!add-money` & `k!remove-money` to have an bank or wallet parameters.";
+            embed.Description = $" **== Fix ==** `v1.5.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Rob command: \nFixed cooldown starting even if rob resulted in an error. \nFixed 'fined 0 coin(s)' if the user has no money in wallet but does in bank, thus allowing wallet money to go negative (in debt until amount gets added to wallet) \n \n<:KBdot:580470791251034123> Fixed the stuck 2 second cooldown on `k!fight` command. \n \n<:KBdot:580470791251034123> Fixed a rare bug in `k!weather` command for humidity. \n \n<:KBdot:580470791251034123> Fixed the sentence reasons in `k!warn` and you don't have to put quotes now. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 29th - 2019 12:13 AM GMT");
+                x.WithText("Last updated: June 30th - 2019 12:32 AM GMT");
 
 
 
