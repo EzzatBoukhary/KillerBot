@@ -36,7 +36,9 @@ namespace Bot.Modules
 
         [Command("new"), Alias("add"), Remarks("Adds a new (not yet existing) tag to the server `tag new <tagName> <tagContent>`")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task AddTag(string tagName, [Remainder] string tagContent)
+        public async Task AddTag(
+            [Summary("Name of the tag you want to create")]string tagName, 
+            [Summary("The reply you want the bot to send when using the tag")][Remainder] string tagContent)
         {
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             var response = TagFunctions.AddTag(tagName, tagContent, _globalGuildAccounts, guildAcc);
@@ -45,7 +47,9 @@ namespace Bot.Modules
 
         [Command("edit"), Remarks("Edits the content of an existing tag of the server")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task UpdateTag(string tagName, [Remainder] string tagContent)
+        public async Task UpdateTag(
+            [Summary("Name of the tag you want to edit")]string tagName,
+            [Summary("The new reply this tag will send")][Remainder] string tagContent)
         {
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             var response = TagFunctions.UpdateTag(tagName, tagContent, _globalGuildAccounts, guildAcc);
@@ -54,7 +58,8 @@ namespace Bot.Modules
 
         [Command("remove"), Remarks("Removes a tag off the server ")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task RemoveTag(string tagName)
+        public async Task RemoveTag(
+            [Summary("Name of the tag you want to delete")]string tagName)
         {
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             var response = TagFunctions.RemoveTag(tagName, _globalGuildAccounts, guildAcc);
@@ -98,7 +103,9 @@ namespace Bot.Modules
         }
 
         [Command("new"), Alias("add"), Remarks("Adds a new (not yet existing) tag to your collection `ptag new <tagname> <tagContent>")]
-        public async Task AddTag(string tagName, [Remainder] string tagContent)
+        public async Task AddTag(
+            [Summary("Name of the private tag you want to create")]string tagName,
+            [Summary("The reply that this personal tag will send when used")] [Remainder] string tagContent)
         {
             var userAcc = _globalUserAccounts.GetById(Context.User.Id);
             var response = TagFunctions.AddTag(tagName, tagContent, _globalUserAccounts, userAcc);
@@ -106,7 +113,9 @@ namespace Bot.Modules
         }
 
         [Command("edit"), Remarks("Edit an existing tag of yours `ptag edit <tag name> <tag content>`")]
-        public async Task UpdateTag(string tagName, [Remainder] string tagContent)
+        public async Task UpdateTag(
+            [Summary("Name of the tag you want to edit")]string tagName,
+            [Summary("The new reply this tag will send when used")][Remainder] string tagContent)
         {
             var userAcc = _globalUserAccounts.GetById(Context.User.Id);
             var response = TagFunctions.UpdateTag(tagName, tagContent, _globalUserAccounts, userAcc);
@@ -114,7 +123,8 @@ namespace Bot.Modules
         }
 
         [Command("remove"), Remarks("Removes an existing tag of yours")]
-        public async Task RemoveTag(string tagName)
+        public async Task RemoveTag(
+            [Summary("Name of the personal tag you want to delete")]string tagName)
         {
             var userAcc = _globalUserAccounts.GetById(Context.User.Id);
             var response = TagFunctions.RemoveTag(tagName, _globalUserAccounts, userAcc);

@@ -51,7 +51,7 @@ namespace Bot.Modules
 
         [Command(""), Priority(0), Remarks("Add a reminder")]
         [Summary("How to use: e.g: `k!remind DO THE THING! :rage: in 2d 23h 3m 12s` __in__ is very important to be there. ")]
-        public async Task AddReminder([Remainder] string args)
+        public async Task AddReminder([Summary("The thing you want the bot to remind you about, in (how much time till it sends the reminder)")][Remainder] string args)
         {
             string[] splittedArgs = null;
             if (args.Contains(" in ")) splittedArgs = args.Split(new string[] {" in "}, StringSplitOptions.None);

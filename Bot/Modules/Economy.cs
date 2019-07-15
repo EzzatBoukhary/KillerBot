@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using Bot.Extensions;
 using static Bot.Global;
 using Bot.Preconditions;
+using Bot.Entities;
+using System.Collections.Generic;
 // ReSharper disable ConvertIfStatementToSwitchStatement
 
 namespace Bot.Modules
@@ -24,6 +26,7 @@ namespace Bot.Modules
 
             _miuniesTransfer = miuniesTransfer;
             _globalUserAccounts = globalUserAccounts;
+
         }
 
         [Command("Daily"), Remarks("Gives you some coins, but can only be used once a day")]
@@ -41,7 +44,7 @@ namespace Bot.Modules
                 await ReplyAsync($"You already got your daily, {Context.User.Mention}.\nCome back in {timeSpanString}.");
             }
         }
-        
+
         [Command("money"), Remarks("Shows how much money you have")]
         [Alias("Cash", "balance", "coins", "bal")]
         public async Task CheckMiunies()
@@ -61,7 +64,7 @@ namespace Bot.Modules
             {
                 GetCoinsCountReaction = $"That's enough to buy a house... \n\nFor me, not for you, shut up, {Context.User.Username}!";
             }
-            else if(account.NetWorth > 10000)
+            else if (account.NetWorth > 10000)
             {
                 GetCoinsCountReaction = $"{Context.User.Username} is kinda getting rich. Do we rob them or what?";
             }
@@ -94,7 +97,7 @@ namespace Bot.Modules
                 GetCoinsCountReaction = $"Yea, {Context.User.Username} is broke. What a surprise.";
             }
             else
-            GetCoinsCountReaction = $"Yea, {Context.User.Username} you still have a lot to go.";
+                GetCoinsCountReaction = $"Yea, {Context.User.Username} you still have a lot to go.";
             //END
             var emb = new EmbedBuilder();
             emb.WithAuthor($"{Context.User}", Context.User.GetAvatarUrl());
@@ -103,13 +106,13 @@ namespace Bot.Modules
             emb.WithFooter($"Requested by: {Context.User}", Context.User.GetAvatarUrl());
             emb.AddField("Wallet", $"{account.Coins} coins", true);
             emb.AddField("Bank", $"{account.BankCoins} coins", true);
-             emb.AddField("Net Worth", $"{account.NetWorth} coins", true);
+            emb.AddField("Net Worth", $"{account.NetWorth} coins", true);
             await ReplyAsync("", false, emb.Build());
         }
 
         [Command("money"), Remarks("Shows how much money the mentioned user has")]
         [Alias("Cash", "balance", "coins", "bal")]
-        public async Task CheckMiuniesOther(IGuildUser target)
+        public async Task CheckMiuniesOther([Summary("user to check")]IGuildUser target)
         {
             var account = _globalUserAccounts.GetById(target.Id);
             //DESCRIPTION REACTION MSG
@@ -174,7 +177,7 @@ namespace Bot.Modules
             emb.AddField("Bank", account.BankCoins, true);
             emb.AddField("Net Worth", account.NetWorth, true);
             await ReplyAsync("", false, emb.Build());
-        } 
+        }
 
         [Command("Leaderboard"), Remarks("Shows a user list of the sorted by money. Pageable to see lower ranked users.")]
         [Alias("Top", "Top10", "Richest", "lb")]
@@ -250,7 +253,9 @@ namespace Bot.Modules
         [Command("Transfer")]
         [Remarks("Transfers specified amount of your coins to the mentioned person.")]
         [Alias("Give", "Gift")]
-        public async Task TransferMinuies(IGuildUser target, long amount)
+        public async Task TransferMinuies(
+            [Summary("User to transfer money to")]IGuildUser target,
+            [Summary("Amount of coins to transfer")]long amount)
         {
             if (amount < 0)
                 throw new ArgumentException("<:KBfail:580129304592252995> Nice try giving the user a negative amount of coins. Sorry but no can do.");
@@ -272,7 +277,7 @@ namespace Bot.Modules
 
         [Command("newslot"), Summary("Creates a new slot machine if you feel the current one is unlucky"), Remarks("Usage: k!newslots [Optional: (amount of pieces)}]")]
         [Alias("newslots")]
-        public async Task NewSlot(int amount = 0)
+        public async Task NewSlot([Summary("OPTIONAL: Amount of items in the slot machine")]int amount = 0)
         {
             Global.Slot = new Slot(amount);
             await ReplyAsync("<a:KBtick:580851374070431774> A new slot machine got generated! Good luck!");
@@ -318,6 +323,7 @@ namespace Bot.Modules
         {
             await ReplyAsync(string.Join("\n", Global.Slot.GetCylinderEmojis(true)));
         }
+
         [Command("work")]
         [Summary("Work every hour and receive some coins!")]
         [Cooldown(3600)]
@@ -333,9 +339,10 @@ namespace Bot.Modules
             emb.WithCurrentTimestamp();
             emb.WithDescription($"You work and recieve **{result} coins** for your hard work. <a:KBtick:580851374070431774> ");
             await ReplyAsync("", false, emb.Build());
-            
+
         }
-        [Command("deposit"),Alias("dep","dp")]
+
+        [Command("deposit"), Alias("dep", "dp")]
         [Summary("Deposit your money to a safer place.")]
         public async Task dep(uint amount = 0)
         {
@@ -357,7 +364,30 @@ namespace Bot.Modules
                 _globalUserAccounts.SaveAccounts(Context.User.Id);
             }
         }
-        [Command("withdraw"),Alias("with","wd")]
+
+        //deposit all
+        [Command("deposit"), Alias("dep", "dp")]
+        [Summary("Deposit your money to a safer place.")]
+        public async Task depALL(string all)
+        {
+            if (all == "all")
+            {
+                var account = _globalUserAccounts.GetById(Context.User.Id);
+                if (account.Coins == 0)
+                {
+                    await ReplyAsync("You can't deposit 0 coins... :neutral_face:");
+                }
+                else
+                {
+                    await ReplyAsync($"<a:KBtick:580851374070431774> {account.Coins} coins were deposited to your bank.");
+                    account.BankCoins += account.Coins;
+                    account.Coins -= account.Coins;
+                    _globalUserAccounts.SaveAccounts(Context.User.Id);
+                }
+            }
+        }
+
+        [Command("withdraw"), Alias("with", "wd")]
         [Summary("Withdraw your money from the bank and put some stuff into that empty wallet.")]
         public async Task with(uint amount = 0)
         {
@@ -379,12 +409,52 @@ namespace Bot.Modules
                 _globalUserAccounts.SaveAccounts(Context.User.Id);
             }
         }
+
+        //withdraw all
+        [Command("withdraw"), Alias("with", "wd")]
+        [Summary("Withdraw your money from the bank and put some stuff into that empty wallet.")]
+        public async Task withALL(string all)
+        {
+            var account = _globalUserAccounts.GetById(Context.User.Id);
+            if (all == "all")
+            {
+                if (account.BankCoins == 0)
+                {
+                    await ReplyAsync("You can't withdraw 0 coins... :neutral_face:");
+                }
+                else
+                {
+                    await ReplyAsync($"<a:KBtick:580851374070431774> {account.BankCoins} coins were withdrew from your bank.");
+                    account.Coins += account.BankCoins;
+                    account.BankCoins -= account.BankCoins;
+                    _globalUserAccounts.SaveAccounts(Context.User.Id);
+                }
+            }
+        }
+
+        /*[Command("roulette")]
+        public async Task RouletteAsync(uint amount = 0)
+        {
+            if (amount < 50)
+            {
+                await ReplyAsync("Your bet should be at least **50 coins**");
+            }
+            var answers = new[]
+            {
+                ":gun: *click*, no bullet in there for you this round.\r\n",
+                ":gun: :boom:, you died! :skull:\r\n", ":gun: *click*, no bullet in there for you this round.\r\n"
+            };
+
+            var answer = answers[Global.Rng.Next(3) % 2]; // 1 out of 3 possibility of death
+            await ReplyAsync(answer);
+        }*/
+
         [Command("rob")]
         [Alias("steal")]
         [Remarks("Really want that money that person has? go for it, but don't get caught!")]
         public async Task Rob([NoSelf] IGuildUser target)
         {
-            
+
             string[] FailSuccess = new string[]
        {
       $"{Context.User} has robbed {target} " ,
@@ -416,7 +486,7 @@ namespace Bot.Modules
                 string RobbingResult = FailSuccess[randomMessage];
 
 
-                if (randomMessage ==  1) //ROBBERY FAILS
+                if (randomMessage == 1) //ROBBERY FAILS
                 {
                     long amount = (long)((float)robber.Coins * (rnd.Next(15, 26) / 100.0)); //How much can the robber lose money.
                     EmbedBuilder fail = new EmbedBuilder();
@@ -458,7 +528,7 @@ namespace Bot.Modules
                     EmbedBuilder success = new EmbedBuilder();
                     success.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
                     success.WithDescription(RobbingResult + $"and got {amount} coin(s)");
-                    success.WithColor(new Color(0,255,0));
+                    success.WithColor(new Color(0, 255, 0));
                     success.WithCurrentTimestamp();
                     robber.Coins += amount;
                     robbed.Coins -= amount;
@@ -469,8 +539,76 @@ namespace Bot.Modules
                 }
 
             }
-                
+
         }
         //Rob command ends here.
+
+  /*      [Group("shop")]
+        [Summary("The economy shop of KillerBot, use your coins to buy some cool stuff!")]
+        public class Shop : ModuleBase<MiunieCommandContext>
+        {
+            private readonly GlobalUserAccounts _globalUserAccounts;
+            private readonly List<Item> _items;
+            public Shop(GlobalUserAccounts globalUserAccounts)
+            {
+                _globalUserAccounts = globalUserAccounts;
+                _items = new List<Item> { new Item("ugh", 33),
+                new Item("Item 2", 50),
+                new Item("Item 3", 22),
+                new Item("Item 4", 50),
+                new Item("Item 5", 50),
+                new Item("Item 6", 50),
+                new Item("Item 7", 50),
+                new Item("Item 8", 50),
+                new Item("Item 9", 50),
+                new Item("Item 10", 50),
+                new Item("Item 11", 50)
+            };
+            }
+            [Command("")]
+            public async Task ShowShop(int page = 1)
+            {
+                const int ItemsPerPage = 9;
+                // Calculate the highest accepted page number => amount of pages we need to be able to fit all users in them
+                // (amount of users) / (how many to show per page + 1) results in +1 page more every time we exceed our usersPerPage  
+                var lastPageNumber = 1 + (_items.Count / (ItemsPerPage + 1));
+                if (page > lastPageNumber)
+                {
+                    await ReplyAsync($"There are not that many pages...\nPage {lastPageNumber} is the last one...");
+                    return;
+                }
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithTitle("KillerBot Shop List: ");
+                embed.WithFooter($"Page {page}/{lastPageNumber}");
+                embed.WithColor(Color.Teal);
+                var application = await Context.Client.GetApplicationInfoAsync(); 
+                embed.WithThumbnailUrl(application.IconUrl);  
+                int endIndex = page * ItemsPerPage;
+                int startIndex = endIndex - ItemsPerPage;
+                for (int i = startIndex; i < endIndex && i < _items.Count; i++)
+                {
+                    embed.AddField($"{_items[i].name}:", $"{_items[i].price} coins", false);
+                }
+                await ReplyAsync("", false, embed.Build());
+            }
+            [Command("buy")]
+            [Summary("Buy a specific item in the KillerBot Economy Shop.")]
+            public async Task Buy(string item)
+            {
+                var account = _globalUserAccounts.GetById(Context.User.Id);
+                foreach (var i in _items)
+                {
+                    if (item == i.name)
+                    {
+                        var BoughtItem = new ItemEntry(item);
+                        account.Bought_Items.Add(BoughtItem);
+                        account.Coins -= i.price;
+                        _globalUserAccounts.SaveAccounts(Context.User.Id);
+                        await ReplyAsync($"You succesfully bought {i.name}");
+                    }
+
+                }
+            } 
+        } */
     }
-} 
+}

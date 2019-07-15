@@ -22,6 +22,8 @@ using Discord.Addons.Interactive;
 using System.Net.Http;
 using Gommon;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
+using Newtonsoft.Json;
 
 namespace Bot.Modules
 {
@@ -140,11 +142,9 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.5.1`");
+            builder.AddField("Version", $"The current version of the bot is: `1.6.0`");
             await ReplyAsync("", false, builder.Build());
         }
-
-
         [Command("Uptime")]
         [Remarks("Usage: k!uptime")]
         public async Task UptimeAsync()
@@ -488,7 +488,7 @@ namespace Bot.Modules
                 .WithColor(Color.Orange);
             await ReplyAsync("",false, output.Build());
         }
-
+       
         // RPS
 
         [Command("rps")]
@@ -497,7 +497,7 @@ namespace Bot.Modules
 
         [Remarks("rock paper scissors!")]
 
-        public async Task Rps([Optional] string input)
+        public async Task Rps([Summary("Your pick")][Optional] string input)
 
         {
 

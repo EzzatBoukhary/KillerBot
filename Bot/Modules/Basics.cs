@@ -40,7 +40,7 @@ namespace Bot.Modules
         [Cooldown(30)]
         [Summary("Submit feedback directly to KillerBot HQ.")]
         [Remarks("Usage: k!feedback {feedback}")]
-        public async Task FeedbackAsync([Remainder] string feedback = null)
+        public async Task FeedbackAsync([Summary("Your feedback you want to send about KillerBot")][Remainder] string feedback = null)
         {
             if (feedback == null)
                 throw new ArgumentException("Please write a feedback to send.");
@@ -112,11 +112,10 @@ namespace Bot.Modules
             {
                 await ReplyAsync("", false, Good.Build());
             }
-        } 
+        }
 
-      
         [Command("changelog")]
-        [Cooldown(5)]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Change log for the current version of the bot")]
         public async Task changes()
         {
@@ -124,12 +123,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Fix ==** `v1.5.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Rob command: \nFixed cooldown starting even if rob resulted in an error. \nFixed 'fined 0 coin(s)' if the user has no money in wallet but does in bank, thus allowing wallet money to go negative (in debt until amount gets added to wallet) \n \n<:KBdot:580470791251034123> Fixed the stuck 2 second cooldown on `k!fight` command. \n \n<:KBdot:580470791251034123> Fixed a rare bug in `k!weather` command for humidity. \n \n<:KBdot:580470791251034123> Fixed the sentence reasons in `k!warn` and you don't have to put quotes now. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Minor Release ==** `v1.6.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Unbanning with username or username#discriminator if you don't want to use ID. \n \n<:KBdot:580470791251034123> `k!deposit all` and `k!withdraw all` to make it easier if someone wants to deposit or withdraw all their coins. \n \n<:KBdot:580470791251034123> Added summaries to most commands' parameters to make stuff clearer. \n \n<:KBdot:580470791251034123> New aliases for `k!changenick` and `k!removewarn` commands. \n \n<:KBdot:580470791251034123> Bot owner: `k!blacklist`, `k!whitelist` and `k!getinvite` commands. \n \n<:KBdot:580470791251034123> Image-related commands: \n`k!resize`, `k!quality`, `k!fliph`, `k!flipv`, `k!rotate`, `k!detectedges`, `k!deepfry`, `k!minecraft`, `k!minecraftach` \n \n**[Removed]** \n \n<:KBdot:580470791251034123> `k!trivia` command was removed until further notice due to unknown reasons of not working. Sorry for any inconvenience! \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> `k!ban` : Made the 'prune days' parameter not required and not mentioning the number wouldn't delete any message from the banned user. \n \n<:KBdot:580470791251034123> Fixed `k!purge @user <amount>` not working as expected. \n \n<:KBdot:580470791251034123> Made the fiels in `k!warnings` not inlined due to text collision. \n \n<:KBdot:580470791251034123> Revamped `k!serverinfo` command. \n \n<:KBdot:580470791251034123> Small changes to `k!kick` and `k!ban` commands' replies. \n \n<:KBdot:580470791251034123> Fixed the date format in `k!userinfo` which didn't match what was written. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 30th - 2019 12:32 AM GMT");
+                x.WithText("Last updated: July 14th - 2019 7:12 PM GMT");
 
 
 
@@ -163,8 +162,8 @@ namespace Bot.Modules
         }
         [Command("Choose")]
         [Summary("Choose an item from a list separated by |.")]
-        [Remarks("Usage: prefix choose {option1|option2|option3|...}   SHOULD have `|` between every option.")]
-        public async Task ChooseAsync([Remainder] string options)
+        [Remarks("Usage: k!choose option1|option2|option3|...   SHOULD have `|` between every option.")]
+        public async Task ChooseAsync([Summary("The options you want the bot to choose from")] [Remainder] string options)
         {
             var opts = options.Split('|', StringSplitOptions.RemoveEmptyEntries);
             var embed = new EmbedBuilder()
@@ -193,7 +192,7 @@ namespace Bot.Modules
 
     [Command("Avatar")]
         [Summary("Shows the mentioned user's avatar, or yours if no one is mentioned.")]
-        [Remarks("Usage: `avatar [@user]`")]
+        [Remarks("Usage: `k!avatar [@user]`")]
         public async Task AvatarAsync(SocketGuildUser user = null)
         {
             var u = user ?? Context.User;
@@ -212,32 +211,61 @@ namespace Bot.Modules
              });
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
-       
         [Command("serverinfo")]
         [Cooldown(3)]
-        [Alias("sinfo","aboutserver")]
-        [Summary("Information about the server the command was done in.")]
-        public async Task serverinfo()
+        [Alias("sinfo", "aboutserver")]
+        [Summary("Shows server information.")]
+        public async Task sinfo()
         {
-            var gld = Context.Guild as SocketGuild;
-            var embed = new EmbedBuilder();
-            embed.Color = new Color(154, 59, 226);
-            if (!string.IsNullOrWhiteSpace(gld.IconId))
-                embed.ThumbnailUrl = gld.IconUrl;
-            var o = gld.Owner.Username;
-            var v = gld.VoiceRegionId;
-            var vc = gld.VoiceChannels.Count;
-            var tc = gld.TextChannels.Count;
-            var c = gld.CreatedAt;
-            var r = gld.Roles.Count;
-            var id = gld.Id;
-            var con = Context.Client.ConnectionState;
-            var lev = gld.VerificationLevel;
-            var us = gld.Users.Count;
-            embed.Title = $"{gld.Name} server information";
-            embed.Description = $"**Server name**: {gld.Name} \n \n **Created at**: {c} \n \n **Server owner**: {o} \n \n **Server region**: {v} \n \n **Voice channels**: {vc} \n \n **Text channels**: {tc} \n \n **Server ID**: {id} \n \n **Number of users** : {us} \n \n **Number of roles** : {r} \n \n **Connection state**: {con} \n \n **Verification level**: {lev}";
-            await ReplyAsync("", false, embed.Build());
+            var channel = (ITextChannel)Context.Channel;
+            var guild = Context.Guild as SocketGuild;
+            var ownername = guild.GetUser(guild.OwnerId);
+            var textchn = guild.TextChannels.Count();
+            var voicechn = guild.VoiceChannels.Count();
+
+            var createdAt = new DateTime(2015, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(guild.Id >> 22);
+            var features = string.Join("\n", guild.Features);
+            if (string.IsNullOrWhiteSpace(features))
+                features = "-";
+            var embed = new EmbedBuilder()
+                .WithAuthor("== SERVER INFORMATION ==")
+                .WithTitle(guild.Name)
+                .AddField(fb => fb.WithName("ID").WithValue(guild.Id.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Owner").WithValue(ownername.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Created at").WithValue($"{ createdAt:dd/MM/yyyy HH:mm:ss} UTC").WithIsInline(true))
+                .AddField(fb => fb.WithName("Members").WithValue(guild.MemberCount.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Text channels").WithValue(textchn.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Voice channels").WithValue(voicechn.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Region").WithValue(guild.VoiceRegionId.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Roles").WithValue((guild.Roles.Count - 1).ToString()).WithIsInline(true))
+                .WithColor(9896005);
+            if (Uri.IsWellFormedUriString(guild.IconUrl, UriKind.Absolute))
+                embed.WithThumbnailUrl(guild.IconUrl);
+            if (features != "-")
+            {
+                embed.AddField(fb =>
+                    fb.WithName("Features")
+                    .WithValue(features).WithIsInline(true));
+            }
+
+            if (guild.Emotes.Any())
+            {
+                embed.AddField(fb =>
+                    fb.WithName("Custom emojis " + $"({guild.Emotes.Count})")
+                    .WithValue(string.Join(" ", guild.Emotes
+                        .Take(20)
+                        .Select(e => $"{e.ToString()}"))));
+            }
+            if (features == "INVITE_SPLASH")
+            {
+                embed.AddField(fb =>
+                    fb.WithName("Splash")
+                    .WithValue("").WithIsInline(true));
+                embed.WithUrl(guild.SplashUrl);
+            }
+            await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }
+        
         [Command("roleinfo"), Summary("Returns info about a role."),Alias("RI","role")]
         [RequireContext(ContextType.Guild)]
         public async Task Role([Remainder, Summary("The role to return information about.")] string roleName)
@@ -338,12 +366,12 @@ namespace Bot.Modules
                     x.Value = $"{perms}";
                     x.IsInline = false;
                 });
-
+               
                 await channel.SendMessageAsync("", false, embed.Build());
             }
         }
         [Command("mock"), Summary("rEpEaTs yOuR tExT lIkE tHiS.")]
-        public async Task Mock([Remainder] string input = "")
+        public async Task Mock([Summary("tHe tExT yOu wAnT tO mOcK")][Remainder] string input = "")
         {
             string result = "";
             if (input == "")
@@ -369,7 +397,7 @@ namespace Bot.Modules
         [Command("userinfo")]
         [Cooldown(3)]
         [Summary("Gets information about the specified user")]
-        public async Task UserInfo([Remainder] IGuildUser user = null)
+        public async Task UserInfo([Summary("OPTIONAL: User to check their info")][Remainder] IGuildUser user = null)
         {
             user = user ?? (SocketGuildUser)Context.User;
             EmbedBuilder emb = new EmbedBuilder();
@@ -490,9 +518,9 @@ namespace Bot.Modules
             else if (user.Discriminator == "0070")
                 emb.Description += $" {nitro}";
 
-            emb.AddField("Created account at", $"{user.CreatedAt.ToString()} (dd/mm/yyyy)");
+            emb.AddField("Created account at", $"{user.CreatedAt.DateTime.ToString()} (By UTC - dd/mm/yyyy)");
             
-            emb.AddField("Joined server at", ((DateTimeOffset)user.JoinedAt).ToString());
+            emb.AddField("Joined server at", user.JoinedAt.Value.DateTime.ToString());
 
             // Display the list of all of user's roles
             if (string.IsNullOrEmpty(userRoles) == false)
@@ -615,7 +643,7 @@ namespace Bot.Modules
         [Command("report"), Alias("bug", "bugreport", "reportbug")]
         [Cooldown(10)]
         [Summary("Send a report about a bug to the bot owner. Spam/troll is not tolerated.")]
-        public async Task BugReport([Remainder] string report)
+        public async Task BugReport([Summary("Information about the bug you want to report")][Remainder] string report)
         {
             var channel = Context.Client.GetChannel(588015155015843903) as SocketTextChannel;
             var application = await Context.Client.GetApplicationInfoAsync();

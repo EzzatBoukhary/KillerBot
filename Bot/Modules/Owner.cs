@@ -58,7 +58,28 @@ namespace Bot.Modules
 
             }
         }
-
+        [Command("getinvite")]
+        [RequireOwner]
+        [Remarks("Provides invite link to a given server by its id")]
+        public async Task Join(ulong id)
+        {
+            var guild = Context.Client.GetGuild(id);
+            if (guild == null)
+            {
+                await ReplyAsync("No server found");
+                return;
+            }
+            try
+            {
+                var invites = await guild.DefaultChannel.CreateInviteAsync(86400, null, false, true);
+                var invite = invites.Url.ToString();
+                await ReplyAsync(invite);
+            }
+            catch
+            {
+                await ReplyAsync("I don't have enough permissions to create that invite link");
+            }
+        }
         [Command("setgame"), Alias("ChangeGame", "SetGame")]
         [Remarks("Change what the bot is currently playing.")]
         [RequireOwner]
@@ -68,7 +89,7 @@ namespace Bot.Modules
             await ReplyAsync($"Changed game to `{gamename}`");
         }
         [Command("ForceLeave")]
-        [Remarks("Usage: k!prefix forceleave {serverID}")]
+        [Remarks("Usage: k!prefix forceleave {serverID} {message}")]
         [RequireOwner]
         public async Task ForceLeaveAsync(ulong ServerId, [Remainder] string msg)
         {
@@ -117,6 +138,38 @@ namespace Bot.Modules
                 Environment.Exit(0);
                
             });
+        }
+        [Command("blacklist")]
+        [RequireOwner]
+        public async Task Blacklist(ulong id)
+        {
+            var UserToBlacklist = _globalUserAccounts.GetById(id);
+            if (UserToBlacklist.Blacklisted == true)
+            {
+                throw new ArgumentException("User is already blacklisted");
+            }
+            else
+            {
+                UserToBlacklist.Blacklisted = true;
+                _globalUserAccounts.SaveAccounts(id);
+                await ReplyAsync($"{id} has been blacklisted from using KillerBot commands.");
+            }
+        }
+        [Command("whitelist"), Alias("unblacklist")]
+        [RequireOwner]
+        public async Task UnBlacklist(ulong id)
+        {
+            var UserToBlacklist = _globalUserAccounts.GetById(id);
+            if (UserToBlacklist.Blacklisted == true)
+            {
+                UserToBlacklist.Blacklisted = false;
+                _globalUserAccounts.SaveAccounts(id);
+                await ReplyAsync($"{id} has been unblacklisted from using KillerBot commands.");
+            }
+            else
+            {
+                await ReplyAsync($"User is not blacklisted.");
+            }
         }
         [Command("logs")]
         [Summary("Show KillerBot logs")]

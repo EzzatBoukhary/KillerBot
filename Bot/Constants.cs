@@ -24,7 +24,7 @@ namespace Bot
             "If you don't know what to add, you can add some of my messages.",
             "A lot of commands have shorter and easier to use aliases!"
         }.AsReadOnly();
-       
+     
         // Exception messages
         public static readonly string ExDailyTooSoon = "Cannot give daily sooner than 24 hours after the last one.";
         public static readonly string ExRobberyTooSoon = "You can only rob once within 24 hours.";

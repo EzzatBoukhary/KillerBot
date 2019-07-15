@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
-    <PackageReference Include="Discord.Addons.Paginator" Version="2.3.0" />
     <PackageReference Include="Discord.Addons.PassiveInteractive" Version="2.0.3" />
     <PackageReference Include="Discord.Net" Version="2.0.1" />
     <PackageReference Include="Discord.Net.Commands" Version="2.0.1" />
@@ -18,8 +17,10 @@
     <PackageReference Include="Discord.Net.WebSocket" Version="2.0.1" />
     <PackageReference Include="Gommon" Version="1.1.0" />
     <PackageReference Include="Humanizer" Version="2.6.2" />
+    <PackageReference Include="ImageProcessor" Version="2.7.0.100" />
     <PackageReference Include="Ofl.Google.Maps" Version="3.0.22" />
     <PackageReference Include="Qmmands" Version="2.3.0" />
+    <PackageReference Include="System.Drawing.Common" Version="4.6.0-preview6.19303.8" />
     <PackageReference Include="Urban.NET" Version="1.0.0" />
   </ItemGroup>
 

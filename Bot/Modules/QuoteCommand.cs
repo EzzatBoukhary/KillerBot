@@ -27,7 +27,7 @@ namespace Bot.Modules
 
         [Command("Quote"), Priority(0)]
         [Summary("Quotes a user from a given message's ID.")]
-        [Remarks("Usage: |prefix|quote {messageID}")]
+        [Remarks("Usage: k!quote {messageID}")]
         public async Task QuoteAsync(ulong messageId)
         {
             var m = await Context.Channel.GetMessageAsync(messageId);
@@ -45,11 +45,17 @@ namespace Bot.Modules
             var shouldHaveImage = m.Attachments.Count > 0;
 
             var embed2 = new EmbedBuilder();
-            IGuildUser author = Context.Guild.Users.Where((user) => user.Id == m.Author.Id).First();
-            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(author);
+            if (Context.Guild.GetUser(m.Author.Id) != null)
+            {
+                IGuildUser author = Context.Guild.Users.Where((user) => user.Id == m.Author.Id).First();
+                IRole highestRole = DiscordHelpers.GetUsersHigherstRole(author);
+                if (highestRole != null)
+                    embed2.Color = highestRole.Color;
+            }
+            else
+            {
 
-            if (highestRole != null)
-                embed2.Color = highestRole.Color;
+            }
 
             embed2.WithDescription($"{m.Content}\n\n[Jump!]({m.GetJumpUrl()})")
                 .WithAuthor($"{m.Author.Username}#{m.Author.Discriminator}", m.Author.GetAvatarUrl())
@@ -83,12 +89,18 @@ namespace Bot.Modules
             var shouldHaveImage = m.Attachments.Count > 0;
 
             var embed2 = new EmbedBuilder();
-            IGuildUser author = Context.Guild.Users.Where((user) => user.Id == m.Author.Id).First();
-            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(author);
+            if (Context.Guild.GetUser(m.Author.Id) != null)
+            {
+                IGuildUser author = Context.Guild.Users.Where((user) => user.Id == m.Author.Id).First();
+                IRole highestRole = DiscordHelpers.GetUsersHigherstRole(author);
 
-            if (highestRole != null)
-                embed2.Color = highestRole.Color;  
+                if (highestRole != null)
+                    embed2.Color = highestRole.Color;
+            }
+            else
+            {
 
+            }
             embed2.WithDescription($"{m.Content}\n\n[Jump!]({m.GetJumpUrl()})")
              .WithAuthor($"{m.Author.Username}#{m.Author.Discriminator}", m.Author.GetAvatarUrl())
                 .WithTimestamp(m.Timestamp)
@@ -121,12 +133,18 @@ namespace Bot.Modules
             var shouldHaveImage = m.Attachments.Count > 0;
             var gld = Context.Guild as SocketGuild;
             var embed2 = new EmbedBuilder();
-            IGuildUser author = Context.Guild.Users.Where((user) => user.Id == m.Author.Id).First();
-            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(author);
+            if (Context.Guild.GetUser(m.Author.Id) != null)
+            {
+                IGuildUser author = Context.Guild.Users.Where((user) => user.Id == m.Author.Id).First();
+                IRole highestRole = DiscordHelpers.GetUsersHigherstRole(author);
 
-            if (highestRole != null)
-                embed2.Color = highestRole.Color;
+                if (highestRole != null)
+                    embed2.Color = highestRole.Color;
+            }
+            else
+            {
 
+            }
             embed2.WithDescription($"{m.Content}\n\n[Jump!]({m.GetJumpUrl()})")
                .WithAuthor($"{m.Author.Username}#{m.Author.Discriminator}", m.Author.GetAvatarUrl())
                 .WithTimestamp(m.Timestamp)

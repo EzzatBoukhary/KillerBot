@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Discord;
+using Discord.WebSocket;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -25,6 +27,10 @@ namespace Bot.Entities
 
         public DateTime LastMessage { get; set; } = DateTime.UtcNow;
 
+        public bool Blacklisted { get; set; }
+
+        public List<ItemEntry> Bought_Items { get; set; }
+
         public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
 
         public List<ReminderEntry> Reminders { get; internal set; } = new List<ReminderEntry>();
@@ -40,10 +46,10 @@ namespace Bot.Entities
             {
                 _commandHistory.RemoveAt(0); //remove the first element, ensures the list always got 5 elements maximum
             }
-            
+
             CommandHistory = new ReadOnlyCollection<CommandInformation>(_commandHistory);
         }
-        
+
         public string TimeZone { get; set; } // Please note, TimeZone ID works for LINUX, but for windows we need TimeZone NAME
         /* Add more values to store */
 
@@ -71,8 +77,17 @@ namespace Bot.Entities
             return unchecked((int)Id);
         }
     }
-    
-    public struct ReminderEntry
+
+    public struct ItemEntry
+    {
+        public string Name;
+
+        public ItemEntry(string name)
+        {
+            Name = name;
+        }
+    }
+        public struct ReminderEntry
     {
         public DateTime DueDate;
         public string Description;
@@ -82,5 +97,6 @@ namespace Bot.Entities
             DueDate = dueDate;
             Description = description;
         }
+        }
     }
-}
+

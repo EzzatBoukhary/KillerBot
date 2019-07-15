@@ -27,7 +27,7 @@ namespace Bot.Modules
         }
 
         [Command("Create"), Remarks("Create a new named blog")]
-        public async Task Create(string name)
+        public async Task Create([Summary("The name of the blog you want to create")]string name)
         {
 
             var blogs = jsonDataStorage.RestoreObject<List<BlogItem>>(blogFile) ?? new List<BlogItem>();
@@ -57,7 +57,8 @@ namespace Bot.Modules
         }
 
         [Command("Post"), Remarks("Publish a new post to one of your named blogs")]
-        public async Task Post(string name, [Remainder]string post)
+        public async Task Post([Summary("Name of your blog that you want to post in")]string name, 
+           [Summary("The text you want to post in your blog")] [Remainder]string post)
         {
 
             var blogs = jsonDataStorage.RestoreObject<List<BlogItem>>(blogFile);
@@ -105,7 +106,7 @@ namespace Bot.Modules
         }
 
         [Command("Subscribe"), Remarks("Subscribe to a named blog to receive a message when a new post gets published")]
-        public async Task Subscribe(string name)
+        public async Task Subscribe([Summary("The name of the blog you want to subscribe to")]string name)
         {
 
             var embed = blogHandler.SubscribeToBlog(Context.User.Id, name);
@@ -114,7 +115,7 @@ namespace Bot.Modules
         }
 
         [Command("Unsubscribe"), Remarks("Remove a subscription from a named blog")]
-        public async Task UnSubscribe(string name)
+        public async Task UnSubscribe([Summary("The name of the blog you want to unsubscribe from")]string name)
         {
 
             var embed = blogHandler.UnSubscribeToBlog(Context.User.Id, name);

@@ -23,7 +23,7 @@ namespace Bot.Modules.Account
 
         [Command("info")]
         [Summary("Shows your or someone's account info if mentioned.")]
-        public async Task AccountInformation(SocketGuildUser user = null)
+        public async Task AccountInformation([Summary("The user you want to check. (if not mentioned it'll check yours")]SocketGuildUser user = null)
         {
             user = user ?? (SocketGuildUser)Context.User;
 

@@ -27,6 +27,8 @@ namespace Bot.Entities
 
         public List<WarnEntry> Warns { get; set; } = new List<WarnEntry>();
 
+       // public List<UsersEntered> Russian_Roulette { get; set; } = new List<UsersEntered>();
+
         //public Modules.ServerBots.GuildData BotData { get; private set; }
 
         public RoleByPhraseSettings RoleByPhraseSettings { get; set; } = new RoleByPhraseSettings();
@@ -56,6 +58,8 @@ namespace Bot.Entities
                 Tags = settings.Tags.Value;
             if (settings.Warns.IsSpecified)
                 Warns = settings.Warns.Value;
+          //  if (settings.Russian_Roulette.IsSpecified)
+          //      Warns = settings.Russian_Roulette.Value;
             //if (settings.BotData.IsSpecified)
             //    BotData = settings.BotData.Value;
             if (settings.RoleByPhraseSettings.IsSpecified)
@@ -106,6 +110,9 @@ namespace Bot.Entities
         public Optional<Dictionary<string, string>> Tags { get; private set; }
         public GuildAccountSettings SetTags(Dictionary<string, string> tags) { Tags = tags; return this; }
 
+        //public Optional<List<UsersEntered>> Russian_Roulette { get; private set; }
+       // public GuildAccountSettings SetRR(List<UsersEntered> rrgame) { Russian_Roulette = rrgame; return this; }
+
         public Optional<List<WarnEntry>> Warns { get; private set; }
         public GuildAccountSettings SetWarns(List<WarnEntry> warns) { Warns = warns; return this; }
         //public Optional<GuildData> BotData { get; private set; }
@@ -129,4 +136,16 @@ namespace Bot.Entities
             Reason = reason;
         }
     }
+  /*  public struct UsersEntered
+    {
+        public ulong _id { get; set; }
+        public string name { get; set; }
+        public uint Bet;
+        public UsersEntered(IUser user, uint bet)
+        {
+            _id = user.Id;
+            name = user.Username;
+            Bet = bet;
+        }
+    }*/
 }

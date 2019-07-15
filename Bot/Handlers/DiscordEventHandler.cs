@@ -170,7 +170,7 @@ namespace Bot.Handlers
             if (latencyAfter > 20000)
             {
                 _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently suffering from a crash attempt! ({latencyAfter} ms)");
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently suffering from a crash attempt! :no_entry: :rotating_light: ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently suffering from a possible crash attempt! :no_entry: :rotating_light: ({latencyAfter} ms)");
 
             }
             else if (latencyAfter > 5000)
@@ -199,7 +199,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.5.1 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.6.0 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
 

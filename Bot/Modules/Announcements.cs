@@ -18,16 +18,16 @@ namespace Bot.Modules
             _globalGuildAccounts = globalGuildAccounts;
         }
 
-        [Command("SetChannel"), Alias("Set"), RequireUserPermission(GuildPermission.Administrator)]
+        [Command("SetChannel"), Alias("Set", "toggle on", "on"), RequireUserPermission(GuildPermission.Administrator)]
         [Remarks("Sets the channel where to post announcements")]
-        public async Task SetAnnouncementChannel(ITextChannel channel)
+        public async Task SetAnnouncementChannel([Summary("The #channel you want the announcements to be sent in.")]ITextChannel channel)
         {
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             guildAcc.Modify(g => g.SetAnnouncementChannelId(channel.Id), _globalGuildAccounts);
             await ReplyAsync("The Announcement-Channel has been set to " + channel.Mention);
         }
 
-        [Command("UnsetChannel"), Alias("Unset", "Off"), RequireUserPermission(GuildPermission.Administrator)]
+        [Command("UnsetChannel"), Alias("Unset", "Off", "toggle off"), RequireUserPermission(GuildPermission.Administrator)]
         [Remarks("Turns posting announcements to a channel off")]
         public async Task UnsetAnnouncementChannel()
         {
@@ -66,9 +66,9 @@ namespace Bot.Modules
             await ReplyAsync(response);
         }
 
-        [Command("remove"), Remarks("Removes a Welcome Message from the ones availabe")]
+        [Command("remove"), Alias("delete"), Remarks("Removes a Welcome Message from the ones availabe")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task RemoveWelcomeMessage(int messageIndex)
+        public async Task RemoveWelcomeMessage([Summary("The index of the message you want to delete (index can be found in `k!welcome list`")]int messageIndex)
         {
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             var messages = guildAcc.WelcomeMessages.ToList();
@@ -131,9 +131,9 @@ namespace Bot.Modules
             await ReplyAsync(response);
         }
 
-        [Command("remove"), Remarks("Removes a Leave Message from the ones available")]
+        [Command("remove"),Alias("delete"), Remarks("Removes a Leave Message from the ones available")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task RemoveLeaveMessage(int messageIndex)
+        public async Task RemoveLeaveMessage([Summary("The index of the message you want to delete (index can be found in `k!leave list`")]int messageIndex)
         {
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             var messages = guildAcc.LeaveMessages.ToList();

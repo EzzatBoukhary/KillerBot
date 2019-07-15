@@ -43,6 +43,8 @@ namespace Bot.Handlers
             if (!(s is SocketUserMessage msg)) { return; }
             if (msg.Channel is SocketDMChannel) { return; }
             if (msg.Author.IsBot) { return; }
+            var user = _globalUserAccounts.GetById(msg.Author.Id);
+            if (user.Blacklisted == true) { return; }
             var context = new MiunieCommandContext(_client, msg, _globalUserAccounts);
 
             await _roleByPhraseProvider.EvaluateMessage(

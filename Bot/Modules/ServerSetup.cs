@@ -68,7 +68,7 @@ namespace Bot.Modules
                     _globalGuildAccounts.SaveAccounts(Context.Guild.Id);
 
 
-                        await ReplyAsync("No more logging any activity now");
+                        await ReplyAsync("Logging was turned off.");
 
                     return;
                 case 0:
@@ -84,19 +84,19 @@ namespace Bot.Modules
                                 _globalGuildAccounts.SaveAccounts(Context.Guild.Id);
 
                                 await ReplyAsync(
-                                    $"Now we log everything to {tryChannel.Mention}, you may rename and move it.");
+                                    $"Created a new logging channel {tryChannel.Mention}, you may rename and move it.");
                             }
                         }
                         catch
                         {
 
-                            var channel = Context.Guild.CreateTextChannelAsync("OctoLogs");
+                            var channel = Context.Guild.CreateTextChannelAsync("KBlogs");
                             guild.LogChannelId = channel.Result.Id;
                             guild.ServerActivityLog = 1;
                             _globalGuildAccounts.SaveAccounts(Context.Guild.Id);
 
                             await ReplyAsync(
-                                $"Now we log everything to {channel.Result.Mention}, you may rename and move it.");
+                                $"Created a new logging channel {channel.Result.Mention}, you may rename and move it.");
                         }
                     }
                     catch
@@ -109,7 +109,7 @@ namespace Bot.Modules
 
 
 
-        [Command("SetRoleOnJoin")]
+         [Command("SetRoleOnJoin")]
         [Alias("RoleOnJoin")]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task SetRoleOnJoin([Remainder] SocketRole role)
@@ -144,6 +144,6 @@ namespace Bot.Modules
             {
                 await ReplyAsync("test");
             }
-        }
+        } 
     }
 } */
