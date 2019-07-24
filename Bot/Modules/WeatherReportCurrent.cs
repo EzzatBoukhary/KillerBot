@@ -148,12 +148,20 @@ namespace Bot
         }
         [Command("weather")]
        // [Cooldown(8)]
-        [Ratelimit(2, 1, Measure.Minutes, RatelimitFlags.None)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Shows weather info about a certain city.")]
         public async Task WeatherAsync([Remainder] string city = null)
         {
+            if (city == null)
+                throw new ArgumentException("Please mention a city to check its weather.");
             WeatherDataCurrent.WeatherReportCurrent weather;
             weather = JsonConvert.DeserializeObject<WeatherDataCurrent.WeatherReportCurrent>(GetWeatherAsync(city).Result);
+            if (weather.Cod == 404)
+            {
+                    await ReplyAsync("Sorry, but the city mentioned wasn't found.");
+                    return;
+
+            }
             //Loading classes
             var Country = weather.Sys.Country;
             double longi = weather.Coord.Lon;
@@ -170,8 +178,12 @@ namespace Bot
             var Icon = weather.Weather[0].Icon;
             var Report = weather.Weather[0].Description;
             var City = weather.Name;
-          
+
             //Done
+            if (Report == null)
+            {
+                Report = "No report.";
+            }
             var embed = new EmbedBuilder();
             embed.Title = ($"Weather Report for {City}, {Country}");
             embed.ThumbnailUrl = "http://openweathermap.org/img/w/" + weather.Weather[0].Icon + ".png\n";

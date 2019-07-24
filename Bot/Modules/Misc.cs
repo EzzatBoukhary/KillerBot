@@ -142,7 +142,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.6.0`");
+            builder.AddField("Version", $"The current version of the bot is: `1.6.1`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]
@@ -307,15 +307,19 @@ namespace Bot.Modules
          [Command("ud"),Alias("urbandictionary"), Summary("Gives you the definition of your word on Urban Dictionary.")]
         [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.None)]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
-          public async Task UrbanDictionary([Remainder] string word)
+          public async Task UrbanDictionary([Remainder] string word = null)
           {
+            if (word == null)
+                throw new ArgumentException("Please type a word to search");
               UrbanService client = new UrbanService();
               var data = await client.Data(word);
               var pages = new List<string>();
               var embed = new EmbedBuilder();
-
-           // if (data.List == null)
-            //    throw new ArgumentException("No results found.");
+            if (data.List.Length == 0)
+            {
+                await ReplyAsync($"I'm sorry but i didn't find `{word}` in the urban dictionary...");
+                return;
+            }
             embed.Color = new Color(200, 200, 0);
               foreach (var entry in data.List)
               {
@@ -325,6 +329,12 @@ namespace Bot.Modules
                 result += def.Replace("]", "");
                 result += $"\n\nExample: {entry.Example}";
                 result += $"\n\n👍{entry.ThumbsUp}\t👎{entry.ThumbsDown}";
+                if (result.Length >= 2048)
+                {
+                    var newresult = result.Take(2047).ToString();
+                    embed.WithDescription(newresult);
+                }
+                else
                   embed.WithDescription(result);
               }
               

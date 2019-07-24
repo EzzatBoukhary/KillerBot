@@ -58,6 +58,7 @@ namespace Bot.Handlers
                || msg.HasMentionPrefix(_client.CurrentUser, ref argPos)
                || CheckPrefix(ref argPos, context))
             {
+                
                 var cmdSearchResult = _cmdService.Search(context, argPos);
                 if (!cmdSearchResult.IsSuccess) { return; }
                 
@@ -69,7 +70,28 @@ namespace Bot.Handlers
                 executionTask.ContinueWith(task =>
                 {
                     if (task.Result.IsSuccess || task.Result.Error == CommandError.UnknownCommand) return;
-                    const string errTemplate = "{0}, Error: {1}.";
+                    
+                    if (task.Result.IsSuccess || task.Result.Error == CommandError.BadArgCount || task.Result.Error == CommandError.ParseFailed)
+                    {
+                        EmbedBuilder errormsg = new EmbedBuilder();
+                        errormsg.WithColor(Color.Red);
+                        errormsg.WithCurrentTimestamp();
+                        errormsg.WithTitle("Bad Usage:");
+                        errormsg.WithDescription($"{task.Result.ErrorReason} \n \n**Please do `k!help {cmdSearchResult.Text}`**");
+                        context.Channel.SendMessageAsync("", false, errormsg.Build());
+                        return;
+                    }
+                    else if (task.Result.IsSuccess || task.Result.ErrorReason.Contains("Object reference not set to an instance of an object"))
+                    {
+                        EmbedBuilder errormsg = new EmbedBuilder();
+                        errormsg.WithColor(Color.Red);
+                        errormsg.WithCurrentTimestamp();
+                        errormsg.WithTitle("Object Reference:");
+                        errormsg.WithDescription($"{task.Result.ErrorReason} \n \n**Please report this to the bot owner if you think this wasn't supposed to happen by doing `k!report [bug]`**");
+                        context.Channel.SendMessageAsync("", false, errormsg.Build());
+                        return;
+                    }
+                        const string errTemplate = "{0}, Error: {1}.";
                     var errMessage = string.Format(errTemplate, context.User.Mention, task.Result.ErrorReason);
                     context.Channel.SendMessageAsync(errMessage);
                 });

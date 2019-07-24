@@ -123,12 +123,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.6.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> Unbanning with username or username#discriminator if you don't want to use ID. \n \n<:KBdot:580470791251034123> `k!deposit all` and `k!withdraw all` to make it easier if someone wants to deposit or withdraw all their coins. \n \n<:KBdot:580470791251034123> Added summaries to most commands' parameters to make stuff clearer. \n \n<:KBdot:580470791251034123> New aliases for `k!changenick` and `k!removewarn` commands. \n \n<:KBdot:580470791251034123> Bot owner: `k!blacklist`, `k!whitelist` and `k!getinvite` commands. \n \n<:KBdot:580470791251034123> Image-related commands: \n`k!resize`, `k!quality`, `k!fliph`, `k!flipv`, `k!rotate`, `k!detectedges`, `k!deepfry`, `k!minecraft`, `k!minecraftach` \n \n**[Removed]** \n \n<:KBdot:580470791251034123> `k!trivia` command was removed until further notice due to unknown reasons of not working. Sorry for any inconvenience! \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> `k!ban` : Made the 'prune days' parameter not required and not mentioning the number wouldn't delete any message from the banned user. \n \n<:KBdot:580470791251034123> Fixed `k!purge @user <amount>` not working as expected. \n \n<:KBdot:580470791251034123> Made the fiels in `k!warnings` not inlined due to text collision. \n \n<:KBdot:580470791251034123> Revamped `k!serverinfo` command. \n \n<:KBdot:580470791251034123> Small changes to `k!kick` and `k!ban` commands' replies. \n \n<:KBdot:580470791251034123> Fixed the date format in `k!userinfo` which didn't match what was written. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Patch ==** `v1.6.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Changed the onboarding message when the bot joins a new server! \n \n<:KBdot:580470791251034123> Changed some error reply messages to an embed with a help note. \n \n<:KBdot:580470791251034123> Made changes to the replies in `k!weather` command if no city was mentioned or if the city wasn't found and changed the command's ratelimit from 2 to 4 times per minute. \n \n<:KBdot:580470791251034123> Made `k!avatar` command take a parameter with spaces. \n \n<:KBdot:580470791251034123> Urban Dictionary:  \nFixed result not sendinng due to character limit exceeding (by only taking the amount of characters we can take) \nAlso changed the replies if no word was provided or the word wasn't found (which used to send an empty embed) \n \n<:KBdot:580470791251034123> Improved the image-related commands by making: \n-Better reply if no link was provided. \n-Made all parameters except the URL optional to make stuff less confusing \n \n<:KBdot:580470791251034123> Made `k!prefix` send the available prefixes just like `k!prefix list`` would. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: July 14th - 2019 7:12 PM GMT");
+                x.WithText("Last updated: July 24th - 2019 12:40 AM GMT");
 
 
 
@@ -193,7 +193,7 @@ namespace Bot.Modules
     [Command("Avatar")]
         [Summary("Shows the mentioned user's avatar, or yours if no one is mentioned.")]
         [Remarks("Usage: `k!avatar [@user]`")]
-        public async Task AvatarAsync(SocketGuildUser user = null)
+        public async Task AvatarAsync([Remainder] SocketGuildUser user = null)
         {
             var u = user ?? Context.User;
             var embed = new EmbedBuilder();
