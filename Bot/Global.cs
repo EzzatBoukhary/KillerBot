@@ -38,7 +38,7 @@ namespace Bot
         private static string ReplaceGuildUserPlaceholderStrings(string messageString, IGuildUser user)
         {
             if (user == null) return messageString;
-            return messageString.Replace("<username>", user.Nickname ?? user.Username)
+            return messageString.Replace("<username>", user.Username)
                 .Replace("<userdiscriminator>", user.Discriminator)
                 .Replace("<usermention>", user.Mention)
                 .Replace("<guildname>", user.Guild.Name);

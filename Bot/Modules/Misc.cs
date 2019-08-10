@@ -142,7 +142,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.6.1`");
+            builder.AddField("Version", $"The current version of the bot is: `1.7.0`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]
@@ -472,7 +472,7 @@ namespace Bot.Modules
                 embed.ThumbnailUrl = application.IconUrl;  /*pulls bot Avatar. Not needed can be removed*/
                 embed.WithColor(new Color(0x4900ff));  /*Hexacode colours*/
                 embed.WithTitle("KillerBot Information");
-                embed.WithDescription("KillerBot is a multi-purpose bot with unique moderation, fun and utility commands that'll change how servers work to the better. \n \n**About my dev** \nI was made with :heart: by Panda#8822 with the help of some testers and support (<@238353818125991936> and <@333988268439764994>). I work on this bot as a hobby and i love to bring joy to my users by adding the features they want. \n \n**When was i created** \nKillerBot started back in 2016 and got hosted for a while until the hosting was stopped and the bot died in 2017. I then decided to bring it back and recode it completely in Discord.Net 2.0.1 and so i did, bringing KillerBot back at 03/03/2019 in a beta state until 05/23/2019 where it was officially released. And we're still going! <:Killerbot:587360915284819998> \n \n**Links** \n[Invite me!](https://discordapp.com/oauth2/authorize?client_id=263753726324375572&scope=bot&permissions=406874134) \n[Discord Support Server](https://discord.gg/DNqAShq) \n[Apply for bot support!](https://docs.google.com/forms/d/e/1FAIpQLSeyl-pHKe9hHic1UcpKaG4lzaMCt2a6Mgaj0PPPnurSgptrIw/viewform) \n------------- \n[Discord Bot list Website](https://discordbotlist.com/bots/263753726324375572) \n[Discord Bots Website](https://discordbots.org/bot/263753726324375572)");
+                embed.WithDescription("KillerBot is a multi-purpose bot with unique moderation, fun and utility commands that'll change how servers work to the better. \n \n**About my dev** \nI was made with :heart: by Panda#8822 with the help of some testers and support (<@238353818125991936> and <@333988268439764994>). I work on this bot as a hobby and i love to bring joy to my users by adding the features they want. \n \n**When was i created** \nKillerBot started back in 2016 and got hosted for a while until the hosting was stopped and the bot died in 2017. I then decided to bring it back and recode it completely in Discord.Net 2.0.1 and so i did, bringing KillerBot back at 03/03/2019 in a beta state until 05/23/2019 where it was officially released. And we're still going! <:Killerbot:587360915284819998> \n \n**Links** \n[Invite me!](https://discordapp.com/oauth2/authorize?client_id=263753726324375572&scope=bot&permissions=406874134) \n[Discord Support Server](https://discord.gg/DNqAShq) \n[Apply for bot support!](https://docs.google.com/forms/d/e/1FAIpQLSeyl-pHKe9hHic1UcpKaG4lzaMCt2a6Mgaj0PPPnurSgptrIw/viewform) \n------------- \n**Support the bot by upvoting it on these websites!** \n[Discord Bot List Website](https://discordbotlist.com/bots/263753726324375572) \n[Discordbots.org Website](https://discordbots.org/bot/263753726324375572) \n[Discord.bots.gg Website](https://discord.bots.gg/bots/263753726324375572)");
                 embed.WithCurrentTimestamp();
 
                 await ReplyAsync("", false, embed.Build());

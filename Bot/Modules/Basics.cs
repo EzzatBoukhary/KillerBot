@@ -22,7 +22,7 @@ namespace Bot.Modules
         {
             await ReplyAsync("Hey!");
         }
-        [Command("invite"), Alias("inv"),Summary("Sends an invite link for the bot.")]
+        [Command("invite"), Alias("inv", "add", "addbot", "link"),Summary("Sends an invite link for the bot.")]
         [Cooldown(5)]
         public async Task InviteBot()
         {
@@ -37,7 +37,7 @@ namespace Bot.Modules
         }
 
         [Command("Feedback"), Alias("Fb")]
-        [Cooldown(30)]
+        [Cooldown(25)]
         [Summary("Submit feedback directly to KillerBot HQ.")]
         [Remarks("Usage: k!feedback {feedback}")]
         public async Task FeedbackAsync([Summary("Your feedback you want to send about KillerBot")][Remainder] string feedback = null)
@@ -49,19 +49,26 @@ namespace Bot.Modules
                 Color = (Color.Green)
             };
             embed.WithDescription($"Feedback sent! Message: ```{feedback}```");
-                await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
             var embed2 = new EmbedBuilder()
             {
                 Color = (Color.LightGrey)
             };
-            embed2.WithDescription($"```{feedback}```")
-            .WithFooter(new EmbedFooterBuilder().WithText($"Feedback from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {Context.Guild.Name}"))
+            if (feedback.Contains("discord.gg/"))
+            {
+                embed2.WithDescription($"[Message contained a server invite link] \n \n || {feedback} ||");
+            }
+            else
+            {
+                embed2.WithDescription($"```{feedback}```");
+                    }
+            embed2.WithFooter(new EmbedFooterBuilder().WithText($"Feedback from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {Context.Guild.Name}"))
             .WithAuthor($"{Context.User}", Context.User.GetAvatarUrl());
 
             var channel = Context.Client.GetChannel(550073251641032717) as SocketTextChannel;
             if (channel is null)
             {
-                await ReplyAsync("Couldn't find channel");
+                await ReplyAsync("Error 404: Couldn't find channel. Please do `k!report k!feedback results in error 404.`");
                 return;
             }
             else
@@ -115,7 +122,7 @@ namespace Bot.Modules
         }
 
         [Command("changelog")]
-        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Change log for the current version of the bot")]
         public async Task changes()
         {
@@ -123,12 +130,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.6.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Changed the onboarding message when the bot joins a new server! \n \n<:KBdot:580470791251034123> Changed some error reply messages to an embed with a help note. \n \n<:KBdot:580470791251034123> Made changes to the replies in `k!weather` command if no city was mentioned or if the city wasn't found and changed the command's ratelimit from 2 to 4 times per minute. \n \n<:KBdot:580470791251034123> Made `k!avatar` command take a parameter with spaces. \n \n<:KBdot:580470791251034123> Urban Dictionary:  \n-Fixed result not sendinng due to character limit exceeding \n-Changed the replies if no word was provided or the word wasn't found (which used to send an empty embed) \n \n<:KBdot:580470791251034123> Improved the image-related commands by making: \n-Better reply if no link was provided. \n-Made all parameters except the URL optional to make stuff less confusing \n \n<:KBdot:580470791251034123> Made `k!prefix` send the available prefixes just like `k!prefix list` would. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Minor Release ==** `v1.7.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> New command `k!account reset-economy` \n \n<:KBdot:580470791251034123> New aliases for `k!invite` command. \n \n<:KBdot:580470791251034123> Added a user and role hierarchy system to all mute/unmute commands, changed some replies , and added audit logs reason \n \n<:KBdot:580470791251034123> New `k!addrole` and `k!removerole` commands! \nDo `k!help (command name)` for more info! \n \n<:KBdot:580470791251034123> Added 'Verification Level' and 'Explict Content Filter' to `k!serverinfo` command! \n \n<:KBdot:580470791251034123> BOT OWNER COMMAND ONLY: Added `k!owner-serverinfo` \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Changed a bit in the user hierarchy system to allow you to change your own nickname with `k!setnick` command. \n \n<:KBdot:580470791251034123> Fixed a bug in `k!serverinfo` command where the splash image won't appear if the server has more than the invite splash feature. \n \n<:KBdot:580470791251034123> Actually fixed the date format in `k!userinfo` and made the status part show streaming and the activity name if there is any! \n \n<:KBdot:580470791251034123> Made small changes to `k!report`, `k!feedback`, `k!logs`, `k!guildlist`, `k!account mydata` and `k!info` commands \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: July 24th - 2019 12:40 AM GMT");
+                x.WithText("Last updated: August 10th - 2019 8:39 PM GMT");
 
 
 
@@ -148,7 +155,6 @@ namespace Bot.Modules
       "Tails!"
 
        };
-        private ulong channelIDHere;
 
         [Command("flip"), Alias("flipcoin")] 
         [Summary("Flips a coin")]
@@ -236,9 +242,28 @@ namespace Bot.Modules
                 .AddField(fb => fb.WithName("Members").WithValue(guild.MemberCount.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Text channels").WithValue(textchn.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Voice channels").WithValue(voicechn.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Region").WithValue(guild.VoiceRegionId.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Roles").WithValue((guild.Roles.Count - 1).ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Region").WithValue(guild.VoiceRegionId.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Verification Level").WithValue(guild.VerificationLevel.ToString()).WithIsInline(true))
                 .WithColor(9896005);
+            if (guild.ExplicitContentFilter.ToString() == "MembersWithoutRoles")
+            {
+                embed.AddField(fb =>
+                     fb.WithName("Explict Content Filter")
+                     .WithValue("Scans messages from members without roles").WithIsInline(false));
+            }
+            if (guild.ExplicitContentFilter.ToString() == "Disabled")
+            {
+                embed.AddField(fb =>
+                     fb.WithName("Explict Content Filter")
+                     .WithValue("No message scanning").WithIsInline(true));
+            }
+            if (guild.ExplicitContentFilter.ToString() == "AllMembers")
+            {
+                embed.AddField(fb =>
+                     fb.WithName("Explict Content Filter")
+                     .WithValue("Scans messages from all members").WithIsInline(false));
+            }
             if (Uri.IsWellFormedUriString(guild.IconUrl, UriKind.Absolute))
                 embed.WithThumbnailUrl(guild.IconUrl);
             if (features != "-")
@@ -256,10 +281,10 @@ namespace Bot.Modules
                         .Take(20)
                         .Select(e => $"{e.ToString()}"))));
             }
-            if (features == "INVITE_SPLASH")
+            if (features.Contains("INVITE_SPLASH"))
             {
                 embed.AddField(fb =>
-                    fb.WithName("Splash")
+                    fb.WithName("Splash Icon")
                     .WithValue("").WithIsInline(true));
                 embed.WithUrl(guild.SplashUrl);
             }
@@ -532,25 +557,35 @@ namespace Bot.Modules
 
             if (string.IsNullOrEmpty(userPermissions) == false)
                 emb.AddField("Permissions", userPermissions);
-
             string statusemoji = "";
-            if (user.Status == UserStatus.Online)
+
+            if (user.Activity != null && user.Activity.Type.ToString() == "Streaming")
+            {
+                statusemoji = "<:KBStreaming:609828634596868127>";
+            }
+            else if (user.Status == UserStatus.Online)
             {
                 statusemoji = "<:KBOnline:587753462477881468>";
             }
-            if (user.Status == UserStatus.Idle)
+            else if (user.Status == UserStatus.Idle)
             {
                 statusemoji = "<:KBaway:587753408363102239>";
             }
-            if (user.Status == UserStatus.DoNotDisturb)
+            else if (user.Status == UserStatus.DoNotDisturb)
             {
                 statusemoji = "<:KBdnd:587753420543230019>";
             }
-            if (user.Status == UserStatus.Offline)
+            else if (user.Status == UserStatus.Offline)
             {
                 statusemoji = "<:KBOffline:587753447902937109>";
             }
+            
             var status = $"{(user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString())} {statusemoji}";
+            if (user.Activity != null)
+            {
+                status += $"{user.Activity.Type.ToString()} **{user.Activity.Name.ToString()}**";
+            }
+            
             emb.AddField($"Status", status);
 
             string KBTeam = "";
@@ -652,8 +687,15 @@ namespace Bot.Modules
             {
                 Color = (Color.Red)
             };
-
-            embed.Description = $"{report}";
+            if (report.Contains("discord.gg/"))
+            {
+                embed.WithDescription($"[Message contained a server invite link] \n \n || {report} ||");
+            }
+            else
+            {
+                embed.Description = $"{report}";
+            }
+            
             embed.WithFooter(new EmbedFooterBuilder().WithText($"Message from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {Context.Guild.Name}"));
             var reportmsg = channel.SendMessageAsync("", false, embed.Build());
             if (Global.MessagesIdToTrack == null)

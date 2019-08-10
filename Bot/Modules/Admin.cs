@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Runtime.Serialization;
 using Bot.Entities;
 using Bot.Features.GlobalAccounts;
+using Bot.Helpers;
 
 namespace Bot.Modules
 {
@@ -130,33 +131,90 @@ namespace Bot.Modules
             
         }
        
-        /* [Command("AddRole")]
-         [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
+         [Command("AddRole")]
+         [Remarks("Usage: k!addrole {@user/ user's name (NO SPACES)} {@role/ roleName}")]
          [RequireBotPermission(GuildPermission.ManageRoles)]
          [RequireUserPermission(GuildPermission.ManageRoles)]
-         public async Task AddRoleAsync(SocketGuildUser user, [Remainder] SocketRole role)
+         public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
          {
+            var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            if (highestRole == null)
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            if ((role != null) && (highestRole.Position == role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
-             await user.AddRoleAsync(role);
+            if ((role != null) && (highestRole.Position < role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            await user.AddRoleAsync(role);
              await ReplyAsync($"Added **{role}** to {user.Mention}!");
 
-         } 
+         }
 
-         [Command("RemoveRole")]
-         [Remarks("Usage: |prefix|addrole {@user} {roleName}")]
+        [Command("AddRole")]
+        [Remarks("Usage: k!addrole {@role/ rolename (NO SPACES)} {@user/ user's name}")]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy] SocketRole role, [Remainder] SocketGuildUser user)
+        {
+            var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            if (highestRole == null)
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            if ((role != null) && (highestRole.Position == role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+
+            if ((role != null) && (highestRole.Position < role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            await user.AddRoleAsync(role);
+            await ReplyAsync($"Added **{role}** to {user.Mention}!");
+
+        }
+
+        [Command("RemoveRole")]
+         [Remarks("Usage: k!addrole {@user/ user's name (NO SPACES)} {@role/ roleName}")]
          [RequireBotPermission(GuildPermission.ManageRoles)]
          [RequireUserPermission(GuildPermission.ManageRoles)]
          public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
          {
-             await user.RemoveRoleAsync(role);
+            var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            if (highestRole == null)
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            if ((role != null) && (highestRole.Position == role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+
+            if ((role != null) && (highestRole.Position < role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            await user.RemoveRoleAsync(role);
              await ReplyAsync($"Removed **{role}** from {user.Mention}!");
 
-         } */
+         }
+
+        [Command("RemoveRole")]
+        [Remarks("Usage: k!addrole {rolename/@role (NO SPACES)} {@user/ user's name}")]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketRole role, [Remainder] SocketGuildUser user)
+        {
+            var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            if (highestRole == null)
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            if ((role != null) && (highestRole.Position == role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+
+            if ((role != null) && (highestRole.Position < role.Position))
+                throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+            await user.RemoveRoleAsync(role);
+            await ReplyAsync($"Removed **{role}** from {user.Mention}!");
+
+        }
 
         [Command("mute")]
         [Remarks("Mutes A User")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
-        public async Task Mute([NoSelf][RequireBotHigherHirachy]
+        public async Task Mute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy]
         [Summary("The user you want to mute")]SocketGuildUser user = null,
             [Summary("OPTIONAL: The reason behind the mute")][Remainder] string reason = null)
         {
@@ -169,32 +227,46 @@ namespace Bot.Modules
             }
 
             var muteRole = await GetMuteRole(user.Guild);
+            
             if (!user.Roles.Any(r => r.Id == muteRole.Id))
-                await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-            var usr = Context.Guild.GetUser(user.Id);
-
-            // await (usr as IGuildUser).ModifyAsync(x => x.Mute = true);
-            await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
-            var embed = new EmbedBuilder();
-            embed.Color = new Color(206, 47, 47);
-            embed.Title = "=== Muted User ===";
-            embed.Description = $"**Username: ** {user.Username} || {user.Discriminator}\n**Muted by: ** {Context.User}\n**Reason: **{reason}";
-            await ReplyAsync("", false, embed.Build());
-
-            try
             {
-                var embed2 = new EmbedBuilder();
-                embed2.Description = ($"You've been muted from **{Context.Guild.Name}** for **{reason}**.");
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
-                await dmChannel.SendMessageAsync("", false, embed2.Build());
+                var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
+                IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
+                if (exec_role == null)
+                    throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+                if ((muteRole != null) && (exec_role.Position < muteRole.Position))
+                    throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+
+                await user.AddRoleAsync(muteRole, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
+                var usr = Context.Guild.GetUser(user.Id);
+
+                // await (usr as IGuildUser).ModifyAsync(x => x.Mute = true);
+                await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
+                var embed = new EmbedBuilder();
+                embed.Color = new Color(206, 47, 47);
+                embed.Title = "=== Muted User ===";
+                embed.Description = $"**User: ** {user.Username}#{user.Discriminator} || {user.Discriminator} \n**Muted by: ** {Context.User}\n**Reason: **{reason}";
+                await ReplyAsync("", false, embed.Build());
+
+                try
+                {
+                    var embed2 = new EmbedBuilder();
+                    embed2.Description = ($"You've been muted from **{Context.Guild.Name}** for **{reason}**.");
+                    var dmChannel = await user.GetOrCreateDMChannelAsync();
+                    await dmChannel.SendMessageAsync("", false, embed2.Build());
+                }
+                catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
             }
-            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
+            else
+            {
+                await ReplyAsync($"**{user.Username}#{user.Discriminator}** is already muted.");
+            }
         }
         //=====mute with time=====
         [Command("tempmute")]
         [Remarks("Mutes a user for a limited time")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
-        public async Task MuteTime([NoSelf][RequireBotHigherHirachy]
+        public async Task MuteTime([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy]
         [Summary("The user you want to tempmute")]SocketGuildUser user = null,
             [Summary("Time in minutes you want to mute the user for")]int time = 1,
             [Summary("OPTIONAL: The reason behind the tempmute")][Remainder] string reason = null)
@@ -211,7 +283,7 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.Color = new Color(206, 47, 47);
             embed.Title = "=== Muted User ===";
-            embed.Description = $"**Username: ** {user.Username} || {user.Discriminator}\n**Muted by: ** {Context.User}\n**Reason: **{reason}\n**Duration: **{time}m";
+            embed.Description = $"**User: ** {user.Username}#{user.Discriminator} || {user.Discriminator} \n**Muted by: ** {Context.User}\n**Reason: **{reason}\n**Duration: **{time}m";
             
 
             var embed2 = new EmbedBuilder();
@@ -227,18 +299,32 @@ namespace Bot.Modules
             else
             {
                 if (!user.Roles.Any(r => r.Id == muteRole.Id))
-                    await user.AddRoleAsync(muteRole).ConfigureAwait(false);
-                await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
-                await ReplyAsync("", false, embed.Build());
-                try
                 {
-                    await dmChannel.SendMessageAsync("", false, embed2.Build());
+                    var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
+                    IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
+                    if (exec_role == null)
+                        throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+                    if ((muteRole != null) && (exec_role.Position < muteRole.Position))
+                        throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+
+                    await user.AddRoleAsync(muteRole, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
+                    await ReplyAsync($"**{user.Username}** has been muted. <a:KBtick:580851374070431774>");
+                    await ReplyAsync("", false, embed.Build());
+                    try
+                    {
+                        await dmChannel.SendMessageAsync("", false, embed2.Build());
+                    }
+                    catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
+                    await Task.Delay(time * 60000);
+                    await user.RemoveRoleAsync(await GetMuteRole(user.Guild), options: new RequestOptions { AuditLogReason = $"[Temp-mute time done]" }).ConfigureAwait(false);
+                    await ReplyAsync($"**{user}** has been unmuted. <a:KBtick:580851374070431774> ");
                 }
-                catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
-                await Task.Delay(time*60000);
-                await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
-                await ReplyAsync($"**{user}** has been unmuted. <a:KBtick:580851374070431774> ");
+                else
+                {
+                    await ReplyAsync($"**{user.Username}#{user.Discriminator}** is already muted.");
+                }
             }
+
         }
        
         //======end of time mute======
@@ -247,16 +333,27 @@ namespace Bot.Modules
         [Command("unmute")]
         [Remarks("Unmutes A User")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
-        public async Task Unmute([NoSelf][RequireBotHigherHirachy] SocketGuildUser user = null)
+        public async Task Unmute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy][Summary("REQUIRED: The user you want to unmute")] SocketGuildUser user = null, [Summary("OPTIONAL: The reason behind the tempmute")] [Remainder] string reason = null)
         {
             if (user == null)
                 throw new ArgumentException("Please mention a user to unmute");
+
+            if (string.IsNullOrEmpty(reason))
+                reason = "[No reason was provided]";
+
             //await Context.Guild.GetUser(user.Id).ModifyAsync(x => x.Mute = false).ConfigureAwait(false);
             var muteRole = await GetMuteRole(user.Guild);
             if (user.Roles.Any(r => r.Id == muteRole.Id))
             {
-                await user.RemoveRoleAsync(await GetMuteRole(user.Guild)).ConfigureAwait(false);
-                await ReplyAsync($"**{user}** has been unmuted. <a:KBtick:580851374070431774> ");
+                var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
+                IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
+                if (exec_role == null)
+                    throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+                if ((muteRole != null) && (exec_role.Position < muteRole.Position))
+                    throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+
+                await user.RemoveRoleAsync(await GetMuteRole(user.Guild), options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
+                await ReplyAsync($"<a:KBtick:580851374070431774> **{user}** has been unmuted by **{Context.User}** for **{reason}**");
             }
             else
                 throw new ArgumentException("User is not muted");
@@ -275,9 +372,6 @@ namespace Bot.Modules
             {
                 reason = "[No reason was provided]";
             }
-            //  if (string.IsNullOrWhiteSpace(reason))
-            //      throw new ArgumentException("You must provide a reason");
-
             var gld = Context.Guild as SocketGuild;
 
             var embed = new EmbedBuilder();
@@ -291,7 +385,7 @@ namespace Bot.Modules
             {
                 var embed2 = new EmbedBuilder();
                 embed2.Description = ($"You've been banned from **{Context.Guild.Name}** for **{reason}**.");
-                    var dmChannel = await user.GetOrCreateDMChannelAsync();
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
                 await dmChannel.SendMessageAsync("", false, embed2.Build());
 
             }
@@ -337,12 +431,16 @@ namespace Bot.Modules
         }
 
         [Command("unban")]
-        [Remarks("Unban A User")]
+        [Remarks("Unbans a user. However if you want the user's name has spaces I'd recommend using the ID method (you need to enable developer mode)")]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task UnbanName([Summary("The name of the user you want to unban")][Remainder]string user = null)
+        public async Task UnbanName([Summary("The name of the user you want to unban")] string user = null, [Remainder] string reason = null)
         {
             if (user == null)
                 throw new ArgumentException("Please enter the the username#discriminator/username/ID of the user you want to unban.");
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "[No reason was provided]";
+            }
             var bans = await Context.Guild.GetBansAsync();
      
             var theUser = bans.FirstOrDefault(x => x.User.ToString().ToLowerInvariant() == user.ToLowerInvariant());
@@ -354,21 +452,21 @@ namespace Bot.Modules
         
             if (user == $"{theUser.User.Username}#{theUser.User.Discriminator}")
             {
-                await Context.Guild.RemoveBanAsync(theUser.User).ConfigureAwait(false);
+                await Context.Guild.RemoveBanAsync(theUser.User, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
                 await ReplyAsync($"{user} has been unbanned. <a:KBtick:580851374070431774>");
             }
             else if (user == $"{UsernameUser.User.Username}")
             {
-                await Context.Guild.RemoveBanAsync(UsernameUser.User).ConfigureAwait(false);
+                await Context.Guild.RemoveBanAsync(UsernameUser.User, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
                 await ReplyAsync($"{user} has been unbanned. <a:KBtick:580851374070431774>");
             }
             
         }
 
         [Command("unban")]
-        [Remarks("Unban A User")]
+        [Remarks("Unban a user with their ID. (If you don't know how search it up or use the name method)")]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task Unban([Summary("The ID of the user you want to unban")]ulong id)
+        public async Task Unban([Summary("The ID of the user you want to unban")]ulong id, [Remainder] string reason = null)
         {
             var bans = await Context.Guild.GetBansAsync();
 
@@ -377,7 +475,11 @@ namespace Bot.Modules
             {
                 throw new ArgumentException("User not found. Please enter the the username#discriminator/username/ID of the user you want to unban.");
             }
-            await Context.Guild.RemoveBanAsync(theUser.User);
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "[No reason was provided]";
+            }
+            await Context.Guild.RemoveBanAsync(theUser.User, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" });
             await ReplyAsync($"The user of ID `{id}` has been unbanned. <a:KBtick:580851374070431774> ");
              
         }

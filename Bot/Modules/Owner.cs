@@ -27,7 +27,7 @@ namespace Bot.Modules
             _globalUserAccounts = globalUserAccounts;
         }
         [Command("SetStream")]
-        [Remarks("Usage: |prefix|setstream {streamer} {streamName}")]
+        [Remarks("Usage: k!setstream {streamer} {streamName}")]
         [RequireOwner]
         public async Task SetStreamAsync(string streamer, [Remainder] string streamName)
         {
@@ -50,13 +50,87 @@ namespace Bot.Modules
                     guildList += $"Name: {g.Name}\n ID: {g.Id} \n Owner: {g.Owner} \n Owner ID: {g.OwnerId} \n \n";
                 }
                 File.WriteAllText("guildlist.txt", guildList);
-                await Context.Channel.SendFileAsync("guildlist.txt", null, false, null);
+                await ReplyAsync("<a:KBtick:580851374070431774> Guild List was sent to your DMs!");
+                var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+                await dmChannel.SendFileAsync("guildlist.txt", null, false, null);
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
 
             }
+        }
+        [Command("owner-serverinfo")]
+        [RequireOwner]
+        [Summary("Shows server information.")]
+        public async Task ownersinfo(ulong ID)
+        {
+            var channel = (ITextChannel)Context.Channel;
+            var guild = Context.Client.GetGuild(ID) as SocketGuild;
+            var ownername = guild.GetUser(guild.OwnerId);
+            var textchn = guild.TextChannels.Count();
+            var voicechn = guild.VoiceChannels.Count();
+
+            var createdAt = new DateTime(2015, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(guild.Id >> 22);
+            var features = string.Join("\n", guild.Features);
+            if (string.IsNullOrWhiteSpace(features))
+                features = "-";
+            var embed = new EmbedBuilder()
+                .WithAuthor("== SERVER INFORMATION ==")
+                .WithTitle(guild.Name)
+                .AddField(fb => fb.WithName("ID").WithValue(guild.Id.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Owner").WithValue($"{ownername.ToString()} | {Context.Guild.OwnerId}").WithIsInline(true))
+                .AddField(fb => fb.WithName("Created at").WithValue($"{ createdAt:dd/MM/yyyy HH:mm:ss} UTC").WithIsInline(true))
+                .AddField(fb => fb.WithName("Members").WithValue(guild.MemberCount.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Text channels").WithValue(textchn.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Voice channels").WithValue(voicechn.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Roles").WithValue((guild.Roles.Count - 1).ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Region").WithValue(guild.VoiceRegionId.ToString()).WithIsInline(true))
+                .AddField(fb => fb.WithName("Verification Level").WithValue(guild.VerificationLevel.ToString()).WithIsInline(true))
+                .WithColor(9896005);
+            if (guild.ExplicitContentFilter.ToString() == "MembersWithoutRoles")
+            {
+                embed.AddField(fb =>
+                     fb.WithName("Explict Content Filter")
+                     .WithValue("Scans messages from members without roles").WithIsInline(false));
+            }
+            if (guild.ExplicitContentFilter.ToString() == "Disabled")
+            {
+                embed.AddField(fb =>
+                     fb.WithName("Explict Content Filter")
+                     .WithValue("No message scanning").WithIsInline(true));
+            }
+            if (guild.ExplicitContentFilter.ToString() == "AllMembers")
+            {
+                embed.AddField(fb =>
+                     fb.WithName("Explict Content Filter")
+                     .WithValue("Scans messages from all members").WithIsInline(false));
+            }
+            if (Uri.IsWellFormedUriString(guild.IconUrl, UriKind.Absolute))
+                embed.WithThumbnailUrl(guild.IconUrl);
+            if (features != "-")
+            {
+                embed.AddField(fb =>
+                    fb.WithName("Features")
+                    .WithValue(features).WithIsInline(true));
+            }
+
+            if (guild.Emotes.Any())
+            {
+                embed.AddField(fb =>
+                    fb.WithName("Custom emojis " + $"({guild.Emotes.Count})")
+                    .WithValue(string.Join(" ", guild.Emotes
+                        .Take(20)
+                        .Select(e => $"{e.ToString()}"))));
+            }
+            if (features.Contains("INVITE_SPLASH"))
+            {
+                embed.AddField(fb =>
+                    fb.WithName("Splash Icon")
+                    .WithValue("").WithIsInline(true));
+                embed.WithUrl(guild.SplashUrl);
+            }
+            await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }
         [Command("getinvite")]
         [RequireOwner]
@@ -177,8 +251,10 @@ namespace Bot.Modules
         public async Task ShowLogs()
         {
             var folder = Constants.LogFolder;
-            var fileName = "Logs.log";
-            await Context.Channel.SendFileAsync($"{folder}/{fileName}");
+            var fileName = "Logs2.log";
+            await ReplyAsync("<a:KBtick:580851374070431774> The logs file was sent to your DMs!");
+            var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
+            await dmChannel.SendFileAsync($"{folder}/{fileName}");
         }
 
         [Command("add-coins"),Alias("add-money")]

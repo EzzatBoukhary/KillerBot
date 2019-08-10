@@ -1,5 +1,5 @@
 ﻿using System;
- using Bot.Features.Economy;
+using Bot.Features.Economy;
 using Bot.Features.GlobalAccounts;
 using Discord;
 using Discord.Commands;
@@ -543,7 +543,7 @@ namespace Bot.Modules
         }
         //Rob command ends here.
 
-  /*      [Group("shop")]
+       /* [Group("shop")]
         [Summary("The economy shop of KillerBot, use your coins to buy some cool stuff!")]
         public class Shop : ModuleBase<MiunieCommandContext>
         {
@@ -552,23 +552,25 @@ namespace Bot.Modules
             public Shop(GlobalUserAccounts globalUserAccounts)
             {
                 _globalUserAccounts = globalUserAccounts;
-                _items = new List<Item> { new Item("ugh", 33),
-                new Item("Item 2", 50),
-                new Item("Item 3", 22),
-                new Item("Item 4", 50),
-                new Item("Item 5", 50),
-                new Item("Item 6", 50),
-                new Item("Item 7", 50),
-                new Item("Item 8", 50),
-                new Item("Item 9", 50),
-                new Item("Item 10", 50),
-                new Item("Item 11", 50)
+                _items = new List<Item> { new Item("KillerBot Starter Pack", 2000, "Buy KillerBot's starter pack to get some special stuff!"),
+                new Item("No Loss Day", 4000, "No money loss for a whole 24 hours from slot machines or robbers.", new TimeSpan(1, 0, 0, 0)),
+                new Item("Double Day", 6000, "Get double the won money in any economy command for 24 hours!", new TimeSpan(1, 0, 0, 0)),
+                new Item("Pro Robber", 8000, "Get a higher chance for a successful robbing."),
+                new Item("Coming Soon", 1,"Coming Soon"),
+                new Item("Coming Soon", 1,"Coming Soon"),
+                new Item("Coming Soon", 1,"Coming Soon"),
+                new Item("Coming Soon", 1,"Coming Soon"),
+                new Item("Item 9", 50,"test"),
+                new Item("Item 10", 50,"test2"),
+                new Item("Item 11", 50,"test3")
             };
             }
             [Command("")]
-            public async Task ShowShop(int page = 1)
+            [Summary("Shows the KillerBot Economy Shop menu.")]
+            [Ratelimit(6, 1,Measure.Minutes ,RatelimitFlags.None)]
+            public async Task ShowShop([Summary("The number of the page in the shop menu if any other pages exist.")]int page = 1)
             {
-                const int ItemsPerPage = 9;
+                const int ItemsPerPage = 8;
                 // Calculate the highest accepted page number => amount of pages we need to be able to fit all users in them
                 // (amount of users) / (how many to show per page + 1) results in +1 page more every time we exceed our usersPerPage  
                 var lastPageNumber = 1 + (_items.Count / (ItemsPerPage + 1));
@@ -578,37 +580,54 @@ namespace Bot.Modules
                     return;
                 }
                 EmbedBuilder embed = new EmbedBuilder();
-                embed.WithTitle("KillerBot Shop List: ");
+                embed.WithTitle("KillerBot's Economy Shop: ");
                 embed.WithFooter($"Page {page}/{lastPageNumber}");
-                embed.WithColor(Color.Teal);
-                var application = await Context.Client.GetApplicationInfoAsync(); 
-                embed.WithThumbnailUrl(application.IconUrl);  
+                embed.WithColor(Color.Gold);
+                var application = await Context.Client.GetApplicationInfoAsync();
+                embed.WithThumbnailUrl(application.IconUrl);
                 int endIndex = page * ItemsPerPage;
                 int startIndex = endIndex - ItemsPerPage;
                 for (int i = startIndex; i < endIndex && i < _items.Count; i++)
                 {
-                    embed.AddField($"{_items[i].name}:", $"{_items[i].price} coins", false);
+                    embed.AddField($"{_items[i].name} ({_items[i].price} coins)", $"{_items[i].description}", false);
                 }
                 await ReplyAsync("", false, embed.Build());
             }
             [Command("buy")]
             [Summary("Buy a specific item in the KillerBot Economy Shop.")]
-            public async Task Buy(string item)
+            [Ratelimit(7, 1, Measure.Minutes, RatelimitFlags.None)]
+            public async Task Buy([Remainder] [Summary("The name of the item you want to buy from the shop (k!shop)")] string item = null)
             {
                 var account = _globalUserAccounts.GetById(Context.User.Id);
-                foreach (var i in _items)
-                {
-                    if (item == i.name)
-                    {
-                        var BoughtItem = new ItemEntry(item);
-                        account.Bought_Items.Add(BoughtItem);
-                        account.Coins -= i.price;
-                        _globalUserAccounts.SaveAccounts(Context.User.Id);
-                        await ReplyAsync($"You succesfully bought {i.name}");
-                    }
+                Item i = _items.Find((a) => a.name == item);
 
+                if (item == null)
+                {
+                    await ReplyAsync("Please specify the item you need to buy. You can find the list of items by doing `k!shop`");
+                    
                 }
-            } 
+
+                else if (i == null)
+                {
+                    await Context.Channel.SendMessageAsync($"<:KBfail:580129304592252995> Sorry but i couldn't find `{item}` in the shop. Make sure you type the item's name correctly from `k!shop`. \n \n**Example:** https://cdn.discordapp.com/attachments/596436675383656459/608481133243400202/unknown.png");
+                }
+                else if (account.Bought_Items.Contains(i))
+                {
+                    await ReplyAsync("<:KBfail:580129304592252995> Sorry, but you can only buy this item once.");
+                }
+                else if (account.Coins < i.price)
+                {
+                    await ReplyAsync($"<:KBfail:580129304592252995> The item's price is **{i.price} coins** and you only have **{account.Coins} coin(s)** in your wallet! (You need {i.price - account.Coins} coins more)");
+                }
+                else
+                {
+                    account.Bought_Items.Add(new UserItem(i));
+                    account.Coins -= i.price;
+                    _globalUserAccounts.SaveAccounts(Context.User.Id);
+                    await ReplyAsync($"<a:KBtick:580851374070431774> You succesfully bought **{i.name}** for **{i.price} coins** from the KillerBot Economy Shop!");
+                }
+            }
         } */
     }
 }
+

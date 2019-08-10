@@ -111,9 +111,20 @@ namespace Bot.Handlers
                 var info = await _client.GetApplicationInfoAsync();
                 var emb = new EmbedBuilder()
                     .WithColor(Color.Blue)
-                    .WithTitle($"New DM: ")
-                    .WithDescription($"<@{message.Author.Id}>: {message.Content}")
-                    .WithTimestamp(message.Timestamp)
+                    .WithTitle($"New DM: ");
+                    if (message.Content.ToString().Contains("discord.gg/"))
+                {
+                    emb.WithDescription($"<@{message.Author.Id}>: [Message contains a server invite link] \n \n|| {message.Content} ||");
+                }
+                    else if (message.Content.ToString() == null || message.Content.Length == 0)
+                    emb.WithDescription($"<@{message.Author.Id}>: [Message was an image or an embed]");
+
+                else
+                {
+                    emb.WithDescription($"<@{message.Author.Id}>: {message.Content}");
+                }
+                    
+                    emb.WithTimestamp(message.Timestamp)
                     .WithFooter($"From: {message.Author}", message.Author.GetAvatarUrl());
                 await channel.SendMessageAsync("", false, emb.Build());
             }

@@ -9,6 +9,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Ofl.Linq;
+using System.Collections.Generic;
 
 namespace Bot.Modules.Account
 {
@@ -59,7 +60,7 @@ namespace Bot.Modules.Account
             return String.Join("\n", commandHistory); //Return the command history separated by line
         }
 
-         [Command("GetAllMyAccountData"), Alias("GetMyData", "MyData")]
+         [Command("GetAllMyAccountData"), Alias("GetMyData", "MyData", "data")]
          public async Task GetAccountFile()
          {
              var userFilePath = _globalUserAccounts.GetAccountFilePath(Context.User.Id);
@@ -69,14 +70,14 @@ namespace Bot.Modules.Account
                  return;
              }
 
-             await Context.User.SendFileAsync(userFilePath, $"This is all I got about you!");
+             await Context.User.SendFileAsync(userFilePath, $"This is all I got about you! Note: Open it in notepad or use an application thats lets you view .json files if you want to view your data.");
              await Context.Channel.SendMessageAsync($"{Context.User.Mention} DM sent!");
          }
 
-       /*  [Command("DeleteAllMyAccountData", RunMode = RunMode.Async),Alias("DeleteData","DeleteAllData")]
+         [Command("reseteconomy", RunMode = RunMode.Async),Alias("economyreset","reset-economy", "economy-reset", "clear-economy", "delete-economy", "economy-delete")]
          public async Task DeleteAccount()
          {
-             var response = await AwaitMessageYesNo("I will delete all the data I know about you, are you sure?", "Yes", "No");
+             var response = await AwaitMessageYesNo("I will delete all the economy data i have about you, are you sure?", "Yes", "No");
              if (response is null)
              {
                  await Context.Channel.SendMessageAsync($"{Context.User.Mention} you took so long to reply!");
@@ -93,9 +94,20 @@ namespace Bot.Modules.Account
              var message = "";
              if (response.Content.ToLower().Contains(optionYes.ToLower()))
              {
-                 message = _globalUserAccounts.DeleteAccountFile(Context.User.Id)
-                     ? "All your data have been deleted."
-                     : "We don't have information about you or couldn't find it.";
+                
+                var account = _globalUserAccounts.GetById(Context.User.Id);
+                if (account != null)
+                {
+                    account.LastDaily = DateTime.UtcNow.AddDays(-2);
+                    account.Coins = 1;
+                    account.BankCoins = 0;
+                    account.LastRobbery = DateTime.UtcNow.AddDays(-2);
+                    //account.Bought_Items = new List<UserItem>();
+                    _globalUserAccounts.SaveAccounts();
+                    message = "I have reset your economy data!";
+                }
+                else
+                    message = "Looks like i don't have any information about you.";
              }
              else
              {
@@ -114,7 +126,7 @@ namespace Bot.Modules.Account
          }
 
          private bool EvaluateResponse(SocketMessage arg, params String[] options)
-             => options.Any(option => arg.Content.ToLower().Contains(option.ToLower()) && arg.Author.Id == Context.User.Id); */
+             => options.Any(option => arg.Content.ToLower().Contains(option.ToLower()) && arg.Author.Id == Context.User.Id);
      } 
     }
 

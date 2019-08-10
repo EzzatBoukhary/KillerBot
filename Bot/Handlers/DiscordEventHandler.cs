@@ -158,7 +158,7 @@ namespace Bot.Handlers
         private async Task JoinedGuild(SocketGuild guild)
         {
             _onboarding.JoinedGuild(guild);
-            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
+            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", $"https://twitch.tv/Killer30kill", ActivityType.Streaming);
 
             // ServerBots.JoinedGuild(guild);
         }
@@ -188,7 +188,7 @@ namespace Bot.Handlers
 
         private async Task LeftGuild(SocketGuild guild)
         {
-            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
+            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", $"https://twitch.tv/Killer30kill", ActivityType.Streaming);
         }
 
         private async Task Log(LogMessage logMessage)
@@ -199,7 +199,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.6.1 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.7.0 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
 
@@ -252,7 +252,7 @@ namespace Bot.Handlers
 
         private async Task Ready()
         {
-            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", "", ActivityType.Watching);
+            await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", $"https://twitch.tv/Killer30kill", ActivityType.Streaming);
             _repeatedTaskFunctions.InitRepeatedTasks();
             var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
             channel.SendMessageAsync("<a:KBtick:580851374070431774>");

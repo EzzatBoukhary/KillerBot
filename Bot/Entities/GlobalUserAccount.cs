@@ -29,7 +29,7 @@ namespace Bot.Entities
 
         public bool Blacklisted { get; set; }
 
-        public List<ItemEntry> Bought_Items { get; set; }
+        //public List<UserItem> Bought_Items { get; set; } = new List<UserItem>();
 
         public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
 
@@ -78,15 +78,6 @@ namespace Bot.Entities
         }
     }
 
-    public struct ItemEntry
-    {
-        public string Name;
-
-        public ItemEntry(string name)
-        {
-            Name = name;
-        }
-    }
         public struct ReminderEntry
     {
         public DateTime DueDate;
