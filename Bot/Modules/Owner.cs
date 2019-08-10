@@ -71,7 +71,6 @@ namespace Bot.Modules
             var textchn = guild.TextChannels.Count();
             var voicechn = guild.VoiceChannels.Count();
 
-            var createdAt = new DateTime(2015, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(guild.Id >> 22);
             var features = string.Join("\n", guild.Features);
             if (string.IsNullOrWhiteSpace(features))
                 features = "-";
@@ -80,7 +79,7 @@ namespace Bot.Modules
                 .WithTitle(guild.Name)
                 .AddField(fb => fb.WithName("ID").WithValue(guild.Id.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Owner").WithValue($"{ownername.ToString()} | {Context.Guild.OwnerId}").WithIsInline(true))
-                .AddField(fb => fb.WithName("Created at").WithValue($"{ createdAt:dd/MM/yyyy HH:mm:ss} UTC").WithIsInline(true))
+                .AddField(fb => fb.WithName("Created at").WithValue($"{guild.CreatedAt.DateTime.ToLongDateString()} {guild.CreatedAt.DateTime.ToLongTimeString()} (By UTC)").WithIsInline(true))
                 .AddField(fb => fb.WithName("Members").WithValue(guild.MemberCount.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Text channels").WithValue(textchn.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Voice channels").WithValue(voicechn.ToString()).WithIsInline(true))

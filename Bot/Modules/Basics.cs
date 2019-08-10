@@ -130,7 +130,7 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.7.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> New command `k!account reset-economy` \n \n<:KBdot:580470791251034123> New aliases for `k!invite` command. \n \n<:KBdot:580470791251034123> Added a user and role hierarchy system to all mute/unmute commands, changed some replies , and added audit logs reason \n \n<:KBdot:580470791251034123> New `k!addrole` and `k!removerole` commands! \nDo `k!help (command name)` for more info! \n \n<:KBdot:580470791251034123> Added 'Verification Level' and 'Explict Content Filter' to `k!serverinfo` command! \n \n<:KBdot:580470791251034123> BOT OWNER COMMAND ONLY: Added `k!owner-serverinfo` \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Changed a bit in the user hierarchy system to allow you to change your own nickname with `k!setnick` command. \n \n<:KBdot:580470791251034123> Fixed a bug in `k!serverinfo` command where the splash image won't appear if the server has more than the invite splash feature. \n \n<:KBdot:580470791251034123> Actually fixed the date format in `k!userinfo` and made the status part show streaming and the activity name if there is any! \n \n<:KBdot:580470791251034123> Made small changes to `k!report`, `k!feedback`, `k!logs`, `k!guildlist`, `k!account mydata` and `k!info` commands \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Minor Release ==** `v1.7.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> New command `k!account reset-economy` \n \n<:KBdot:580470791251034123> New aliases for `k!invite` command. \n \n<:KBdot:580470791251034123> Added a user and role hierarchy system to all mute/unmute commands, changed some replies , and added audit logs reason \n \n<:KBdot:580470791251034123> New `k!addrole` and `k!removerole` commands! \nDo `k!help (command name)` for more info! \n \n<:KBdot:580470791251034123> Added 'Verification Level' and 'Explict Content Filter' to `k!serverinfo` command! \n \n<:KBdot:580470791251034123> BOT OWNER COMMAND ONLY: Added `k!owner-serverinfo` \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Changed a bit in the user hierarchy system to allow you to change your own nickname with `k!setnick` command. \n \n<:KBdot:580470791251034123> Fixed a bug in `k!serverinfo` command where the splash image won't appear if the server has more than the invite splash feature. \n \n<:KBdot:580470791251034123> Fixed the date format in `k!userinfo`, and `k!roleinfo` and made the status part in the `k!userinfo` command show streaming and the activity name if there is any! \n \n<:KBdot:580470791251034123> Made small changes to `k!report`, `k!feedback`, `k!logs`, `k!guildlist`, `k!account mydata` and `k!info` commands \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
@@ -238,7 +238,7 @@ namespace Bot.Modules
                 .WithTitle(guild.Name)
                 .AddField(fb => fb.WithName("ID").WithValue(guild.Id.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Owner").WithValue(ownername.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Created at").WithValue($"{ createdAt:dd/MM/yyyy HH:mm:ss} UTC").WithIsInline(true))
+                .AddField(fb => fb.WithName("Created at").WithValue($"{ createdAt:dd/MM/yyyy HH:mm:ss} UTC (dd/mm)").WithIsInline(true))
                 .AddField(fb => fb.WithName("Members").WithValue(guild.MemberCount.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Text channels").WithValue(textchn.ToString()).WithIsInline(true))
                 .AddField(fb => fb.WithName("Voice channels").WithValue(voicechn.ToString()).WithIsInline(true))
@@ -334,7 +334,7 @@ namespace Bot.Modules
                 embed.Color = tgt.Color;
                 embed.Footer = new EmbedFooterBuilder()
                 {
-                    Text = $"Created on: {tgt.CreatedAt.ToUniversalTime().ToString()}"
+                    Text = $"Created on: { tgt.CreatedAt.DateTime.ToLongDateString() } { tgt.CreatedAt.DateTime.ToLongTimeString() } (By UTC)"
                 };
                 embed.Title = "=== ROLE INFORMATION ===";
                 embed.Timestamp = DateTime.UtcNow;
@@ -542,10 +542,9 @@ namespace Bot.Modules
                 emb.Description += $" {nitro}";
             else if (user.Discriminator == "0070")
                 emb.Description += $" {nitro}";
-
-            emb.AddField("Created account at", $"{user.CreatedAt.DateTime.ToString()} (By UTC - dd/mm/yyyy)");
+            emb.AddField("Created account at", $"{user.CreatedAt.DateTime.ToLongDateString()} {user.CreatedAt.DateTime.ToLongTimeString()} (By UTC)");
             
-            emb.AddField("Joined server at", user.JoinedAt.Value.DateTime.ToString());
+            emb.AddField("Joined server at", $"{user.JoinedAt.Value.DateTime.ToLongDateString()} {user.JoinedAt.Value.DateTime.ToLongTimeString()} (By UTC)");
 
             // Display the list of all of user's roles
             if (string.IsNullOrEmpty(userRoles) == false)
@@ -593,7 +592,7 @@ namespace Bot.Modules
             // Display the KB team position if found
             if (ID == "333988268439764994")
                 KBTeam += "KB Support";
-            if (ID == "238353818125991936")
+            if (ID == "238353818125991936" || ID == "196354024491057152")
                 KBTeam += "KBHQ Staff";
             if (ID == "223530903773773824")
                 KBTeam += "Bot owner";
