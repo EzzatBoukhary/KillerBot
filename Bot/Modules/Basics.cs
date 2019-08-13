@@ -130,12 +130,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.7.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n<:KBdot:580470791251034123> New command `k!account reset-economy` \n \n<:KBdot:580470791251034123> New aliases for `k!invite` command. \n \n<:KBdot:580470791251034123> Added a user and role hierarchy system to all mute/unmute commands, changed some replies , and added audit logs reason \n \n<:KBdot:580470791251034123> New `k!addrole` and `k!removerole` commands! \nDo `k!help (command name)` for more info! \n \n<:KBdot:580470791251034123> Added 'Verification Level' and 'Explict Content Filter' to `k!serverinfo` command! \n \n<:KBdot:580470791251034123> BOT OWNER COMMAND ONLY: Added `k!owner-serverinfo` \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Changed a bit in the user hierarchy system to allow you to change your own nickname with `k!setnick` command. \n \n<:KBdot:580470791251034123> Fixed a bug in `k!serverinfo` command where the splash image won't appear if the server has more than the invite splash feature. \n \n<:KBdot:580470791251034123> Fixed the date format in `k!userinfo`, and `k!roleinfo` and made the status part in the `k!userinfo` command show streaming and the activity name if there is any! \n \n<:KBdot:580470791251034123> Made small changes to `k!report`, `k!feedback`, `k!logs`, `k!guildlist`, `k!account mydata` and `k!info` commands \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Patch ==** `v1.7.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug where missing permissions onboarding makes the bot crash. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: August 10th - 2019 8:39 PM GMT");
+                x.WithText("Last updated: August 13th - 2019 3:42 PM GMT");
 
 
 

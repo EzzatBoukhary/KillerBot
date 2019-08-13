@@ -25,7 +25,7 @@ namespace Bot.Features.Onboarding.Tasks
                 return;
             }
 
-            if (user.GetPermissions(defaultChannel).Has(ChannelPermission.SendMessages))
+            if (user.GetPermissions(defaultChannel).Has(ChannelPermission.SendMessages) && user.GetPermissions(defaultChannel).Has(ChannelPermission.EmbedLinks) && user.GetPermissions(defaultChannel).Has(ChannelPermission.ViewChannel))
             {
                 EmbedBuilder emb = new EmbedBuilder()
                     .WithColor(new Color(0, 255, 0))
