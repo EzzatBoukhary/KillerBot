@@ -864,6 +864,10 @@ namespace Bot.Modules
                 var duration = "";
                 if (account.Bought_Items[i].Duration == new TimeSpan(long.MaxValue))
                     duration = "Permanent";
+                else if (DateTime.UtcNow - account.Bought_Items[i].Date > account.Bought_Items[i].Duration)
+                {
+                    duration = "The item's duration is finished.";
+                }
                 else
                 {
                     var time_left = account.Bought_Items[i].Duration - (DateTime.UtcNow - account.Bought_Items[i].Date);
@@ -911,10 +915,10 @@ namespace Bot.Modules
                 EmbedBuilder embed = new EmbedBuilder();
                 embed.WithTitle("KillerBot's Economy Shop: ");
                 embed.WithFooter($"Page {page}/{lastPageNumber} | Note: The item's name is the one before (coins)");
-                embed.WithDescription("Here you can buy items for cool rewards, just do [k!shop buy {item name}](https://cdn.discordapp.com/attachments/596436675383656459/608481133243400202/unknown.png)");
-                embed.WithColor(Color.Gold);
+                embed.WithDescription("Here you can buy items for cool rewards, just do [k!shop buy {item name}](https://cdn.discordapp.com/attachments/497373849042812930/620597247515688980/KB_How_To_Shop.jpg)");
+                embed.WithColor(new Color(0, 255, 247));
                 var application = await Context.Client.GetApplicationInfoAsync();
-                embed.WithThumbnailUrl(application.IconUrl);
+                embed.WithThumbnailUrl("https://cdn.discordapp.com/attachments/497373849042812930/620076029104357412/output-onlinepngtools_8.png");
                 int endIndex = page * ItemsPerPage;
                 int startIndex = endIndex - ItemsPerPage;
                 for (int i = startIndex; i < endIndex && i < _items.Count; i++)
@@ -941,7 +945,7 @@ namespace Bot.Modules
 
                 else if (i == null)
                 {
-                    await Context.Channel.SendMessageAsync($"<:KBfail:580129304592252995> Sorry but i couldn't find `{item}` in the shop. Make sure you type the item's name correctly from `k!shop`. \n \n**Example:** https://cdn.discordapp.com/attachments/596436675383656459/608481133243400202/unknown.png");
+                    await Context.Channel.SendMessageAsync($"<:KBfail:580129304592252995> Sorry but i couldn't find `{item}` in the shop. Make sure you type the item's name correctly from `k!shop`. \n \n**How to buy items:** https://cdn.discordapp.com/attachments/497373849042812930/620597247515688980/KB_How_To_Shop.jpg");
                     return;
                 }
 
