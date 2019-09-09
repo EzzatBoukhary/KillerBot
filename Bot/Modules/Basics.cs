@@ -126,16 +126,16 @@ namespace Bot.Modules
         [Summary("Change log for the current version of the bot")]
         public async Task changes()
         {
-
+            var dot = "<:KBdot:580470791251034123>";
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.7.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n<:KBdot:580470791251034123> Fixed a bug where missing permissions onboarding makes the bot crash. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Minor Release ==** `v1.8.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Shop System: \n`k!shop`, `k!shop buy`, `k!inventory`, `k!shop item-info`. \n \n{dot} Added different rewards for buying items into most economy commands! \n \n{dot} Added custom job titles to `k!work` command \n \n**[Changed-Fixed]** \n \n{dot} Changed in the fining system for `k!rob` making it fine you for your net worth and changed a bit in the replies. \n \n{dot} Increased the cooldown of `k!work` from 1 hour to 2. \n \n{dot} Changed `k!account reseteconomy` to reset shop items too since it was added. \n \n{dot} Fixed a bug in `k!purge @user (amount)` where the bot deletes all the messages not just the amount specified. \n \n{dot} Made it possible to check the everyone role info without having to mention it. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: August 13th - 2019 3:42 PM GMT");
+                x.WithText("Last updated: September 9th - 2019 3:01 AM GMT");
 
 
 
@@ -310,6 +310,11 @@ namespace Bot.Modules
 
             foreach (IRole role in roleList)
             {
+               if (roleName == "everyone" && role.Name == "@everyone")
+                {
+                    tgt = role;
+                    break;
+                }
                 if (role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
                 {
                     tgt = role;
@@ -320,7 +325,7 @@ namespace Bot.Modules
                     continue;
                 }
             }
-
+            
             if (tgt == null)
             {
                 await Context.Channel.SendMessageAsync($"Unable to find role by the name of `{roleName}`.");
@@ -391,7 +396,7 @@ namespace Bot.Modules
                     x.Value = $"{perms}";
                     x.IsInline = false;
                 });
-               
+
                 await channel.SendMessageAsync("", false, embed.Build());
             }
         }

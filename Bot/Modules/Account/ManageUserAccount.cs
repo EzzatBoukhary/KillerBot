@@ -102,7 +102,7 @@ namespace Bot.Modules.Account
                     account.Coins = 1;
                     account.BankCoins = 0;
                     account.LastRobbery = DateTime.UtcNow.AddDays(-2);
-                    //account.Bought_Items = new List<UserItem>();
+                    account.Bought_Items = new List<UserItem>();
                     _globalUserAccounts.SaveAccounts();
                     message = "I have reset your economy data!";
                 }

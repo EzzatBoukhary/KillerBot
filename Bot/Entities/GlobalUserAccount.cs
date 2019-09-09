@@ -29,7 +29,7 @@ namespace Bot.Entities
 
         public bool Blacklisted { get; set; }
 
-        //public List<UserItem> Bought_Items { get; set; } = new List<UserItem>();
+        public List<UserItem> Bought_Items { get; set; } = new List<UserItem>();
 
         public Dictionary<string, string> Tags { get; set; } = new Dictionary<string, string>();
 

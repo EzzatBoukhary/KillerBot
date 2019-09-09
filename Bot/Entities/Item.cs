@@ -1,4 +1,4 @@
-﻿/* using Newtonsoft.Json;
+﻿ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -27,7 +27,8 @@ namespace Bot.Entities
         {
             this.name = other.name;
             this.price = other.price;
-            this.description = description;
+            this.description = other.description;
+            Duration = other.Duration;
         }
 
         public string name { get; private set;  }
@@ -56,4 +57,4 @@ namespace Bot.Entities
             this.Date = DateTime.UtcNow;
         }
     }
-} */
+} 

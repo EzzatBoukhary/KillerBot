@@ -17,20 +17,19 @@ using System.Data;
 
 namespace Bot.Modules
 {
-    public class combat : ModuleBase<MiunieCommandContext>
-    {
-        private CommandService _service;
-        private readonly ListManager _listManager;
-        private int _fieldRange = 10;
-
-        public combat(CommandService service, ListManager listManager)
+   
+        public class fun : ModuleBase<MiunieCommandContext>
         {
-            _service = service;
-            _listManager = listManager;
-        }
+            private CommandService _service;
+            private readonly ListManager _listManager;
+            private int _fieldRange = 10;
 
-      
-        Random rand = new Random();
+            public fun(CommandService service, ListManager listManager)
+            {
+                _service = service;
+                _listManager = listManager;
+            }
+            Random rand = new Random();
         private int damage;
         static string player1;
         static string player2;

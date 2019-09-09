@@ -39,28 +39,6 @@ namespace Bot.Modules
             _listManager = listManager;
         }
 
-        /* [Cooldown(15)]
-         [Command("help"), Alias("h"),
-          Remarks(
-              "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
-         public async Task Help()
-         {
-             await Context.Channel.SendMessageAsync("Check your DMs.");
-
-             var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
-
-             var contextString = Context.Guild?.Name ?? "DMs with me";
-             var emb = new EmbedBuilder()
-                 .WithTitle("These are the commands you can use:")
-                 .WithColor(Color.Red)
-                 .WithDescription("**__Prefix Commands:__** \nprefix add \nprefix remove \nprefix list \n \n**__Moderation Commands:__**" + "\nkick \nBan \nunban \nmute \nunmute \nchangenick \ncreatetext \ncreatevoice \npurge \nannounce \n \n**__Basic Commands__:** \nHello \nversion \ninvite \nserver \nuptime \nfeedback \necho \naccount info \naccount commandhistory \nuserinfo \nserverinfo \nping \nusercount \nbotinfo \nweather <city> \nreport, bugreport, bug, reportbug \n8ball \n \n**__Join-leave announcements:__** \n announcements setchannel \nannouncements unsetchannel \nwelcome add \nwelcome list \nwelcome remove \nleave add \nleave list \nleave remove \n \n**__Fun/Misc Commands:__** \nremind \nremind list \nremind remove \nflip or flipcoin \nrps \nquote \navatar \nchoose \ncalculate (do `help calculate` for more info) \n \n**Tags:** \ntag new \ntag edit \ntag remove \ntag list \nprivatetag/ptag new \nptag edit \nptag remove \nptag list \n \n**Combat:** \nfight \nslash \ngiveup \n \n**Auctions:** \nauction \nbid \nauctioncheck \nauctionend");
-
-
-             await dmChannel.SendMessageAsync("", false, emb.Build());
-         } */
-
-
-
 
         [Command("help"), Alias("h"),
             Remarks(
@@ -133,7 +111,7 @@ namespace Bot.Modules
                 await dmChannel.SendMessageAsync("", false, builder.Build());
 
             }
-        }
+        } 
 
         [Command("version"), Alias("ver")]
         [Remarks("Returns the current version of the bot.")]
@@ -142,7 +120,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.7.1`");
+            builder.AddField("Version", $"The current version of the bot is: `1.8.0`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]

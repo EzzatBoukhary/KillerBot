@@ -21,14 +21,14 @@ using Bot.Helpers;
 
 namespace Bot.Modules
 {
-    public class Admin : ModuleBase<MiunieCommandContext>
+    public class moderation : ModuleBase<MiunieCommandContext>
     {
         private static readonly OverwritePermissions denyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
         private int _fieldRange = 10;
         private CommandService _service;
         private readonly GlobalGuildAccounts _globalGuildAccounts;
         private readonly Logger _logger;
-        public Admin(GlobalGuildAccounts globalGuildAccounts, Logger logger)
+        public moderation(GlobalGuildAccounts globalGuildAccounts, Logger logger)
         {
             _globalGuildAccounts = globalGuildAccounts;
             _logger = logger;
@@ -73,7 +73,7 @@ namespace Bot.Modules
             if (user == Context.User)
                 amountOfMessagesToDelete++; //Because it will count the purge command as a message
 
-            var messages = await Context.Message.Channel.GetMessagesAsync().FlattenAsync();
+            var messages = await Context.Message.Channel.GetMessagesAsync(amountOfMessagesToDelete).FlattenAsync();
 
             var result = messages.Where(x => x.Author.Id == user.Id && x.CreatedAt >= DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(14)));
 
