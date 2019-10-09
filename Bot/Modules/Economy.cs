@@ -168,7 +168,7 @@ namespace Bot.Modules
 
         [Command("money"), Remarks("Shows how much money the mentioned user has")]
         [Alias("Cash", "balance", "coins", "bal")]
-        public async Task CheckMiuniesOther([Summary("user to check")]IGuildUser target)
+        public async Task CheckMiuniesOther([Remainder] [Summary("user to check")]IGuildUser target)
         {
             var account = _globalUserAccounts.GetById(target.Id);
             //DESCRIPTION REACTION MSG
@@ -341,23 +341,32 @@ namespace Bot.Modules
 
         [Command("slots"), Summary("Play the slots! Win or lose some coins!")]
         [Alias("slot")]
+        [Ratelimit(5, 3, Measure.Minutes ,RatelimitFlags.None)]
         public async Task SpinSlot(uint amount)
         {
-            if (amount < 1)
+            if (amount < 1 || amount > 10000)
             {
-                await ReplyAsync("Oh, nice try. But we only spin for coins > 1");
+                await ReplyAsync("Sorry but you should insert an amount more than 1 and less than (or equal to) 10,000 coins.");
                 return;
             }
             var account = _globalUserAccounts.GetById(Context.User.Id);
             if (account.Coins < amount)
             {
-                await ReplyAsync($"Sorry but it seems like you don't have enough coins... You only have {account.Coins}.");
+                await ReplyAsync($"Sorry but it seems like you don't have enough coins in your wallet... You only have {account.Coins}.");
                 return;
             }
 
             var slotEmojis = Global.Slot.Spin();
             var payoutAndFlavour = Global.Slot.GetPayoutAndFlavourText(amount);
-            
+            if (payoutAndFlavour.Item1 > 10000)
+            {
+                await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
+                await Task.Delay(700);
+                await ReplyAsync($"You used **{amount} coins** but you'll only get **10,000 coins** for that since you won more than the 10k maximum amount.");
+                account.Coins += 10000;
+                _globalUserAccounts.SaveAccounts(Context.User.Id);
+                return;
+            }
             bool Double = false;
             bool NoLoss = false;
             for (int i = 0; i < account.Bought_Items.Count; i++)
@@ -376,6 +385,15 @@ namespace Bot.Modules
                     }
                     else if (account.Bought_Items[i].name == "Double Day")
                     {
+                        if (payoutAndFlavour.Item1 * 2 > 10000)
+                        {
+                            await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
+                            await Task.Delay(700);
+                            await ReplyAsync($"You used **{amount} coins** but you'll only get **10,000 coins** for that since you won more than the 10k maximum amount.");
+                            account.Coins += 10000;
+                            _globalUserAccounts.SaveAccounts(Context.User.Id);
+                            return;
+                        }
                         Double = true;
                     }
 
@@ -389,13 +407,13 @@ namespace Bot.Modules
                     account.Coins += payoutAndFlavour.Item1;
                     _globalUserAccounts.SaveAccounts();
                     await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
-                    await Task.Delay(1000);
+                    await Task.Delay(700);
                     await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2}");
                 }
                 else
                 {
                     await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
-                    await Task.Delay(1000);
+                    await Task.Delay(700);
                     await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2} \n:cloud_tornado: PHEW! That was close, **No Loss Day** just saved you from losing that money! ");
                 }
 
@@ -409,13 +427,13 @@ namespace Bot.Modules
                     account.Coins += payoutAndFlavour.Item1 * 2;
                     _globalUserAccounts.SaveAccounts(Context.User.Id);
                     await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
-                    await Task.Delay(1000);
+                    await Task.Delay(700);
                     await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2} \n:money_mouth: **Double Day** is in effect and gave you double the amount! ({payoutAndFlavour.Item1 * 2} coins)");
                 }
                 else
                 {
                     await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
-                    await Task.Delay(1000);
+                    await Task.Delay(700);
                     await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2} ");
                 }
             }
@@ -426,13 +444,13 @@ namespace Bot.Modules
                     account.Coins += payoutAndFlavour.Item1 * 2;
                     _globalUserAccounts.SaveAccounts();
                     await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
-                    await Task.Delay(1000);
+                    await Task.Delay(700);
                     await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2} \n:money_mouth: **Double Day** is in effect and gave you double the amount! ({payoutAndFlavour.Item1 * 2} coins)");
                 }
                 else
                 {
                     await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
-                    await Task.Delay(1000);
+                    await Task.Delay(700);
                     await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2} \n:cloud_tornado: PHEW! That was close, **No Loss Day** just saved you from losing that money! ");
                 }
             }
@@ -447,7 +465,7 @@ namespace Bot.Modules
 
                 }
                     await ReplyAsync($"**[  :slot_machine:  SLOTS ]** \n------------------\n{slotEmojis}");
-                    await Task.Delay(1000);
+                    await Task.Delay(700);
                     await ReplyAsync($"You used **{amount} coin(s)** {payoutAndFlavour.Item2}");
             }
         }
@@ -466,8 +484,17 @@ namespace Bot.Modules
         [Cooldown(7200)]
         public async Task Work()
         {
+            
             int randomIndex = Global.Rng.Next(Constants.Jobs.Length);
             string job = Constants.Jobs[randomIndex];
+            if (job.Contains("A") || job.Contains("E") || job.Contains("I") || job.Contains("O") || job.Contains("U") || job.Contains("Y"))
+            {
+                job = $"an {job}";
+            }
+            else
+            {
+                job = $"a {job}";
+            }
             var account = _globalUserAccounts.GetById(Context.User.Id);
             var emb = new EmbedBuilder();
             var result = Global.Rng.Next(Constants.WorkRewardMinMax.Item1, Constants.WorkRewardMinMax.Item2 + 1);
@@ -487,7 +514,7 @@ namespace Bot.Modules
                         emb.WithColor(Color.Green);
                         emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
                         emb.WithCurrentTimestamp();
-                        emb.WithDescription($"<a:KBtick:580851374070431774> You work as a {job} and earn **{result * 2} coins**. Double Day is in effect and gave you double the amount!");
+                        emb.WithDescription($"<a:KBtick:580851374070431774> You work as {job} and earn **{result * 2} coins**. Double Day is in effect and gave you double the amount!");
                         await ReplyAsync("", false, emb.Build());
                         return;
                     }
@@ -500,7 +527,7 @@ namespace Bot.Modules
             emb.WithColor(Color.Green);
             emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
             emb.WithCurrentTimestamp();
-            emb.WithDescription($"<a:KBtick:580851374070431774> You work as a {job} and earn **{result} coins**.");
+            emb.WithDescription($"<a:KBtick:580851374070431774> You work as {job} and earn **{result} coins**.");
             await ReplyAsync("", false, emb.Build());
         }
 
@@ -597,7 +624,7 @@ namespace Bot.Modules
         [Command("rob")]
         [Alias("steal")]
         [Remarks("Really want that money that person has? go for it, but don't get caught!")]
-        public async Task Rob([NoSelf] IGuildUser target)
+        public async Task Rob([Remainder] [NoSelf] IGuildUser target)
         {
 
             string[] FailSuccess = new string[]
@@ -657,7 +684,7 @@ namespace Bot.Modules
                     {
                         long amount = (long)((float)robber.NetWorth * (rnd.Next(15, 26) / 100.0)); //How much can the robber lose money.
                         EmbedBuilder fail = new EmbedBuilder();
-                        fail.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                        fail.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                         fail.WithColor(new Color(255, 0, 0));
                         fail.WithCurrentTimestamp();
 
@@ -685,7 +712,7 @@ namespace Bot.Modules
                         long amount = (long)((float)robbed.Coins * (rnd.Next(10, 31) / 100.0)); //How much can the robber steal money.
 
                         EmbedBuilder success = new EmbedBuilder();
-                        success.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                        success.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                         success.WithDescription(RobbingResult + $"and got {amount * 2} coin(s). **Double Day** is in effect and gave you double the amount!");
                         success.WithColor(new Color(0, 255, 0));
                         success.WithCurrentTimestamp();
@@ -704,7 +731,7 @@ namespace Bot.Modules
                     {
                         long amount = (long)((float)robber.NetWorth * (rnd.Next(15, 26) / 100.0)); //How much can the robber lose money.
                         EmbedBuilder fail = new EmbedBuilder();
-                        fail.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                        fail.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                         fail.WithColor(new Color(255, 0, 0));
                         fail.WithCurrentTimestamp();
 
@@ -731,7 +758,7 @@ namespace Bot.Modules
                         long amount = (long)((float)robbed.Coins * (rnd.Next(10, 31) / 100.0)); //How much can the robber steal money.
 
                         EmbedBuilder success = new EmbedBuilder();
-                        success.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                        success.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                         success.WithDescription(RobbingResult + $"and got {amount} coin(s).");
                         success.WithColor(new Color(0, 255, 0));
                         success.WithCurrentTimestamp();
@@ -750,7 +777,7 @@ namespace Bot.Modules
                     {
                         long amount = (long)((float)robber.NetWorth * (rnd.Next(15, 26) / 100.0)); //How much can the robber lose money.
                         EmbedBuilder fail = new EmbedBuilder();
-                        fail.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                        fail.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                         fail.WithColor(new Color(255, 0, 0));
                         fail.WithCurrentTimestamp();
 
@@ -776,7 +803,7 @@ namespace Bot.Modules
                         long amount = (long)((float)robbed.Coins * (rnd.Next(10, 31) / 100.0)); //How much can the robber steal money.
 
                         EmbedBuilder success = new EmbedBuilder();
-                        success.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                        success.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                         success.WithDescription(RobbingResult + $"and got {amount * 2} coin(s). **Double Day** is in effect and gave you double the amount!");
                         success.WithColor(new Color(0, 255, 0));
                         success.WithCurrentTimestamp();
@@ -793,7 +820,7 @@ namespace Bot.Modules
                 {
                     long amount = (long)((float)robber.NetWorth * (rnd.Next(15, 26) / 100.0)); //How much can the robber lose money.
                     EmbedBuilder fail = new EmbedBuilder();
-                    fail.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                    fail.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                     fail.WithColor(new Color(255, 0, 0));
                     fail.WithCurrentTimestamp();
 
@@ -820,7 +847,7 @@ namespace Bot.Modules
                     long amount = (long)((float)robbed.Coins * (rnd.Next(10, 31) / 100.0)); //How much can the robber steal money.
 
                     EmbedBuilder success = new EmbedBuilder();
-                    success.WithTitle("<:rob:593876945205329966> == ROBBING == <:rob:593876945205329966>");
+                    success.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
                     success.WithDescription(RobbingResult + $"and got {amount * 2} coin(s).");
                     success.WithColor(new Color(0, 255, 0));
                     success.WithCurrentTimestamp();

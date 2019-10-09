@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 
 namespace Bot.Preconditions
 {
@@ -17,8 +18,14 @@ namespace Bot.Preconditions
     ///     and will not persist with restarts.
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false)]
-    public sealed class RatelimitAttribute : PreconditionAttribute
+    public class RatelimitAttribute : PreconditionAttribute
     {
+        private readonly Logger _logger;
+        public RatelimitAttribute(Logger logger)
+        {
+            _logger = logger;
+
+        }
         private readonly bool _applyPerGuild;
         private readonly bool _applyPerUser;
         private readonly uint _invokeLimit;
@@ -61,7 +68,7 @@ namespace Bot.Preconditions
                     break;
             }
         }
-
+        
         /// <summary> Sets how often a user is allowed to use this command. </summary>
         /// <param name="times">The number of times a user may use the command within a certain period.</param>
         /// <param name="period">The amount of time since first invoke a user has until the limit is lifted.</param>
@@ -69,7 +76,8 @@ namespace Bot.Preconditions
         public RatelimitAttribute(
             uint times,
             TimeSpan period,
-            RatelimitFlags flags = RatelimitFlags.None)
+            RatelimitFlags flags = RatelimitFlags.None
+            )
         {
             _invokeLimit = times;
             _noLimitInDMs = (flags & RatelimitFlags.NoLimitInDMs) == RatelimitFlags.NoLimitInDMs;
@@ -81,6 +89,7 @@ namespace Bot.Preconditions
         }
 
         /// <inheritdoc />
+        
         public override Task<PreconditionResult> CheckPermissionsAsync(
             ICommandContext context,
             CommandInfo command,
@@ -110,7 +119,12 @@ namespace Bot.Preconditions
                 _invokeTracker[key] = timeout;
                 return Task.FromResult(PreconditionResult.FromSuccess());
             }
-            return Task.FromResult(PreconditionResult.FromError("Hey, Cooldown!"));
+            //(LogSeverity.Critical, $"{DateTime.Now}", $"{context.User} has triggered the rate limit of a command. ({context.User.Id})");
+            //Console.Write($"{context.User} has triggered the rate limit of a command. ({context.User.Id})");
+           // Console.WriteLine($"{context.User} has triggered the rate limit of a command. ({context.User.Id})");
+            
+            return Task.FromResult(PreconditionResult.FromError("Cooldown! You have broke the rate limit of the command."));
+            
             
         }
 

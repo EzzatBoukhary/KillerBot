@@ -46,7 +46,7 @@ namespace Bot.Modules
             try
             {
                 await Context.Message.DeleteAsync();
-                var messages = await Context.Channel.GetMessagesAsync(amountOfMessagesToDelete + 1).FlattenAsync();
+                var messages = await Context.Channel.GetMessagesAsync(amountOfMessagesToDelete).FlattenAsync();
                 await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
                 var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
                 await Task.Delay(5000);
@@ -59,7 +59,6 @@ namespace Bot.Modules
             }
         
     }
-
 
         [Command("purge")]
         [Remarks("Purges A User's Last Messages. Default Amount To Purge Is 100")]
@@ -80,7 +79,7 @@ namespace Bot.Modules
             try
             {
                 await (Context.Message.Channel as SocketTextChannel).DeleteMessagesAsync(result);
-                var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
+                var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete - 1} Messages 👌");
                 await Task.Delay(5000);
                 await m.DeleteAsync();
             }
@@ -585,7 +584,7 @@ namespace Bot.Modules
         [Summary("Direct message a user with a warning")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task Warn([Summary("The user you want to warn/strike")]SocketGuildUser user = null, 
+        public async Task Warn([RequireUserHierarchy][Summary("The user you want to warn/strike")]SocketGuildUser user = null, 
            [Summary("OPTIONAL: The reason behind the warning")] [Remainder] string reason = null)
         {
            
@@ -675,7 +674,7 @@ namespace Bot.Modules
        
         
         [Command("removewarn")]
-        [Alias("removestrike", "deletestrike","deletewarn", "remove-warn", "delete-warn", "remove-strike", "delete-strike")]
+        [Alias("removestrike", "deletestrike","deletewarn", "remove-warn", "delete-warn", "remove-strike", "delete-strike", "clear-warn", "clear-strike")]
         [Summary("Direct message a user with a warning")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]

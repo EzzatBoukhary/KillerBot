@@ -60,7 +60,7 @@ namespace Bot.Modules
 
             }
         }
-        [Command("owner-serverinfo")]
+        [Command("owner-serverinfo"), Alias("o-sinfo")]
         [RequireOwner]
         [Summary("Shows server information.")]
         public async Task ownersinfo(ulong ID)
@@ -203,6 +203,8 @@ namespace Bot.Modules
         {
             var todel = await ReplyAsync("Shutting down...");
             var channel = Context.Client.GetChannel(550072406505553921) as SocketTextChannel;
+            if (channel == null)
+                await ReplyAsync("<:KBfail:580129304592252995> The bot is offline.");
             var todol = channel.SendMessageAsync("<:KBfail:580129304592252995>");
             var task = Task.Run(async () =>
             {
@@ -214,8 +216,10 @@ namespace Bot.Modules
         }
         [Command("blacklist")]
         [RequireOwner]
-        public async Task Blacklist(ulong id)
+        public async Task Blacklist(ulong id, string reason = null)
         {
+            if (reason == null)
+                reason = "[No reason was specified]";
             var UserToBlacklist = _globalUserAccounts.GetById(id);
             if (UserToBlacklist.Blacklisted == true)
             {
@@ -225,24 +229,66 @@ namespace Bot.Modules
             {
                 UserToBlacklist.Blacklisted = true;
                 _globalUserAccounts.SaveAccounts(id);
-                await ReplyAsync($"{id} has been blacklisted from using KillerBot commands.");
+                var username = Context.Client.GetUser(id).Username;
+                var discrim = Context.Client.GetUser(id).Discriminator;
+                var emb = new EmbedBuilder()
+                    .WithColor(Color.Red)
+                    .WithTitle("=== Blacklist ===")
+                    .WithCurrentTimestamp()
+                    .WithFooter($"Blacklisted by {Context.User}", Context.User.GetAvatarUrl())
+                    .WithDescription($"Blacklisted user: **{username}#{discrim}** \nReason: {reason}");
+                await Context.Channel.SendMessageAsync("", false, emb.Build());
             }
         }
         [Command("whitelist"), Alias("unblacklist")]
         [RequireOwner]
-        public async Task UnBlacklist(ulong id)
+        public async Task UnBlacklist(ulong id, string reason = null)
         {
+            if (reason == null)
+                reason = "[No reason was specified]";
             var UserToBlacklist = _globalUserAccounts.GetById(id);
             if (UserToBlacklist.Blacklisted == true)
             {
                 UserToBlacklist.Blacklisted = false;
                 _globalUserAccounts.SaveAccounts(id);
-                await ReplyAsync($"{id} has been unblacklisted from using KillerBot commands.");
+                var username = Context.Client.GetUser(id).Username;
+                var discrim = Context.Client.GetUser(id).Discriminator;
+                var emb = new EmbedBuilder()
+                    .WithColor(Color.Green)
+                    .WithTitle("=== Whitelist ===")
+                    .WithCurrentTimestamp()
+                    .WithFooter($"Whitelisted by {Context.User}", Context.User.GetAvatarUrl())
+                    .WithDescription($"Whitelisted user: **{username}#{discrim}** \nReason: {reason}");
+                await Context.Channel.SendMessageAsync("", false, emb.Build());
             }
             else
             {
                 await ReplyAsync($"User is not blacklisted.");
             }
+        }
+        [Command("blacklists")]
+        [RequireOwner]
+        public async Task Blacklists()
+        {
+            var accounts = _globalUserAccounts.GetAllAccounts();
+            var emb = new EmbedBuilder()
+                           .WithTitle("Blacklisted users");
+            foreach (var acc in accounts.ToList())
+            {
+                
+                if (acc.Blacklisted == true)
+                {
+                    var username = Context.Client.GetUser(acc.Id).Username;
+                    var discrim = Context.Client.GetUser(acc.Id).Discriminator;
+                    emb.WithColor(new Color(0,0,0));
+                    emb.AddField($"{username}#{discrim}",$"ID: {acc.Id}", false);
+                    await Context.Channel.SendMessageAsync("", false, emb.Build());
+                    return;
+                }
+            }
+            emb.WithColor(Color.Green);
+            emb.Description = "No users are blacklisted at the moment.";
+            await Context.Channel.SendMessageAsync("", false, emb.Build());
         }
         [Command("logs")]
         [Summary("Show KillerBot logs")]
@@ -298,7 +344,7 @@ namespace Bot.Modules
                 throw new ArgumentException("Amount specified is can't be 0");
             var account = _globalUserAccounts.GetById(user);
 
-            if (amount > account.Coins)
+            if ((source == "wallet" & amount > account.Coins) || (source == "bank" & amount > account.BankCoins))
                 throw new ArgumentException($"Amount specified is not available ({amount} > {account.Coins})");
             var emb = new EmbedBuilder();
             if (source == "wallet")

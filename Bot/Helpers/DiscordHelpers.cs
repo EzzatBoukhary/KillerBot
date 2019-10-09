@@ -17,6 +17,8 @@ namespace Bot.Helpers
                 IRole role = user.Guild.GetRole(id);
                 if (role.Name == "@everyone")
                     continue;
+                if (role.Color.RawValue == 0)
+                    continue;
 
                 if (highestRole == null)
                     highestRole = role;
