@@ -205,7 +205,11 @@ namespace Bot.Modules
             var todel = await ReplyAsync("Shutting down...");
             var channel = Context.Client.GetChannel(550072406505553921) as SocketTextChannel;
             if (channel == null)
+            {
                 await ReplyAsync("<:KBfail:580129304592252995> The bot is offline.");
+                Environment.Exit(0);
+                return;
+            }
             var todol = channel.SendMessageAsync("<:KBfail:580129304592252995>");
             var task = Task.Run(async () =>
             {
