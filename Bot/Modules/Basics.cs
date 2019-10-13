@@ -130,12 +130,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.8.1` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n{dot} Fixed the quote & userinfo embed color showing wrongly if the highest role isn't colored but a lower one is. \n \n{dot} Got rid of the '512' in perms of `k!roleinfo` command. \n \n{dot} Nerfed `k!slots`. \n \n{dot} Added user hierarchy to warn command. \n \n{dot} Fixed not being able to use `k!bal`, `k!rob` if you type the user's name with spaces (if the name has spaces) \n \n{dot} New aliases to: `k!delete-warn` and `k!owner-serverinfo` \n \n{dot} Added `k!blacklists` command and made layout changes to `k!blacklist` , `k!whitelist`. \n \n{dot} Fixed a bug in `k!remove-money` and `k!shutdown` \n \n{dot} Fixed the grammar mistakes in `k!work` depending on the job title. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Patch ==** `v1.8.2` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n{dot} Fixed `k!serverinfo` command error if the server has features. \n \n{dot} Small fix for the bot owner command `k!remove-money`. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: October 9th - 2019 8:38 AM GMT");
+                x.WithText("Last updated: October 13th - 2019 12:16 AM GMT");
 
 
 
@@ -285,8 +285,8 @@ namespace Bot.Modules
             {
                 embed.AddField(fb =>
                     fb.WithName("Splash Icon")
-                    .WithValue("").WithIsInline(true));
-                embed.WithUrl(guild.SplashUrl);
+                    .WithValue($"[Splash picture:]({guild.SplashUrl})").WithIsInline(true));
+                embed.WithImageUrl(guild.SplashUrl);
             }
             await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }

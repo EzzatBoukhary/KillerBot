@@ -126,10 +126,11 @@ namespace Bot.Modules
             {
                 embed.AddField(fb =>
                     fb.WithName("Splash Icon")
-                    .WithValue("").WithIsInline(true));
-                embed.WithUrl(guild.SplashUrl);
+                    .WithValue($"[Splash picture:]({guild.SplashUrl})").WithIsInline(true));
+                embed.WithImageUrl(guild.SplashUrl);
             }
-            await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+            
+           await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }
         [Command("getinvite")]
         [RequireOwner]
@@ -346,6 +347,8 @@ namespace Bot.Modules
 
             if ((source == "wallet" & amount > account.Coins) || (source == "bank" & amount > account.BankCoins))
                 throw new ArgumentException($"Amount specified is not available ({amount} > {account.Coins})");
+            if ((source == "bank" & amount > account.BankCoins))
+                throw new ArgumentException($"Amount specified is not available ({amount} > {account.BankCoins})");
             var emb = new EmbedBuilder();
             if (source == "wallet")
             {
