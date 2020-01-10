@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using Discord.WebSocket;
@@ -48,6 +49,16 @@ namespace Bot.Helpers
                 roles = roles.Remove(roles.Length - 2, 2);
 
             return roles;
+        }
+        private static readonly string[] regionalIndicatorLetters = "🇦|🇧|🇨|🇩|🇪|🇫|🇬|🇭|🇮|🇯|🇰|🇱|🇲|🇳|🇴|🇵|🇶|🇷|🇸|🇹|🇺|🇻|🇼|🇽|🇾|🇿|".Split('|');
+
+        public static string GetUnicodeRegionalLetter(int index)
+        {
+            if (index < 0 || index >= regionalIndicatorLetters.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+            return regionalIndicatorLetters[index];
         }
     }
 }

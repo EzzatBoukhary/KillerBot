@@ -307,6 +307,21 @@ namespace Bot.Modules
             await dmChannel.SendFileAsync($"{folder}/{fileName}");
         }
 
+        [Command("user-data"), Alias("userdata")]
+        [RequireOwner]
+        public async Task GetAccountFile(ulong id)
+        {
+            var userFilePath = _globalUserAccounts.GetAccountFilePath(id);
+            if (String.IsNullOrEmpty(userFilePath))
+            {
+                await Context.Channel.SendMessageAsync("I don't have any information about them.");
+                return;
+            }
+
+            await Context.User.SendFileAsync(userFilePath, $"This is the information I have on them.");
+            await Context.Channel.SendMessageAsync($"{Context.User.Mention} DM sent!");
+        }
+
         [Command("add-coins"),Alias("add-money")]
         [Summary("Adds specified money to a specific user. Bot owner only.")]
         [RequireOwner]

@@ -20,6 +20,11 @@ using Bot.Helpers;
 using Bot.Modules;
 using Bot.Extensions;
 using System.Linq;
+using Discord.Addons.Interactive;
+using Bot.Modules.Account;
+using Bot.Modules.YouTube;
+using Bot.Modules.Giphy;
+using Bot.Services;
 
 namespace Bot
 {
@@ -63,8 +68,10 @@ namespace Bot
 
             serviceCollection.AddSingleton<Logger>();
             serviceCollection.AddSingleton<TriviaGames>();
+            serviceCollection.AddHttpClient();
             serviceCollection.AddSingleton<DiscordEventHandler>();
             serviceCollection.AddSingleton<CommandHandler>();
+            serviceCollection.AddSingleton(new InteractiveService(new DiscordSocketClient()));
             serviceCollection.AddSingleton<CommandService>();
             serviceCollection.AddSingleton<ApplicationSettings>((s) =>
             {
@@ -83,15 +90,18 @@ namespace Bot
             serviceCollection.AddSingleton<IDiscordSocketClient, DiscordSocketClientAbstraction>();
             serviceCollection.AddSingleton<IDailyMiunies, Daily>();
             serviceCollection.AddSingleton<IMiuniesTransfer, Transfer>();
-
             serviceCollection.AddSingleton<BlogHandler>();
             serviceCollection.AddSingleton<GlobalGuildAccounts>();
+            serviceCollection.AddSingleton<YouTubeApi>();
+            serviceCollection.AddSingleton<GiphyApi>();
+            serviceCollection.AddSingleton<IXkcdService, XkcdService>();
             serviceCollection.AddSingleton<GlobalUserAccounts>();
             serviceCollection.AddSingleton<Announcements>();
             serviceCollection.AddSingleton<RoleByPhraseProvider>();
             serviceCollection.AddSingleton<MessageRewardHandler>();
             serviceCollection.AddSingleton<RepeatedTaskFunctions>();
             serviceCollection.AddSingleton<BotSettings>();
+            serviceCollection.AddSingleton<InteractiveService>();
             serviceCollection.AddSingleton<JsonDataStorage>();
         }
 

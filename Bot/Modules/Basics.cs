@@ -11,6 +11,11 @@ using System.Text;
 using System.Collections.Generic;
 using Gommon;
 using Bot.Helpers;
+using System.Net;
+using Newtonsoft.Json;
+using System.IO;
+using System.Net.Http;
+using Bot.Entities;
 
 namespace Bot.Modules
 {
@@ -130,12 +135,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.8.2` <:KBupdate:580129240889163787> \n \n**[Changed-Fixed]** \n \n{dot} Fixed `k!serverinfo` command error if the server has features. \n \n{dot} Small fix for the bot owner command `k!remove-money`. \n \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Minor Release ==** `v1.9.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} New commands: \n`k!softban`, `k!move`, `k!poll`, `k!list-bans`, `k!race`, `k!findmessageid`, `k!timezones`, `k!minesweeper`, `xkcd`, `k!dadjoke`, `k!giphy`, `k!youtube`, `k!google`. \n \n{dot} Owner command: `k!user-data`. \n \n{dot} Added examples to some commands that can be seen by doing `k!help {{command name}}`. \n \n**[Changed/Fixed]** \n \n{dot} Change in error messages. \n \n{dot} Change in some of the remarks, summaries , and aliases of commands. \n \n{dot} Small changes to the ban and unban commands. \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: October 13th - 2019 12:16 AM GMT");
+                x.WithText("Last updated: January 10th - 2019 1:49 AM GMT");
 
 
 
@@ -196,7 +201,7 @@ namespace Bot.Modules
             await ReplyAsync("Join the bot's support server to know all the information about the status of the bot and connection: https://discord.gg/DNqAShq");
         }
 
-    [Command("Avatar")]
+    [Command("Avatar"), Alias("av")]
         [Summary("Shows the mentioned user's avatar, or yours if no one is mentioned.")]
         [Remarks("Usage: `k!avatar [@user]`")]
         public async Task AvatarAsync([Remainder] SocketGuildUser user = null)
@@ -291,102 +296,124 @@ namespace Bot.Modules
             await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }
         
-        [Command("roleinfo"), Summary("Returns info about a role."),Alias("RI","role")]
+        [Command("roleinfo"), Summary("Returns info about a role."),Alias("RI")]
         [RequireContext(ContextType.Guild)]
-        public async Task Role([Remainder, Summary("The role to return information about.")] string roleName)
+        public async Task Role([Remainder, Summary("The role to return information about.")] string args)
         {
 
             EmbedBuilder embed = new EmbedBuilder();
             StringBuilder builder = new StringBuilder();
-
+            args = args.ToLower();
+            var mentionedRole = Context.Guild.Roles.Where(r => r.Name.ToLower() == args).FirstOrDefault();
+            if (mentionedRole == null)
+            {
+                mentionedRole = Context.Guild.Roles.Where(r => r.Name.ToLower().StartsWith(args)).FirstOrDefault();
+            }
             IMessage message = Context.Message;
             IGuild guild = Context.Guild;
             IMessageChannel channel = Context.Channel;
-
-            IReadOnlyCollection<IRole> rolesReadOnly = guild.Roles;
-            IRole tgt = null;
-
-            List<IRole> roleList = rolesReadOnly.ToList();
-
-            foreach (IRole role in roleList)
+            var members = Context.Guild.Users.Where(u => u.Roles.Contains(mentionedRole)).ToList();
+            if (args == "everyone" || args == "Everyone")
+                mentionedRole = guild.EveryoneRole as SocketRole;
+            if (mentionedRole == null)
             {
-               if (roleName == "everyone" && role.Name == "@everyone")
-                {
-                    tgt = role;
-                    break;
-                }
-                if (role.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase))
-                {
-                    tgt = role;
-                    break;
-                }
-                else
-                {
-                    continue;
-                }
-            }
-            
-            if (tgt == null)
-            {
-                await Context.Channel.SendMessageAsync($"Unable to find role by the name of `{roleName}`.");
+                await Context.Channel.SendMessageAsync($"Unable to find role by the name of `{args}`.");
                 return;
             }
             else
             {
                 await channel.TriggerTypingAsync();
 
-                embed.Title = $"{tgt.Name}";
-                embed.Color = tgt.Color;
+                embed.Title = $"{mentionedRole.Name}";
+                embed.Color = mentionedRole.Color;
                 embed.Footer = new EmbedFooterBuilder()
                 {
-                    Text = $"Created on: { tgt.CreatedAt.DateTime.ToLongDateString() } { tgt.CreatedAt.DateTime.ToLongTimeString() } (By UTC)"
+                    Text = $"Created on: { mentionedRole.CreatedAt.DateTime.ToLongDateString() } { mentionedRole.CreatedAt.DateTime.ToLongTimeString() } (By UTC)"
                 };
                 embed.Title = "=== ROLE INFORMATION ===";
                 embed.Timestamp = DateTime.UtcNow;
 
                 embed.AddField(x => {
                     x.Name = $"Name";
-                    x.Value = $"{tgt.Name}";
+                    x.Value = $"{mentionedRole.Name}";
                     x.IsInline = true;
                 });
                 embed.AddField(x => {
                     x.Name = $"ID";
-                    x.Value = $"{tgt.Id}";
+                    x.Value = $"{mentionedRole.Id}";
                     x.IsInline = true;
                 });
                 embed.AddField(x => {
                     x.Name = $"Hoisted";
-                    x.Value = $"{tgt.IsHoisted}";
+                    x.Value = $"{mentionedRole.IsHoisted}";
                     x.IsInline = true;
                 });
                 embed.AddField(x => {
                     x.Name = $"Managed";
-                    x.Value = $"{tgt.IsManaged}";
+                    x.Value = $"{mentionedRole.IsManaged}";
                     x.IsInline = true;
                 });
                 embed.AddField(x => {
                     x.Name = $"Mentionable";
-                    x.Value = $"{tgt.IsMentionable}";
+                    x.Value = $"{mentionedRole.IsMentionable}";
                     x.IsInline = true;
                 });
                 embed.AddField(x => {
                     x.Name = $"Position";
-                    x.Value = $"{tgt.Position}";
+                    x.Value = $"{mentionedRole.Position}";
                     x.IsInline = true;
                 });
                 embed.AddField(x => {
                     x.Name = $"Color";
-                    x.Value = $"{tgt.Color.R}, {tgt.Color.G}, {tgt.Color.B}";
+                    x.Value = $"{mentionedRole.Color}";
                     x.IsInline = true;
                 });
-
+                var membercount = Context.Guild.Users.Where(u => u.Roles.Contains(mentionedRole)).Count();
+                string memberstext = "";
+                foreach (var member in members)
+                {
+                    memberstext += $"<@{member.Id}> ";
+                }
+                if (mentionedRole.ToString() == guild.EveryoneRole.ToString())
+                {
+                    membercount = Context.Guild.Users.Count;
+                    memberstext = "Literally everyone here.";
+                }
+                    if (memberstext != "")
+                {
+                    embed.AddField(x =>
+                    {
+                        x.Name = $"Members ({membercount})";
+                            x.Value = $"{memberstext}";
+                        x.IsInline = false;
+                    });
+                }
+                
+                else if (memberstext.ToString().Length > 2048)
+                {
+                    embed.AddField(x =>
+                    {
+                        x.Name = $"Members ({membercount})";
+                        x.Value = $"Loads! I can't show 'em here!";
+                        x.IsInline = false;
+                    });
+                }
+                else
+                {
+                    embed.AddField(x =>
+                    {
+                        x.Name = $"Members ({membercount})";
+                        x.Value = $"None";
+                        x.IsInline = false;
+                    });
+                }
                 builder.Clear();
                 string perms = "";
-                if (tgt.Permissions.ToString() == "512")
+                if (mentionedRole.Permissions.ToString() == "512")
                 {
                     perms = "No perms";
                 }
-                foreach (GuildPermission perm in tgt.Permissions.ToList())
+                foreach (GuildPermission perm in mentionedRole.Permissions.ToList())
                 {
                     if (perm.ToString() == "512")
                         continue;
@@ -681,6 +708,62 @@ namespace Bot.Modules
 
             return permissions.Remove(permissions.Length - 2);
         }
+        /* [Command("wiki")]
+         [Cooldown(5)]
+         [Remarks("Link to the wiki or a a specific search query.")]
+         public async Task Wiki([Remainder] string searchQuery = "")
+         {
+             string link = "https://www.wikipedia.org/";
+             if (searchQuery != "")
+             {
+                 link = $"https://en.wikipedia.org/wiki/{searchQuery.Trim().Replace(" ", "+")}";
+             }
+
+             await Context.Channel.SendMessageAsync(embed: new EmbedBuilder()
+                 .WithColor(Color.Blue)
+                 .WithDescription(link)
+                 .Build());
+         } */
+        [Command("dadjoke")]
+        [Summary("Random dad joke")]
+        public async Task DadJoke()
+        {
+            var wr = (HttpWebRequest)WebRequest.Create("https://icanhazdadjoke.com/");
+            wr.Accept = "application/json";
+            wr.UserAgent = "Hatsune Miku Discord Bot (speyd3r@meek.moe)";
+            await ReplyAsync(JsonConvert.DeserializeObject<Dadjoke>(new StreamReader(wr.GetResponse().GetResponseStream()).ReadToEnd()).joke);
+        }
+
+        [Command("FindMessageID"), Alias("getmessageid", "messageid", "fmi", "gmi")]
+        [Summary("Gets the message id of a message in the current channel with the provided message text")]
+        [Remarks("Keep in mind that this isn't the best efficient way to get the ID of a message. If you're having any trouble try doing it manually.")]
+        [RequireContext(ContextType.Guild)]
+        public async Task FindMessageIDAsync([Summary("The content of the message to search for")][Remainder] string messageContent)
+        {
+            if (messageContent.IsEmptyOrWhiteSpace())
+            {
+                _ = await ReplyAsync("You need to specify the text of the message to search for.").ConfigureAwait(false);
+                return;
+            }
+            const int searchDepth = 100;
+            IEnumerable<IMessage> messages = await Context.Channel.GetMessagesAsync(searchDepth).FlattenAsync().ConfigureAwait(false);
+            IEnumerable<IMessage> matches = messages.Where(x => x.Content.StartsWith(messageContent.Trim(), StringComparison.OrdinalIgnoreCase));
+            if (matches == null || !matches.Any())
+            {
+                _ = await ReplyAsync($"Message not found. Hint: Only the last {searchDepth} messages in this channel are scanned.").ConfigureAwait(false);
+                return;
+            }
+            else if (matches.Count() > 1)
+            {
+                _ = await ReplyAsync($"{matches.Count()} Messages found. Please be more specific.").ConfigureAwait(false);
+                return;
+            }
+            else
+            {
+                _ = await ReplyAsync($"The message Id is: {matches.First().Id} \n**TIP:** You can use \"k!quote {matches.First().Id}\" to quote the message in this channel.").ConfigureAwait(false);
+            }
+        }
+
         [Command("report"), Alias("bug", "bugreport", "reportbug")]
         [Cooldown(10)]
         [Summary("Send a report about a bug to the bot owner. Spam/troll is not tolerated.")]

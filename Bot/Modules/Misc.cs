@@ -120,7 +120,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.8.2`");
+            builder.AddField("Version", $"The current version of the bot is: `1.9.0`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]
@@ -173,8 +173,12 @@ namespace Bot.Modules
                                  //  $"\nPreconditions: {cmd.Preconditions.Humanize()}" +
                                    (string.IsNullOrEmpty(cmd.Remarks) ? "" : $"\nRemarks: {cmd.Remarks}") +
                                    (string.IsNullOrEmpty(cmd.Summary) ? "" : $"\nSummary: {cmd.Summary}");
+                ExampleAttribute example = cmd.Attributes.OfType<ExampleAttribute>().FirstOrDefault();
+                if (example != null && !example.ExampleText.IsEmpty())
+                {
+                    paramsString += $"\nExample: {example.ExampleText}";
+                }
 
-              
                 builder.AddField(x =>
                 {
                     x.Name = string.Join(", ", cmd.Aliases);
@@ -320,7 +324,22 @@ namespace Bot.Modules
 
            
           }
-      
+        [Command("timezones"), Alias("worldclock")]
+        public async Task Worldclock()
+        {
+            CultureInfo enAU = new CultureInfo("en-US");
+            string format = "HH':'mm', 'MMM dd";
+            await Context.Channel.SendMessageAsync("", false,
+                new EmbedBuilder()
+                .AddField(":globe_with_meridians: UTC", DateTime.UtcNow.ToString(format, enAU), true)
+                .AddField(":flag_at: Vienna", DateTime.Now.ToString(format, enAU), true)
+                .AddField(":flag_in: Mumbai", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "India Standard Time").ToString(format, enAU), true)
+                .AddField(":flag_jp: Tokyo", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Tokyo Standard Time").ToString(format, enAU), true)
+                .AddField(":bridge_at_night: San Francisco", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Pacific Standard Time").ToString(format, enAU), true)
+                .AddField(":statue_of_liberty: New York", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Eastern Standard Time").ToString(format, enAU), true)
+                .Build()
+                );
+        }
 
         //8ball
         [Command("8ball"), Summary("Answers all your questions in life.")]
@@ -456,7 +475,7 @@ namespace Bot.Modules
                 await ReplyAsync("", false, embed.Build());
             }
         }
-       
+
         [Command("randomcat")]
         [Cooldown(3)]
         [Alias("meow","cat")]

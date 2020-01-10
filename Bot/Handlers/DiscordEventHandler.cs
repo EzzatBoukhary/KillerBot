@@ -169,20 +169,20 @@ namespace Bot.Handlers
             var channel = _client.GetChannel(584836200414576652) as SocketTextChannel;
             if (latencyAfter > 20000)
             {
-                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently suffering from a crash attempt! ({latencyAfter} ms)");
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently suffering from a possible crash attempt! :no_entry: :rotating_light: ({latencyAfter} ms)");
+                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently suffering from a very bad connection! ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently suffering from a very bad connection! :no_entry: :rotating_light: ({latencyAfter} ms)");
 
             }
             else if (latencyAfter > 5000)
             {
-                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently having a possible crash attempt! ({latencyAfter} ms)");
+                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently having a bad latency! ({latencyAfter} ms)");
                 channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having a possible crash attempt! :warning: ({latencyAfter} ms)");
             }
            
             else if (latencyBefore > 5000 & latencyAfter < 200)
             {
-                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot survived possible crash attempt. ({latencyAfter} ms)");
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot survived possible crash attempt. ({latencyAfter} ms)");
+                _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is back to normal. ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is back to normal. ({latencyAfter} ms)");
             }
         }
 
@@ -199,7 +199,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.8.2 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.9.0 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
 

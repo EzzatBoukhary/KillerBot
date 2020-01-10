@@ -38,6 +38,7 @@ namespace Bot.Modules
 
         [Command("purge", RunMode = RunMode.Async)]
         [Remarks("Purges An Amount Of Messages")]
+        [Example("k!purge 30")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task Clear(
@@ -62,6 +63,7 @@ namespace Bot.Modules
 
         [Command("purge")]
         [Remarks("Purges A User's Last Messages. Default Amount To Purge Is 100")]
+        [Example("k!purge @Panda#8822 15")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task Clear(
@@ -90,7 +92,7 @@ namespace Bot.Modules
             }
         }
 
-        [Command("Kick"), Summary("Kick @Username This is a reason"), Remarks("Kicks a user from the guild")]
+        [Command("Kick"), Remarks("k!kick @User This is a reason"), Summary("Kicks a user from the guild")]
         [RequireBotPermission(GuildPermission.KickMembers)]
         [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task KickAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy]
@@ -132,7 +134,8 @@ namespace Bot.Modules
        
          [Command("AddRole")]
          [Remarks("Usage: k!addrole {@user/ user's name (NO SPACES)} {@role/ roleName}")]
-         [RequireBotPermission(GuildPermission.ManageRoles)]
+        [Summary("Adds a role to a user.")]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
          [RequireUserPermission(GuildPermission.ManageRoles)]
          public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
          {
@@ -152,6 +155,7 @@ namespace Bot.Modules
 
         [Command("AddRole")]
         [Remarks("Usage: k!addrole {@role/ rolename (NO SPACES)} {@user/ user's name}")]
+        [Summary("Adds a role to a user.")]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy] SocketRole role, [Remainder] SocketGuildUser user)
@@ -172,7 +176,8 @@ namespace Bot.Modules
 
         [Command("RemoveRole")]
          [Remarks("Usage: k!addrole {@user/ user's name (NO SPACES)} {@role/ roleName}")]
-         [RequireBotPermission(GuildPermission.ManageRoles)]
+        [Summary("Removes a role from a user.")]
+        [RequireBotPermission(GuildPermission.ManageRoles)]
          [RequireUserPermission(GuildPermission.ManageRoles)]
          public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
          {
@@ -192,6 +197,7 @@ namespace Bot.Modules
 
         [Command("RemoveRole")]
         [Remarks("Usage: k!addrole {rolename/@role (NO SPACES)} {@user/ user's name}")]
+        [Summary("Removes a role from a user.")]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketRole role, [Remainder] SocketGuildUser user)
@@ -211,7 +217,8 @@ namespace Bot.Modules
         }
 
         [Command("mute")]
-        [Remarks("Mutes A User")]
+        [Summary("Mutes A User")]
+        [Example("k!mute @Panda#8822 Have fun in silence.")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task Mute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy]
         [Summary("The user you want to mute")]SocketGuildUser user = null,
@@ -263,7 +270,8 @@ namespace Bot.Modules
         }
         //=====mute with time=====
         [Command("tempmute")]
-        [Remarks("Mutes a user for a limited time")]
+        [Summary("Mutes a user for a limited time")]
+        [Example("k!tempmute @Panda#8822 10 I SAID NO!")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task MuteTime([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy]
         [Summary("The user you want to tempmute")]SocketGuildUser user = null,
@@ -325,12 +333,13 @@ namespace Bot.Modules
             }
 
         }
-       
+
         //======end of time mute======
 
 
         [Command("unmute")]
-        [Remarks("Unmutes A User")]
+        [Summary("Unmutes A User")]
+        [Example("k!unmute @Panda#8822 You're a good boy now.")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task Unmute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy][Summary("REQUIRED: The user you want to unmute")] SocketGuildUser user = null, [Summary("OPTIONAL: The reason behind the tempmute")] [Remainder] string reason = null)
         {
@@ -357,8 +366,28 @@ namespace Bot.Modules
             else
                 throw new ArgumentException("User is not muted");
         }
-
-        [Command("Ban"), Summary("Usage: Ban @Username {Days to prune messages} Reason"), Remarks("Bans a user from the guild")]
+        [Command("ban"), Summary("Usage: k!ban {User ID} Reason"), Remarks("Force bans a user from the guild."), Example("k!ban 123456789420 You're not Welcome here ever.")]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task ForceBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The ID of user you want to ban")] ulong id,
+           [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
+        {
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "[No reason was provided]";
+            }
+            var gld = Context.Guild as SocketGuild;
+            var user = Context.Client.GetUser(id);
+            var embed = new EmbedBuilder();
+            embed.Color = new Color(206, 47, 47);
+            embed.Title = "=== Forced Ban ===";
+            embed.Description = $"**Banned User: ** {user.Username}#{user.Discriminator} || {user.Id} \n**Banned by: ** {Context.User}\n**Reason: **{reason}";
+            embed.ImageUrl = "https://i.redd.it/psv0ndgiqrny.gif";
+            await gld.AddBanAsync(id, 0, $"{Context.User}: {reason}");
+            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT FORCEFULLY BANNED*** :hammer: :fire: ");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")] SocketGuildUser user = null,
@@ -366,7 +395,7 @@ namespace Bot.Modules
            [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
         {
             if (user == null)
-                throw new ArgumentException("You must mention a user! <:KBfail:580129304592252995>");
+                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user!");
             if (string.IsNullOrEmpty(reason))
             {
                 reason = "[No reason was provided]";
@@ -395,14 +424,14 @@ namespace Bot.Modules
         }
 
         //Ban with no prune days
-        [Command("Ban"), Summary("Usage: Ban @Username {Days to prune messages} Reason"), Remarks("Bans a user from the guild")]
+        [Command("Ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")]SocketGuildUser user = null,
            [Summary("OPTIONAL: The reason behind the ban")] [Remainder] string reason = null)
         {
             if (user == null)
-                throw new ArgumentException("You must mention a user! <:KBfail:580129304592252995>");
+                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user");
             if (string.IsNullOrEmpty(reason))
             {
                 reason = "[No reason was provided]";
@@ -448,7 +477,7 @@ namespace Bot.Modules
                 theUser = UsernameUser;
             if (UsernameUser == null)
                 throw new ArgumentException("User not found. Please enter the the username#discriminator/username/ID of the user you want to unban.");
-        
+            
             if (user == $"{theUser.User.Username}#{theUser.User.Discriminator}")
             {
                 await Context.Guild.RemoveBanAsync(theUser.User, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
@@ -478,11 +507,85 @@ namespace Bot.Modules
             {
                 reason = "[No reason was provided]";
             }
+            var name = Context.Client.GetUser(id);
             await Context.Guild.RemoveBanAsync(theUser.User, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" });
-            await ReplyAsync($"The user of ID `{id}` has been unbanned. <a:KBtick:580851374070431774> ");
+            await ReplyAsync($"<a:KBtick:580851374070431774> **{name}** of ID ({id}) has been unbanned. ");
              
         }
 
+        [Command("sban"), Alias("soft", "softban")]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [Summary("Bans a user and immediately unbans them.")]
+        public async Task SoftBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy][Summary("The user to softban")] SocketGuildUser user = null,
+                                  [Summary("Number of days for which to prune the user's messages (1 day is default)")] int pruneDays = 1,
+                                  [Summary("Reason for softban")] [Remainder] string reason = null)
+                                  
+        {
+            if (user == null)
+                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user");
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "[No reason was provided]";
+            }
+
+            var gld = Context.Guild as SocketGuild;
+
+            var embed = new EmbedBuilder();
+            embed.Color = Color.Orange;
+            embed.Title = "=== Soft Ban ===";
+            embed.Description = $"**Soft banned User: ** {user.Username}#{user.Discriminator} || {user.Id}\n**Soft Banned by: ** {Context.User}\n**Reason: **{reason}";
+            try
+            {
+                var embed2 = new EmbedBuilder();
+                embed2.Description = ($"You've been soft banned from **{Context.Guild.Name}** for **{reason}**.");
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                await dmChannel.SendMessageAsync("", false, embed2.Build());
+
+            }
+            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
+            await gld.AddBanAsync(user, pruneDays, $"{Context.User}: {reason}");
+            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT SOFT BANNED!***");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Guild.RemoveBanAsync(user, options: new RequestOptions { AuditLogReason = $"Soft banned by: {Context.User.Username}#{Context.User.Discriminator}" }).ConfigureAwait(false);
+
+        }
+        [Command("sban"), Alias("soft", "softban")]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [Summary("Bans a user and immediately unbans them.")]
+        public async Task SoftBan2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy][Summary("The user to softban")] SocketGuildUser user = null,
+                                  [Remainder][Summary("Reason for softban")] string reason = null)
+
+        {
+            if (user == null)
+                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user");
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "[No reason was provided]";
+            }
+
+            var gld = Context.Guild as SocketGuild;
+
+            var embed = new EmbedBuilder();
+            embed.Color = Color.Orange;
+            embed.Title = "=== Soft Ban ===";
+            embed.Description = $"**Soft banned User: ** {user.Username}#{user.Discriminator} || {user.Id}\n**Soft Banned by: ** {Context.User}\n**Reason: **{reason}";
+            try
+            {
+                var embed2 = new EmbedBuilder();
+                embed2.Description = ($"You've been soft banned from **{Context.Guild.Name}** for **{reason}**.");
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                await dmChannel.SendMessageAsync("", false, embed2.Build());
+
+            }
+            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
+            await gld.AddBanAsync(user, 1, $"{Context.User}: {reason}");
+            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT SOFT BANNED!***");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Guild.RemoveBanAsync(user, options: new RequestOptions { AuditLogReason = $"Soft Banned by: {Context.User.Username}#{Context.User.Discriminator}" }).ConfigureAwait(false);
+
+        }
         [Command("changenick"), Alias("setnick", "change-nick")]
         [Remarks("Set A User's Nickname")]
         [RequireUserPermission(GuildPermission.ManageNicknames)]
@@ -495,6 +598,47 @@ namespace Bot.Modules
                 throw new ArgumentException("You should specify the new nickname you need to set to the user");
             await Context.Guild.GetUser(username.Id).ModifyAsync(x => x.Nickname = name);
             await ReplyAsync(" <a:KBtick:580851374070431774> Nickname changed. ");
+        }
+
+        [Command("list-bans", RunMode = RunMode.Async)]
+        [Summary("List the users currently banned on the server")]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        public async Task ListBans()
+        {
+            var embed = new EmbedBuilder();
+            embed.ThumbnailUrl = Context.Guild.IconUrl;
+            StringBuilder sb = new StringBuilder();
+            try
+            {
+                embed.Title = $"Ban list of '{Context.Guild.Name}':";
+                var bans = await Context.Guild.GetBansAsync();
+                if (bans.Count > 0)
+                {
+                    foreach (var ban in bans)
+                    {
+                        string reason = ban.Reason;
+                        if (string.IsNullOrEmpty(reason))
+                        {
+                            reason = "[No Reason was set]";
+                        }
+                        sb.AppendLine($":black_medium_small_square: **{ban.User.Username}** (*{reason}*) \nID: **{ban.User.Id}**");
+                    }
+                }
+                else
+                {
+                    sb.AppendLine($"Looks like its empty in here... \nI guess there's much space to fill :wink:");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                embed.Title = $"Error attempting to list bans for **{Context.Guild.Name}**";
+                sb.AppendLine($"[{ex.Message}]");
+            }
+            embed.Description = sb.ToString();
+            embed.WithColor(new Color(0, 0, 255));
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
         [Command("createtext")]
@@ -577,7 +721,82 @@ namespace Bot.Modules
 
             return muteRole;
         }
+        [Command("move"), Summary("Moves a message from one channel to another."), Example("k!move 663803219440566272 #boo cool reason")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
+        public async Task Run(ulong messageId, SocketTextChannel channel, [Remainder] string reason = null)
+        {
+            // Ignore bots and same channel-to-channel requests
+            if (Context.User.IsBot || channel.Id == Context.Channel.Id) return;
 
+            IMessage message = null;
+
+            try
+            {
+                message = await channel.GetMessageAsync(messageId);
+
+                if (message == null)
+                    message = await FindMessageInUnknownChannel(messageId);
+            }
+            catch (Exception e)
+            {
+                await ReplyAsync($"Failed fetching message for Move command, ran by {Context.User} with a Message ID of **{messageId}**");
+            }
+
+            // Format output
+            var builder = new EmbedBuilder()
+                    .WithColor(new Color(95, 186, 125))
+                    .WithTimestamp(message.Timestamp)
+                    .WithDescription(message.Content);
+
+            if (!string.IsNullOrWhiteSpace(reason))
+            {
+                builder.AddField("Reason", reason, true);
+            }
+
+            var mover = $"{Context.User}";
+            builder.WithFooter($"Message was moved from #{message.Channel.Name} by {mover}");
+
+            await channel.SendMessageAsync("", embed: builder.Build());
+
+            // Delete the source message, and the command message that started this request
+            await message.DeleteAsync();
+            await Context.Message.DeleteAsync();
+            await Context.Channel.SendMessageAsync($"Message: **{messageId}** was moved by **{mover}** to #{channel}");
+        }
+
+        [Command("move"), Summary("Moves a message from one channel to another."), Example("k!move #boo 663803219440566272 Message shouldn't be here")]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireBotPermission(GuildPermission.ManageMessages)]
+        public async Task Run(SocketTextChannel channel, ulong messageId, [Remainder] string reason = null)
+            => await Run(messageId, channel, reason);
+
+        private async Task<IMessage> FindMessageInUnknownChannel(ulong messageId)
+        {
+            IMessage message = null;
+            var guild = Context.Guild as SocketGuild;
+            // We haven't found a message, now fetch all text
+            // channels and attempt to find the message
+
+            var channels = guild.TextChannels.ToList();
+
+            foreach (var channel in channels)
+            {
+                try
+                {
+                    message = await channel.GetMessageAsync(messageId);
+
+                    if (message != null)
+                        break;
+                }
+                catch (Exception e)
+                {
+                    await ReplyAsync($"Failed accessing channel {channel.Name} when searching for message **{messageId}**");
+                }
+            }
+
+            return message;
+        }
         //WARN SYSTEM
         [Command("warn")]
         [Alias("strike")]
