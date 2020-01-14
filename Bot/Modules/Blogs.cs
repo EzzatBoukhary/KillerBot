@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 
 namespace Bot.Modules
 {
+    [Name("Blogs")]
     [Group("Blog"), Summary("Enables you to create a blog that people can subscribe to so they don't miss out your posts.")]
     public class Blogs : ModuleBase<MiunieCommandContext>
     {

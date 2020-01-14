@@ -7,15 +7,16 @@ using Bot.Extensions;
 
 namespace Bot.Modules
 {
+    [Name("Tags")]
     [Group("Tag"), Alias("ServerTag", "Tags", "T", "ServerTags")]
     [Summary("Permanently assign a message to a keyword (for this server) which " +
              "the bot will repeat if someone uses this command with that keyword.")]
     [RequireContext(ContextType.Guild)]
-    public class ServerTags : ModuleBase<MiunieCommandContext>
+    public class SeverTags : ModuleBase<MiunieCommandContext>
     {
         private readonly GlobalGuildAccounts _globalGuildAccounts;
 
-        public ServerTags(GlobalGuildAccounts globalGuildAccounts)
+        public SeverTags(GlobalGuildAccounts globalGuildAccounts)
         {
             _globalGuildAccounts = globalGuildAccounts;
         }

@@ -40,7 +40,7 @@ namespace Bot.Modules
         }
 
 
-        [Command("help"), Alias("h"),
+       /* [Command("help"), Alias("h"),
             Remarks(
                 "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
         [Cooldown(5)]
@@ -54,7 +54,7 @@ namespace Bot.Modules
             var builder = new EmbedBuilder()
             {
                 Title = "Help",
-                Description = $"These are the commands you can use in {contextString}",
+                Description = $"These are the commands you can use in {contextString} \n \nImportant Note: This is a temporary help message, if you want more information on a specific command please do \"k!help (command name)\". We will bring a better and improved help message ASAP.",
                 Color = new Color(114, 137, 218)
             };
 
@@ -109,9 +109,9 @@ namespace Bot.Modules
             {
                 builder.Fields.RemoveRange(0, 25);
                 await dmChannel.SendMessageAsync("", false, builder.Build());
-
+                
             }
-        } 
+        } */
 
         [Command("version"), Alias("ver")]
         [Remarks("Returns the current version of the bot.")]
@@ -135,12 +135,12 @@ namespace Bot.Modules
 
         }
 
-         [Command("help"), Alias("h")]
+        /* [Command("help"), Alias("h")]
         [Remarks("Shows what a specific command or module does and what parameters it takes.")]
         [Cooldown(5)]
         public async Task HelpQuery([Remainder] string query)
         {
-            var application = await Context.Client.GetApplicationInfoAsync();  /*for lib version*/
+            var application = await Context.Client.GetApplicationInfoAsync();  //for lib version
             var builder = new EmbedBuilder();
 
                 builder.Color = new Color(114, 137, 218);
@@ -209,10 +209,10 @@ namespace Bot.Modules
                 if (!result.IsSuccess || duplicateChecker.Contains(cmd.Aliases.First())) continue;
                 duplicateChecker.Add(cmd.Aliases.First());
                 var cmdDescription = $"`{cmd.Aliases.First()}`";
-              //  if (!string.IsNullOrEmpty(cmd.Summary))
+                //  if (!string.IsNullOrEmpty(cmd.Summary))
                 //   cmdDescription += $" | {cmd.Summary}";
-                if (!string.IsNullOrEmpty(cmd.Remarks))
-                    cmdDescription += $" | {cmd.Remarks}";
+                //if (!string.IsNullOrEmpty(cmd.Remarks))
+                  //  cmdDescription += $" | {cmd.Remarks}";
                 if (cmdDescription != "``")
                     descriptionBuilder.Add(cmdDescription);
             }
@@ -236,7 +236,7 @@ namespace Bot.Modules
                 builder.AddField($"__**{module.Name}:**__",
                     $"{moduleNotes} {builtString}\n{Constants.InvisibleString}");
             }
-        } 
+        }  */
 
        
         string usage;

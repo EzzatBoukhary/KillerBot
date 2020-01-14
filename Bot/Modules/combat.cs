@@ -18,13 +18,13 @@ using System.Data;
 namespace Bot.Modules
 {
    
-        public class fun : ModuleBase<MiunieCommandContext>
+        public class combat : ModuleBase<MiunieCommandContext>
         {
             private CommandService _service;
             private readonly ListManager _listManager;
             private int _fieldRange = 10;
 
-            public fun(CommandService service, ListManager listManager)
+            public combat(CommandService service, ListManager listManager)
             {
                 _service = service;
                 _listManager = listManager;

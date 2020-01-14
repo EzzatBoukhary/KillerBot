@@ -1,5 +1,6 @@
-﻿/*using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Bot.Configuration;
 using Bot.Entities;
 
 namespace Bot.Common
@@ -11,9 +12,9 @@ namespace Bot.Common
 
 		static HelpModulesManager()
 		{
-			if (DataStorage.SaveExists(HelpModulesFile))
+			if (JsonDataStorage.SaveExists(HelpModulesFile))
 			{
-				_helpModules = DataStorage.LoadHelpModules(HelpModulesFile).ToList();
+				_helpModules = JsonDataStorage.LoadHelpModules(HelpModulesFile).ToList();
 			}
 			else
 			{
@@ -27,7 +28,7 @@ namespace Bot.Common
 		/// </summary>
 		public static void SaveHelpModules()
 		{
-			DataStorage.SaveHelpModules(_helpModules, HelpModulesFile);
+			JsonDataStorage.SaveHelpModules(_helpModules, HelpModulesFile);
 		}
 
 		/// <summary>
@@ -52,43 +53,50 @@ namespace Bot.Common
 		{
 			List<HelpModule> helpModules = new List<HelpModule>();
 
-			HelpModule basic = new HelpModule
+            HelpModule moderation = new HelpModule
+            {
+                Group = "Moderation",
+                Modules = new List<string> { "moderation", "Prefix", "Announcements" }
+            };
+            helpModules.Add(moderation);
+
+            HelpModule basic = new HelpModule
 			{
 				Group = "Basic",
-				Modules = new List<string> { "BasicCommands", "Misc" }
+				Modules = new List<string> { "Help", "Basics", "Misc", "QuoteCommand" }
 			};
 			helpModules.Add(basic);
 
 			HelpModule utils = new HelpModule
 			{
 				Group = "Utils",
-				Modules = new List<string> { "Utils" }
+				Modules = new List<string> { "PollModule", "Blogs", "Tags", "WeatherReportCurrent", "Reminder", "auctions", "RoleByPhrase" }
 			};
 			helpModules.Add(utils);
 
 			HelpModule account = new HelpModule
 			{
-				Group = "Account",
-				Modules = new List<string> { "AccountDataManagement", "AccountUtils" }
+				Group = "Economy",
+				Modules = new List<string> { "Economy", "ManageUserAccount" }
 			};
 			helpModules.Add(account);
 
 			HelpModule fun = new HelpModule
 			{
 				Group = "Fun",
-				Modules = new List<string> {"GiphySearch", "GoogleSearch", "YoutubeSearch", "TronaldDump", "RandomPerson", "WikipediaSearch"}
+				Modules = new List<string> {"GiphyCommands", "GoogleSearch", "YouTubeCommands", "combat", "XkcdModule", "MiniGames", "images"}
 			};
 			helpModules.Add(fun);
 
-			HelpModule audio = new HelpModule
-			{
-				Group = "Audio",
-				Modules = new List<string> { "Music" }
-			};
-			helpModules.Add(audio);
 
-			return helpModules;
+            HelpModule owner = new HelpModule
+            {
+                Group = "Bot Owner",
+                Modules = new List<string> { "Owner" }
+            };
+            helpModules.Add(owner);
+
+            return helpModules;
 		}
 	}
 }
-*/

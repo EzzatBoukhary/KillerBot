@@ -31,12 +31,12 @@ namespace Bot.Handlers
         private readonly ListManager _listManager;
         private readonly IOnboarding _onboarding;
         private readonly BlogHandler _blogHandler; 
-        private readonly Announcements _announcements;
+        private readonly Features.Announcements _announcements;
         private readonly MessageRewardHandler _messageRewardHandler;
         private readonly RepeatedTaskFunctions _repeatedTaskFunctions;
         private readonly GlobalGuildAccounts _globalGuildAccounts;
 
-        public DiscordEventHandler(Logger logger, TriviaGames triviaGames, DiscordSocketClient client, CommandHandler commandHandler, ApplicationSettings applicationSettings, ListManager listManager, IOnboarding onboarding, BlogHandler blogHandler, Announcements announcements, MessageRewardHandler messageRewardHandler, RepeatedTaskFunctions repeatedTaskFunctions, GlobalGuildAccounts globalGuildAccounts)
+        public DiscordEventHandler(Logger logger, TriviaGames triviaGames, DiscordSocketClient client, CommandHandler commandHandler, ApplicationSettings applicationSettings, ListManager listManager, IOnboarding onboarding, BlogHandler blogHandler, Features.Announcements announcements, MessageRewardHandler messageRewardHandler, RepeatedTaskFunctions repeatedTaskFunctions, GlobalGuildAccounts globalGuildAccounts)
         {
             _logger = logger;
             _client = client;

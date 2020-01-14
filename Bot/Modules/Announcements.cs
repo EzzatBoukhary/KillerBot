@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Bot.Extensions;
 using Bot.Features.GlobalAccounts;
+using Bot.Helpers;
 using Discord;
 using Discord.Commands;
 
@@ -9,16 +10,17 @@ namespace Bot.Modules
 {
     [Group("Announcements"), Alias("Announcement"), Summary("Settings for announcements")]
     [RequireUserPermission(GuildPermission.Administrator)]
-    public class Announcement : ModuleBase<MiunieCommandContext>
+    public class Announcements : ModuleBase<MiunieCommandContext>
     {
         private readonly GlobalGuildAccounts _globalGuildAccounts;
 
-        public Announcement(GlobalGuildAccounts globalGuildAccounts)
+        public Announcements(GlobalGuildAccounts globalGuildAccounts)
         {
             _globalGuildAccounts = globalGuildAccounts;
         }
 
         [Command("SetChannel"), Alias("Set", "toggle on", "on"), RequireUserPermission(GuildPermission.Administrator)]
+        [Example("k!setchannel #joins-leaves")]
         [Remarks("Sets the channel where to post announcements")]
         public async Task SetAnnouncementChannel([Summary("The #channel you want the announcements to be sent in.")]ITextChannel channel)
         {
@@ -28,6 +30,7 @@ namespace Bot.Modules
         }
 
         [Command("UnsetChannel"), Alias("Unset", "Off", "toggle off"), RequireUserPermission(GuildPermission.Administrator)]
+        [Example("k!unsetchannel")]
         [Remarks("Turns posting announcements to a channel off")]
         public async Task UnsetAnnouncementChannel()
         {
@@ -47,8 +50,8 @@ namespace Bot.Modules
             _globalGuildAccounts = globalGuildAccounts;
         }
         [Command("add"), RequireUserPermission(GuildPermission.Administrator)]
-        [Remarks("Example: `welcome add <usermention>, welcome to **<guildname>**! " +
-                 "Try using ```@<botname>#<botdiscriminator> help``` for all the commands of <botmention>!`\n" +
+        [Example("`k!welcome add <usermention>, welcome to **<guildname>**!`")]
+        [Remarks("`Try using ```@<botname>#<botdiscriminator> help``` for all the commands of <botmention>!`\n" +
                  "Possible placeholders are: `<usermention>`, `<username>`, `<userdiscriminator>`, `<guildname>`, " +
                  "`<botname>`, `<botdiscriminator>`, `<botmention>` ")]
         public async Task AddWelcomeMessage([Remainder] string message)
@@ -67,6 +70,7 @@ namespace Bot.Modules
         }
 
         [Command("remove"), Alias("delete"), Remarks("Removes a Welcome Message from the ones availabe")]
+        [Example("k!welcome remove 2")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RemoveWelcomeMessage([Summary("The index of the message you want to delete (index can be found in `k!welcome list`")]int messageIndex)
         {
@@ -113,8 +117,8 @@ namespace Bot.Modules
         }
 
         [Command("add"), RequireUserPermission(GuildPermission.Administrator)]
-        [Remarks("Example: `leave add Oh noo! <usermention>, left <guildname>...`\n" +
-                 "Possible placeholders are: `<usermention>`, `<username>`, `<userdiscriminator>`, `<guildname>`, " +
+        [Example("`k!leave add Oh noo! <usermention>, left <guildname>...`")]
+        [Remarks("Possible placeholders are: `<usermention>`, `<username>`, `<userdiscriminator>`, `<guildname>`, " +
                  "`<botname>`, `<botdiscriminator>`, `<botmention>`")]
         public async Task AddLeaveMessage([Remainder] string message)
         {
@@ -132,6 +136,7 @@ namespace Bot.Modules
         }
 
         [Command("remove"),Alias("delete"), Remarks("Removes a Leave Message from the ones available")]
+        [Example("k!leave remove 1")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RemoveLeaveMessage([Summary("The index of the message you want to delete (index can be found in `k!leave list`")]int messageIndex)
         {

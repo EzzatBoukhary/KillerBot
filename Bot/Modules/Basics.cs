@@ -297,6 +297,7 @@ namespace Bot.Modules
         }
         
         [Command("roleinfo"), Summary("Returns info about a role."),Alias("RI")]
+        [Example("k!roleinfo Cool role")]
         [RequireContext(ContextType.Guild)]
         public async Task Role([Remainder, Summary("The role to return information about.")] string args)
         {
@@ -453,7 +454,7 @@ namespace Bot.Modules
             await ReplyAsync(result);
         }
         
-        [Command("userinfo")]
+        [Command("userinfo"), Alias("whois")]
         [Cooldown(3)]
         [Summary("Gets information about the specified user")]
         public async Task UserInfo([Summary("OPTIONAL: User to check their info")][Remainder] IGuildUser user = null)
@@ -708,22 +709,7 @@ namespace Bot.Modules
 
             return permissions.Remove(permissions.Length - 2);
         }
-        /* [Command("wiki")]
-         [Cooldown(5)]
-         [Remarks("Link to the wiki or a a specific search query.")]
-         public async Task Wiki([Remainder] string searchQuery = "")
-         {
-             string link = "https://www.wikipedia.org/";
-             if (searchQuery != "")
-             {
-                 link = $"https://en.wikipedia.org/wiki/{searchQuery.Trim().Replace(" ", "+")}";
-             }
 
-             await Context.Channel.SendMessageAsync(embed: new EmbedBuilder()
-                 .WithColor(Color.Blue)
-                 .WithDescription(link)
-                 .Build());
-         } */
         [Command("dadjoke")]
         [Summary("Random dad joke")]
         public async Task DadJoke()
@@ -737,6 +723,7 @@ namespace Bot.Modules
         [Command("FindMessageID"), Alias("getmessageid", "messageid", "fmi", "gmi")]
         [Summary("Gets the message id of a message in the current channel with the provided message text")]
         [Remarks("Keep in mind that this isn't the best efficient way to get the ID of a message. If you're having any trouble try doing it manually.")]
+        [Example("k!messageid Hey find my id!")]
         [RequireContext(ContextType.Guild)]
         public async Task FindMessageIDAsync([Summary("The content of the message to search for")][Remainder] string messageContent)
         {

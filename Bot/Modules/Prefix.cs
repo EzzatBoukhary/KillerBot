@@ -50,7 +50,7 @@ namespace Bot.Modules
             await ReplyAsync(response);
         }
 
-        [Command(""),Alias("list"), Remarks("Show all possible prefixes for this server")]
+        [Command("list"),Alias(""), Remarks("Show all possible prefixes for this server")]
         public async Task ListPrefixes()
         {
             var prefixes = _globalGuildAccounts.GetById(Context.Guild.Id).Prefixes;

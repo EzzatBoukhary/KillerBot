@@ -10,7 +10,7 @@ using Bot.Helpers;
 
 namespace Bot.Modules
 {
-    [Name("Xkcd")]
+    [Name("XkcdModule")]
     public class XkcdModule : ModuleBase<MiunieCommandContext>
     {
         private readonly IXkcdService xkcdService;

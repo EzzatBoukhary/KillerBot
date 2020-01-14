@@ -16,7 +16,7 @@ namespace Bot.Modules
     /// <summary>
     /// Provides a simple voting system
     /// </summary>
-    [Name("Poll")]
+    [Name("PollModule")]
     [RequireContext(ContextType.Guild)]
     public class PollModule : InteractiveBase
     {
@@ -28,11 +28,12 @@ namespace Bot.Modules
         }
 
         [Command("Poll")]
-        [Alias("Vote")]
+        [Alias("Vote", "start-poll")]
         [Priority(1)]
         [Remarks("Starts a new poll with the specified question and automatically adds reactions")]
         [Example("k!poll \"Was the event good?\" for 1h")]
         [RequireBotPermission(ChannelPermission.AddReactions | ChannelPermission.ManageMessages)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task StartPollAsync([Summary("The question, \"for\", the duration")][Remainder] string args)
         {
             string[] splittedArgs = null;
@@ -108,6 +109,7 @@ namespace Bot.Modules
           [Remarks("Starts a new poll with the specified question and the list answers and automatically adds reactions")]
           [Example("k!poll 60 \"What's your favourite game?\" \"Minecraft\" \"COD\" \"CS:GO\"")]
           [RequireBotPermission(ChannelPermission.AddReactions | ChannelPermission.ManageMessages)]
+          [RequireUserPermission(GuildPermission.ManageMessages)]
           public async Task StartPollAsync([Summary("Duration of the poll (in minutes)")] int duration, [Summary("The question of the poll")] string question, [Summary("The list of answers")] params string[] answers)
           {
               if (answers == null || answers.Length <= 0)

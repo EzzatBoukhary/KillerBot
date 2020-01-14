@@ -13,6 +13,7 @@ using System.Collections.Generic;
 
 namespace Bot.Modules.Account
 {
+    [Name("ManageUserAccount")]
     [Group("account")]
     public class ManageUserAccount : ModuleBase<MiunieCommandContext>
     {

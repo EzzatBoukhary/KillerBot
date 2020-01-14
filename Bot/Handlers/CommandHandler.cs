@@ -173,8 +173,17 @@ namespace Bot.Handlers
                  });
                  // Because this call is not awaited, execution of the current method continues before the call is completed
              }
-         } 
-
+         }
+        /// <summary>
+        /// Checks all the help modules in the config
+        /// </summary>
+        public void CheckHelpModules()
+        {
+            foreach (string module in HelpModulesManager.GetHelpModules().SelectMany(helpModule => helpModule.Modules.Where(module => GetModule(module) == null)))
+            {
+                Global.Log($"There is no module called {module}! Reset the help modules or fix the help modules in the config file!", ConsoleColor.Red);
+            }
+        }
         /// <summary>
         /// Get a modules
         /// </summary>

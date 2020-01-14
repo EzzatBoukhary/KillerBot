@@ -96,7 +96,7 @@ namespace Bot
             serviceCollection.AddSingleton<GiphyApi>();
             serviceCollection.AddSingleton<IXkcdService, XkcdService>();
             serviceCollection.AddSingleton<GlobalUserAccounts>();
-            serviceCollection.AddSingleton<Announcements>();
+            serviceCollection.AddSingleton<Features.Announcements>();
             serviceCollection.AddSingleton<RoleByPhraseProvider>();
             serviceCollection.AddSingleton<MessageRewardHandler>();
             serviceCollection.AddSingleton<RepeatedTaskFunctions>();

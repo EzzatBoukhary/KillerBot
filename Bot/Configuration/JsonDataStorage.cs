@@ -1,5 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿using Bot.Entities;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Bot.Configuration
@@ -15,6 +17,33 @@ namespace Bot.Configuration
                 Directory.CreateDirectory(resourcesFolder);
             }
         }
+
+        #region Help Modules
+
+        /// <summary>
+        /// Saves a list of help modules
+        /// </summary>
+        /// <param name="helpModules"></param>
+        /// <param name="filePath"></param>
+        public static void SaveHelpModules(IEnumerable<HelpModule> helpModules, string filePath)
+        {
+            string json = JsonConvert.SerializeObject(helpModules, Formatting.Indented);
+            File.WriteAllText(filePath, json);
+        }
+
+        /// <summary>
+        /// Loads a list of all the help modules from a file
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static IEnumerable<HelpModule> LoadHelpModules(string filePath)
+        {
+            if (!File.Exists(filePath)) return null;
+            string json = File.ReadAllText(filePath);
+            return JsonConvert.DeserializeObject<List<HelpModule>>(json);
+        }
+
+        #endregion
 
         public void StoreObject(object obj, string file)
         {
@@ -50,7 +79,15 @@ namespace Bot.Configuration
             string filePath = String.Concat(resourcesFolder, "/", file);
             return File.Exists(filePath);
         }
-
+        /// <summary>
+		/// Checks if a saved user file exists
+		/// </summary>
+		/// <param name="filePath">The path to the user save file</param>
+		/// <returns></returns>
+		public static bool SaveExists(string filePath)
+        {
+            return File.Exists(filePath);
+        }
         private string GetOrCreateFileContents(string file)
         {
             string filePath = String.Concat(resourcesFolder, "/", file);

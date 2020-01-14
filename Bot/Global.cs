@@ -51,14 +51,14 @@ namespace Bot
                 .Replace("<botdiscriminator>", Client.CurrentUser.Discriminator)
                 .Replace("<botname>", Client.CurrentUser.Username);
         }
-        public static readonly string version = "0.3.6";
+        public static readonly string version = "0.9.0";
 
-        public static readonly string aboutMessage = $"Pootis Bot --- | --- {version}\n" +
-                                                     $"Created by Creepysin licensed under the MIT license. Visit/blob/master/LICENSE.md for more info.\n\n" +
-                                                     "Pootis Robot icon by Valve\n" +
+        public static readonly string aboutMessage = $"KillerBot --- | --- {version}\n" +
+                                                     $"Created by Panda \n\n" +
+                                                     "Made with love. \n" +
                                                      "Created with Discord.NET\n" +
-                                                     "https://github.com/Creepysin/Pootis-Bot \n\n" +
-                                                     "Thank you for using Pootis Bot";
+                                                     "discod.gg/ \n\n" +
+                                                     "Thank you for using KillerBot";
 
         public static string BotName;
         public static string BotPrefix = "k!";

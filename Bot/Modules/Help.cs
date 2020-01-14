@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +8,7 @@ using Discord.Commands;
 using Bot.Common;
 using Bot.Entities;
 using Bot.Handlers;
+using Bot.Helpers;
 
 namespace Bot.Modules
 {
@@ -34,26 +35,49 @@ namespace Bot.Modules
 		{
 			try
 			{
-				StringBuilder builder = new StringBuilder();
-				builder.Append(
-					$"```# Pootis-Bot Normal Commands```\nFor more help on a specific command do `{Global.BotPrefix}help [command]`.\n");
+                EmbedBuilder emb = new EmbedBuilder();
+                emb.WithColor(Color.Teal);
+                emb.WithTitle("KillerBot Commands");
+                emb.WithDescription($"For more help on a specific command do `{Global.BotPrefix}help [command]`");
+				//StringBuilder builder = new StringBuilder();
+				//builder.Append(
+					//$"```# KillerBot Normal Commands```\nFor more help on a specific command do `{Global.BotPrefix}help [command]`.\n");
 
 				//Basic Commands
 				foreach (HelpModule helpModule in HelpModulesManager.GetHelpModules())
 				{
-					builder.Append($"\n**{helpModule.Group}** - ");
+                    emb.Description += $"\n\n**{helpModule.Group}** - ";
+					//builder.Append($"\n**{helpModule.Group}** - ");
+
 					foreach (CommandInfo cmd in helpModule.Modules.SelectMany(module => _commandHandler.GetModule(module).Commands))
 					{
-						builder.Append($"`{cmd.Name}` ");
-					}
+                        if (cmd.Module.Group != null || (cmd.Module.Group != null && cmd.Name == ""))
+                        {
+                            emb.Description += $"`{cmd.Module.Group} {cmd.Name}`, ";
+                        }
+                        else if (emb.Description.Contains(cmd.Name))
+                        {
+                            if (cmd.Name == "minecraft" || cmd.Name == "help")
+                            {
+                                emb.Description += $"`{cmd.Name}`, ";
+                            }
+                            else
+                            continue;
+                        }
+                        else
+                        {
+                            emb.Description += $"`{cmd.Name}`, ";
+                        }
+                        //builder.Append($"`{cmd.Name}` ");
+                    }
 				}
-
-				await Context.Channel.SendMessageAsync(builder.ToString());
-			}
+                await Context.Channel.SendMessageAsync("", false, emb.Build());
+                //await Context.Channel.SendMessageAsync(builder.ToString());
+            }
 			catch (NullReferenceException)
 			{
 				await Context.Channel.SendMessageAsync(
-					$"Sorry, but it looks like the bot owner doesn't have the help options configured correctly.\nVisit for command list.");
+					$"Sorry, but it looks like the bot owner doesn't have the help options configured correctly. \n`k!report (this problem)` to let the bot owner know about this!");
 
 				Global.Log("The help options are configured incorrectly!", ConsoleColor.Red);
 			}
@@ -69,15 +93,16 @@ namespace Bot.Modules
 			embed.WithColor(new Color(241, 196, 15));
 
 			SearchResult result = _cmdService.Search(Context, query);
-			if (result.IsSuccess)
-				foreach (CommandMatch command in result.Commands)
-					embed.AddField(command.Command.Name,
-						$"Summary: {command.Command.Summary}\nAlias: {FormatAliases(command.Command)}\nUsage: `{command.Command.Name} {FormatParms(command.Command)}`");
-
+            if (result.IsSuccess)
+                foreach (CommandMatch command in result.Commands)
+                {
+                    ExampleAttribute example = command.Command.Attributes.OfType<ExampleAttribute>().FirstOrDefault();
+                    embed.AddField(command.Command.Name,
+                        $"Summary: {command.Command.Summary}\nAlias: {FormatAliases(command.Command)}\nUsage: `{command.Command.Name} {FormatParms(command.Command)}` \nExample: {example.ExampleText}");
+                }
 			if (embed.Fields.Count == 0)
 				embed.WithDescription("Nothing was found for " + query);
-
-			await Context.Channel.SendMessageAsync("", false, embed.Build());
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
 		}
 
 		private string FormatAliases(CommandInfo commandInfo)
@@ -120,4 +145,4 @@ namespace Bot.Modules
 			return format.ToString();
 		}
 	}
-}*/
+}

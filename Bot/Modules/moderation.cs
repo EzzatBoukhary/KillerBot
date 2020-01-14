@@ -92,7 +92,8 @@ namespace Bot.Modules
             }
         }
 
-        [Command("Kick"), Remarks("k!kick @User This is a reason"), Summary("Kicks a user from the guild")]
+        [Command("Kick"), Summary("Kicks a user from the guild")]
+        [Example("k!kick @Panda#8822 Good bye")]
         [RequireBotPermission(GuildPermission.KickMembers)]
         [RequireUserPermission(GuildPermission.KickMembers)]
         public async Task KickAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy]
@@ -135,6 +136,7 @@ namespace Bot.Modules
          [Command("AddRole")]
          [Remarks("Usage: k!addrole {@user/ user's name (NO SPACES)} {@role/ roleName}")]
         [Summary("Adds a role to a user.")]
+        [Example("k!addrole @Panda#8822 Members")]
         [RequireBotPermission(GuildPermission.ManageRoles)]
          [RequireUserPermission(GuildPermission.ManageRoles)]
          public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
@@ -198,6 +200,7 @@ namespace Bot.Modules
         [Command("RemoveRole")]
         [Remarks("Usage: k!addrole {rolename/@role (NO SPACES)} {@user/ user's name}")]
         [Summary("Removes a role from a user.")]
+        [Example("k!removerole Members Panda")]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketRole role, [Remainder] SocketGuildUser user)
@@ -338,10 +341,10 @@ namespace Bot.Modules
 
 
         [Command("unmute")]
-        [Summary("Unmutes A User")]
+        [Summary("Unmutes a user")]
         [Example("k!unmute @Panda#8822 You're a good boy now.")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
-        public async Task Unmute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy][Summary("REQUIRED: The user you want to unmute")] SocketGuildUser user = null, [Summary("OPTIONAL: The reason behind the tempmute")] [Remainder] string reason = null)
+        public async Task Unmute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy][Summary("REQUIRED: The user you want to unmute")] SocketGuildUser user = null, [Summary("OPTIONAL: The reason behind the unmute")] [Remainder] string reason = null)
         {
             if (user == null)
                 throw new ArgumentException("Please mention a user to unmute");
@@ -366,7 +369,7 @@ namespace Bot.Modules
             else
                 throw new ArgumentException("User is not muted");
         }
-        [Command("ban"), Summary("Usage: k!ban {User ID} Reason"), Remarks("Force bans a user from the guild."), Example("k!ban 123456789420 You're not Welcome here ever.")]
+        [Command("ban"), Summary("Usage: k!ban {User ID} Reason"), Remarks("Force bans a user from the guild."), Example("k!ban 223530903773773824 You're not Welcome here ever.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task ForceBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The ID of user you want to ban")] ulong id,
@@ -387,7 +390,7 @@ namespace Bot.Modules
             await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT FORCEFULLY BANNED*** :hammer: :fire: ");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
-        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
+        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 3 Being a bad boy.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")] SocketGuildUser user = null,
@@ -424,7 +427,7 @@ namespace Bot.Modules
         }
 
         //Ban with no prune days
-        [Command("Ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
+        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task BanAsync2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")]SocketGuildUser user = null,
@@ -514,9 +517,10 @@ namespace Bot.Modules
         }
 
         [Command("sban"), Alias("soft", "softban")]
+        [Summary("Bans and unbans a user instantly. The purpose of this is to get rid of the user's messages.")]
+        [Example("k!softban @Panda#8822 2 Spamming")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
-        [Summary("Bans a user and immediately unbans them.")]
         public async Task SoftBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy][Summary("The user to softban")] SocketGuildUser user = null,
                                   [Summary("Number of days for which to prune the user's messages (1 day is default)")] int pruneDays = 1,
                                   [Summary("Reason for softban")] [Remainder] string reason = null)
@@ -551,6 +555,7 @@ namespace Bot.Modules
 
         }
         [Command("sban"), Alias("soft", "softban")]
+        [Example("k!sban @Panda#8822 Spam harder next time.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [Summary("Bans a user and immediately unbans them.")]
@@ -601,6 +606,7 @@ namespace Bot.Modules
         }
 
         [Command("list-bans", RunMode = RunMode.Async)]
+        [Example("k!list-bans")]
         [Summary("List the users currently banned on the server")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]

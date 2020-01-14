@@ -15,7 +15,7 @@ using System.Net.Http;
 
 namespace Bot.Modules.Fun
 {
-    public class Images : ModuleBase<SocketCommandContext>
+    public class images : ModuleBase<SocketCommandContext>
     {
 
         [Command("resize"), Alias("rz"), Summary("Resize a image")]
