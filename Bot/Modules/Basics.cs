@@ -31,7 +31,7 @@ namespace Bot.Modules
         [Cooldown(5)]
         public async Task InviteBot()
         {
-            await ReplyAsync("Add the bot to any server you want to by clicking this link: https://goo.gl/h3xHqU (shortened)");
+            await ReplyAsync("Add the bot to any server you want to by clicking this link: <https://goo.gl/h3xHqU> (shortened)");
         }
         [Command("server"), Alias("botserver" , "support")]
         [Cooldown(5)]
@@ -135,12 +135,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.9.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} New commands: \n`k!softban`, `k!move`, `k!poll`, `k!list-bans`, `k!race`, `k!findmessageid`, `k!timezones`, `k!minesweeper`, `xkcd`, `k!dadjoke`, `k!giphy`, `k!youtube`, `k!google`. \n \n{dot} Owner command: `k!user-data`. \n \n{dot} Added examples to some commands that can be seen by doing `k!help {{command name}}`. \n \n**[Changed/Fixed]** \n \n{dot} Change in error messages. \n \n{dot} Change in some of the remarks, summaries , and aliases of commands. \n \n{dot} Small changes to the ban and unban commands. \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Patch ==** `v1.9.1` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} New commands: \n`k!softban`, `k!move`, `k!poll`, `k!list-bans`, `k!race`, `k!findmessageid`, `k!timezones`, `k!minesweeper`, `xkcd`, `k!dadjoke`, `k!giphy`, `k!youtube`, `k!google`. \n \n{dot} Owner command: `k!user-data`. \n \n{dot} Added examples to some commands that can be seen by doing `k!help {{command name}}`. \n \n**[Changed/Fixed]** \n \n{dot} Change in error messages. \n \n{dot} Change in some of the remarks, summaries , and aliases of commands. \n \n{dot} Small changes to the ban and unban commands. \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: January 10th - 2019 1:49 AM GMT");
+                x.WithText("Last updated: February 1st - 2019 10:00 AM GMT");
 
 
 
