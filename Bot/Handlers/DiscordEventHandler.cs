@@ -176,7 +176,7 @@ namespace Bot.Handlers
             else if (latencyAfter > 5000)
             {
                 _logger.Log(LogSeverity.Error, $"{DateTime.Now}", $"KillerBot is currently having a bad latency! ({latencyAfter} ms)");
-                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having a possible crash attempt! :warning: ({latencyAfter} ms)");
+                channel.SendMessageAsync($"`{DateTime.Now}` - KillerBot is currently having a bad connection! :warning: ({latencyAfter} ms)");
             }
            
             else if (latencyBefore > 5000 & latencyAfter < 200)
@@ -199,7 +199,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.9.0 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.9.1 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
 

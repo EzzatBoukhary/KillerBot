@@ -30,7 +30,8 @@ namespace Bot.Modules
 		}
 
 		[Command("help")]
-		[Alias("h")]
+        [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.ApplyPerGuild)]
+        [Alias("h")]
 		[Summary("Gets help")]
 		public async Task HelpCmd()
 		{
@@ -58,13 +59,13 @@ namespace Bot.Modules
                         }
                         else if (emb.Description.Contains(cmd.Name))
                         {
-                            if (cmd.Name == "minecraft" || cmd.Name == "help")
+                            if (cmd.Name == "minecraft" || cmd.Name == "help" || cmd.Name == "info" || cmd.Name == "move")
                             {
                                 emb.Description += $"`{cmd.Name}`, ";
                             }
                             else
                             continue;
-                        }
+                        } 
                         else
                         {
                             emb.Description += $"`{cmd.Name}`, ";
@@ -138,7 +139,7 @@ namespace Bot.Modules
                 var cmd = match.Command;
                 var parameters = cmd.Parameters.Select(p => string.IsNullOrEmpty(p.Summary) ? p.Name : p.Summary);
                 var paramsString = $"Parameters: {string.Join(", ", parameters)}" +
-                                   //  $"\nPreconditions: {cmd.Preconditions.Humanize()}" +
+                                     //$"\nAttributes: {cmd.Attributes.ToString()}" +
                                    (string.IsNullOrEmpty(cmd.Remarks) ? "" : $"\nRemarks: {cmd.Remarks}") +
                                    (string.IsNullOrEmpty(cmd.Summary) ? "" : $"\nSummary: {cmd.Summary}");
                 ExampleAttribute example = cmd.Attributes.OfType<ExampleAttribute>().FirstOrDefault();

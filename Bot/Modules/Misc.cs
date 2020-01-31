@@ -120,7 +120,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.9.0`");
+            builder.AddField("Version", $"The current version of the bot is: `1.9.1`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]
@@ -138,6 +138,7 @@ namespace Bot.Modules
         string usage;
 
         [Command("calculate", RunMode = RunMode.Async)]
+        [Cooldown(4)]
         [Summary("Calculate anything, you can use + for addition, - for subtraction, / ÷ or for division, x or * for multiplication, PI to get the PI value, E for 2.718281828459045, % for Mod")]
         [Remarks("You can use multiple signs at once for example `calculate 4 + 2 * 4`")]
         public async Task Calculate([Remainder]string equation)
@@ -221,6 +222,7 @@ namespace Bot.Modules
            
           }
         [Command("timezones"), Alias("worldclock")]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         public async Task Worldclock()
         {
             CultureInfo enAU = new CultureInfo("en-US");
@@ -228,11 +230,15 @@ namespace Bot.Modules
             await Context.Channel.SendMessageAsync("", false,
                 new EmbedBuilder()
                 .AddField(":globe_with_meridians: UTC", DateTime.UtcNow.ToString(format, enAU), true)
-                .AddField(":flag_at: Vienna", DateTime.Now.ToString(format, enAU), true)
-                .AddField(":flag_in: Mumbai", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "India Standard Time").ToString(format, enAU), true)
-                .AddField(":flag_jp: Tokyo", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Tokyo Standard Time").ToString(format, enAU), true)
-                .AddField(":bridge_at_night: San Francisco", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Pacific Standard Time").ToString(format, enAU), true)
-                .AddField(":statue_of_liberty: New York", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Eastern Standard Time").ToString(format, enAU), true)
+                .AddField(":flag_fr: Paris", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Europe/Paris").ToString(format, enAU), true)
+                //.AddField(":flag_in: Mumbai", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "India Standard Time").ToString(format, enAU), true)
+                //.AddField(":flag_jp: Tokyo", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Tokyo Standard Time").ToString(format, enAU), true)
+                //.AddField(":bridge_at_night: San Francisco", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Pacific Standard Time").ToString(format, enAU), true)
+                //.AddField(":statue_of_liberty: New York", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Eastern Standard Time").ToString(format, enAU), true)
+                .AddField(":flag_in: Mumbai", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Asia/Mumbai").ToString(format, enAU), true)
+                .AddField(":flag_jp: Tokyo", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "Asia/Tokyo").ToString(format, enAU), true)
+                .AddField(":bridge_at_night: San Francisco", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "America/San_Fracisco").ToString(format, enAU), true)
+                .AddField(":statue_of_liberty: New York", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "America/New_York").ToString(format, enAU), true)
                 .Build()
                 );
         }

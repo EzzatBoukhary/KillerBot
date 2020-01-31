@@ -728,12 +728,13 @@ namespace Bot.Modules
             return muteRole;
         }
         [Command("move"), Summary("Moves a message from one channel to another."), Example("k!move 663803219440566272 #boo cool reason")]
+        [Cooldown(10, true)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task Run(ulong messageId, SocketTextChannel channel, [Remainder] string reason = null)
         {
             // Ignore bots and same channel-to-channel requests
-            if (Context.User.IsBot || channel.Id == Context.Channel.Id) return;
+            if (Context.User.IsBot) return;
 
             IMessage message = null;
 
@@ -743,6 +744,11 @@ namespace Bot.Modules
 
                 if (message == null)
                     message = await FindMessageInUnknownChannel(messageId);
+                if (message.Channel.Id == Context.Channel.Id)
+                {
+                    await ReplyAsync("You can't move the message to the same channel it is in! DUH.");
+                    return;
+                }
             }
             catch (Exception e)
             {
@@ -759,7 +765,10 @@ namespace Bot.Modules
             {
                 builder.AddField("Reason", reason, true);
             }
-
+            if (message.Attachments.Count > 0)
+            {
+                builder.WithImageUrl(message.Attachments.ElementAt(0).Url);
+            }
             var mover = $"{Context.User}";
             builder.WithFooter($"Message was moved from #{message.Channel.Name} by {mover}");
 
@@ -772,6 +781,7 @@ namespace Bot.Modules
         }
 
         [Command("move"), Summary("Moves a message from one channel to another."), Example("k!move #boo 663803219440566272 Message shouldn't be here")]
+        [Cooldown(10, true)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
         public async Task Run(SocketTextChannel channel, ulong messageId, [Remainder] string reason = null)
