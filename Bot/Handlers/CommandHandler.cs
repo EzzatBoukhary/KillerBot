@@ -110,7 +110,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Bad Usage:");
-                         errormsg.WithDescription($"Command did not have the right amount of parameters. Type {prefix}help {cmdSearchResult.Text} for more info");
+                         errormsg.WithDescription($"Command did not have the right amount of parameters. Type {prefix}help (command name) for more info");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -120,7 +120,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Unmet Precondition");
-                         errormsg.WithDescription($"A precondition for the command was not met. Type {prefix}help {cmdSearchResult.Text} for more info");
+                         errormsg.WithDescription($"A precondition for the command was not met **({task.Result.ErrorReason})**. Type {prefix}help (command name) for more info");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }

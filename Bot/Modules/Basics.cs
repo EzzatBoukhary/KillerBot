@@ -135,12 +135,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.9.1` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} New commands: \n`k!softban`, `k!move`, `k!poll`, `k!list-bans`, `k!race`, `k!findmessageid`, `k!timezones`, `k!minesweeper`, `xkcd`, `k!dadjoke`, `k!giphy`, `k!youtube`, `k!google`. \n \n{dot} Owner command: `k!user-data`. \n \n{dot} Added examples to some commands that can be seen by doing `k!help {{command name}}`. \n \n**[Changed/Fixed]** \n \n{dot} Change in error messages. \n \n{dot} Change in some of the remarks, summaries , and aliases of commands. \n \n{dot} Small changes to the ban and unban commands. \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Patch ==** `v1.9.1` <:KBupdate:580129240889163787> \n \n**[Changed/Fixed]** \n \n{dot} Added cooldowns and ratelimits to multiple commands. \n \n{dot} Added the missing commands to `k!help` command. \n \n{dot} Fixed the `k!timezones` command that wasn't working. \n \n{dot} Changes in error messages. \n \n{dot} Fixed broken purge command. \n \n{dot} Changes in k!move command. \n \n{dot} Fixed a loophole in the role hierarhcy system which affects most role commands. \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: February 1st - 2019 10:00 AM GMT");
+                x.WithText("Last updated: March 2nd - 2019 1:49 AM GMT");
 
 
 

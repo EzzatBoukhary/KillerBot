@@ -46,8 +46,7 @@ namespace Bot.Modules
         {
             try
             {
-                await Context.Message.DeleteAsync();
-                var messages = await Context.Channel.GetMessagesAsync(amountOfMessagesToDelete).FlattenAsync();
+                var messages = await Context.Channel.GetMessagesAsync(amountOfMessagesToDelete + 1).FlattenAsync();
                 await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
                 var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
                 await Task.Delay(5000);
@@ -74,14 +73,14 @@ namespace Bot.Modules
             if (user == Context.User)
                 amountOfMessagesToDelete++; //Because it will count the purge command as a message
 
-            var messages = await Context.Message.Channel.GetMessagesAsync(amountOfMessagesToDelete).FlattenAsync();
+            var messages = await Context.Message.Channel.GetMessagesAsync().FlattenAsync();
 
             var result = messages.Where(x => x.Author.Id == user.Id && x.CreatedAt >= DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(14)));
-
+            var result2 = result.Take(amountOfMessagesToDelete);
             try
             {
-                await (Context.Message.Channel as SocketTextChannel).DeleteMessagesAsync(result);
-                var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete - 1} Messages 👌");
+                await (Context.Message.Channel as SocketTextChannel).DeleteMessagesAsync(result2);
+                var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
                 await Task.Delay(5000);
                 await m.DeleteAsync();
             }
@@ -132,27 +131,32 @@ namespace Bot.Modules
             await Context.Channel.SendMessageAsync("", false, embed.Build());
             
         }
-       
-         [Command("AddRole")]
-         [Remarks("Usage: k!addrole {@user/ user's name (NO SPACES)} {@role/ roleName}")]
+
+        [Command("AddRole")]
+        [Remarks("Usage: k!addrole {@user/ user's name (NO SPACES)} {@role/ roleName}")]
         [Summary("Adds a role to a user.")]
         [Example("k!addrole @Panda#8822 Members")]
         [RequireBotPermission(GuildPermission.ManageRoles)]
-         [RequireUserPermission(GuildPermission.ManageRoles)]
-         public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
-         {
+        [RequireUserPermission(GuildPermission.ManageRoles)]
+        public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
+        {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
             IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
-            if (highestRole == null)
+            if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            if ((role != null) && (highestRole.Position == role.Position))
+            else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
+            {
+                await user.AddRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Added by {Context.User.Username}#{Context.User.Discriminator}" });
+                await ReplyAsync($"Added **{role}** to {user.Mention}!");
+                return;
+            }
+            if ((role != null) && (highestRole.Position == role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
-            if ((role != null) && (highestRole.Position < role.Position))
+            if ((role != null) && (highestRole.Position < role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            await user.AddRoleAsync(role);
-             await ReplyAsync($"Added **{role}** to {user.Mention}!");
-
+            await user.AddRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Added by {Context.User.Username}#{Context.User.Discriminator}" });
+            await ReplyAsync($"Added **{role}** to {user.Mention}!");
          }
 
         [Command("AddRole")]
@@ -164,14 +168,20 @@ namespace Bot.Modules
         {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
             IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
-            if (highestRole == null)
+            if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            if ((role != null) && (highestRole.Position == role.Position))
+            else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
+            {
+                await user.AddRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Added by {Context.User.Username}#{Context.User.Discriminator}" });
+                await ReplyAsync($"Added **{role}** to {user.Mention}!");
+                return;
+            }
+            if ((role != null) && (highestRole.Position == role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
-            if ((role != null) && (highestRole.Position < role.Position))
+            if ((role != null) && (highestRole.Position < role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            await user.AddRoleAsync(role);
+            await user.AddRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Added by {Context.User.Username}#{Context.User.Discriminator}" });
             await ReplyAsync($"Added **{role}** to {user.Mention}!");
 
         }
@@ -185,14 +195,20 @@ namespace Bot.Modules
          {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
             IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
-            if (highestRole == null)
+            if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            if ((role != null) && (highestRole.Position == role.Position))
+            else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
+            {
+                await user.RemoveRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Removed by {Context.User.Username}#{Context.User.Discriminator}" });
+                await ReplyAsync($"Removed **{role}** from {user.Mention}!");
+                return;
+            }
+            if ((role != null) && (highestRole.Position == role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
-            if ((role != null) && (highestRole.Position < role.Position))
+            if ((role != null) && (highestRole.Position < role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            await user.RemoveRoleAsync(role);
+            await user.RemoveRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Removed by {Context.User.Username}#{Context.User.Discriminator}" });
              await ReplyAsync($"Removed **{role}** from {user.Mention}!");
 
          }
@@ -207,14 +223,20 @@ namespace Bot.Modules
         {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
             IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
-            if (highestRole == null)
+            if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            if ((role != null) && (highestRole.Position == role.Position))
+            else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
+            {
+                await user.RemoveRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Removed by {Context.User.Username}#{Context.User.Discriminator}" });
+                await ReplyAsync($"Removed **{role}** from {user.Mention}!");
+                return;
+            }
+            if ((role != null) && (highestRole.Position == role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
-            if ((role != null) && (highestRole.Position < role.Position))
+            if ((role != null) && (highestRole.Position < role.Position) && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-            await user.RemoveRoleAsync(role);
+            await user.RemoveRoleAsync(role, options: new RequestOptions { AuditLogReason = $"Removed by {Context.User.Username}#{Context.User.Discriminator}" });
             await ReplyAsync($"Removed **{role}** from {user.Mention}!");
 
         }
@@ -241,9 +263,9 @@ namespace Bot.Modules
             {
                 var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
                 IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
-                if (exec_role == null)
+                if (exec_role == null && Context.User.Id != Context.Guild.OwnerId)
                     throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-                if ((muteRole != null) && (exec_role.Position < muteRole.Position))
+                if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
                     throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
                 await user.AddRoleAsync(muteRole, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
@@ -312,9 +334,9 @@ namespace Bot.Modules
                 {
                     var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
                     IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
-                    if (exec_role == null)
+                    if (exec_role == null && Context.User.Id != Context.Guild.OwnerId)
                         throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-                    if ((muteRole != null) && (exec_role.Position < muteRole.Position))
+                    if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
                         throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
                     await user.AddRoleAsync(muteRole, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
@@ -358,9 +380,9 @@ namespace Bot.Modules
             {
                 var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
                 IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
-                if (exec_role == null)
+                if (exec_role == null && Context.User.Id != Context.Guild.OwnerId)
                     throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-                if ((muteRole != null) && (exec_role.Position < muteRole.Position))
+                if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
                     throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
                 await user.RemoveRoleAsync(await GetMuteRole(user.Guild), options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
@@ -744,7 +766,7 @@ namespace Bot.Modules
 
                 if (message == null)
                     message = await FindMessageInUnknownChannel(messageId);
-                if (message.Channel.Id == Context.Channel.Id)
+                if (message.Channel.Id == channel.Id)
                 {
                     await ReplyAsync("You can't move the message to the same channel it is in! DUH.");
                     return;
@@ -759,6 +781,7 @@ namespace Bot.Modules
             var builder = new EmbedBuilder()
                     .WithColor(new Color(95, 186, 125))
                     .WithTimestamp(message.Timestamp)
+                    .WithAuthor(message.Author.ToString(), message.Author.GetAvatarUrl())
                     .WithDescription(message.Content);
 
             if (!string.IsNullOrWhiteSpace(reason))
@@ -770,14 +793,21 @@ namespace Bot.Modules
                 builder.WithImageUrl(message.Attachments.ElementAt(0).Url);
             }
             var mover = $"{Context.User}";
-            builder.WithFooter($"Message was moved from #{message.Channel.Name} by {mover}");
+            builder.WithFooter($"Message was moved from #{message.Channel.Name} by {mover} | Message Date:");
 
             await channel.SendMessageAsync("", embed: builder.Build());
 
             // Delete the source message, and the command message that started this request
             await message.DeleteAsync();
             await Context.Message.DeleteAsync();
-            await Context.Channel.SendMessageAsync($"Message: **{messageId}** was moved by **{mover}** to #{channel}");
+            if (reason == null)
+            {
+                await message.Channel.SendMessageAsync($"Message: **{messageId}** sent by **{message.Author}** was moved by **{mover}** to <#{channel.Id}>");
+            }
+            else
+            {
+                await message.Channel.SendMessageAsync($"Message: **{messageId}** sent by **{message.Author}** was moved by **{mover}** to <#{channel.Id}> \n**Reason**: {reason}");
+            }
         }
 
         [Command("move"), Summary("Moves a message from one channel to another."), Example("k!move #boo 663803219440566272 Message shouldn't be here")]

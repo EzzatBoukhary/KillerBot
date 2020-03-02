@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Globalization;
+using Bot.Preconditions;
 
 namespace Bot.Modules
 {
@@ -30,6 +31,7 @@ namespace Bot.Modules
         [Command("Poll")]
         [Alias("Vote", "start-poll")]
         [Priority(1)]
+        [Cooldown(10)]
         [Remarks("Starts a new poll with the specified question and automatically adds reactions")]
         [Example("k!poll \"Was the event good?\" for 1h")]
         [RequireBotPermission(ChannelPermission.AddReactions | ChannelPermission.ManageMessages)]
@@ -40,7 +42,7 @@ namespace Bot.Modules
             if (args.Contains(" for ")) splittedArgs = args.Split(new string[] { " for " }, StringSplitOptions.None);
             if (splittedArgs == null || splittedArgs.Length < 2)
             {
-                await ReplyAsync("In order to start a poll you'll need to set the question and the duration (OR, you can just put the question but the default duration of the poll is 1 hour) you'd want this poll to run for. \nExample: k!poll Stream? for 1d \nMake sure to put **for** between the question and the duration.");
+                await ReplyAsync("In order to start a poll you'll need to set the question and the duration you'd want this poll to run for. \nExample: k!poll Stream? for 1d \nMake sure to put **for** between the question and the duration.");
                 return;
             }
 
@@ -106,6 +108,7 @@ namespace Bot.Modules
           [Command("Poll")]
           [Alias("Vote")]
           [Priority(2)]
+          [Cooldown(10)]
           [Remarks("Starts a new poll with the specified question and the list answers and automatically adds reactions")]
           [Example("k!poll 60 \"What's your favourite game?\" \"Minecraft\" \"COD\" \"CS:GO\"")]
           [RequireBotPermission(ChannelPermission.AddReactions | ChannelPermission.ManageMessages)]
