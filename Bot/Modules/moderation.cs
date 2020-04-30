@@ -395,6 +395,7 @@ namespace Bot.Modules
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task ForceBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The ID of user you want to ban")] ulong id,
+           [Summary("OPTIONAL: The amount of days of messages you want to delete from that user")]  int pruneDays = 0,
            [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
         {
             if (string.IsNullOrEmpty(reason))
@@ -408,7 +409,7 @@ namespace Bot.Modules
             embed.Title = "=== Forced Ban ===";
             embed.Description = $"**Banned User: ** {user.Username}#{user.Discriminator} || {user.Id} \n**Banned by: ** {Context.User}\n**Reason: **{reason}";
             embed.ImageUrl = "https://i.redd.it/psv0ndgiqrny.gif";
-            await gld.AddBanAsync(id, 0, $"{Context.User}: {reason}");
+            await gld.AddBanAsync(id, pruneDays, $"{Context.User}: {reason}");
             await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT FORCEFULLY BANNED*** :hammer: :fire: ");
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
@@ -614,7 +615,8 @@ namespace Bot.Modules
 
         }
         [Command("changenick"), Alias("setnick", "change-nick")]
-        [Remarks("Set A User's Nickname")]
+        [Summary("Set A User's Nickname")]
+        [Example("k!setnick Panda NotPanda")]
         [RequireUserPermission(GuildPermission.ManageNicknames)]
         [RequireBotPermission(GuildPermission.ManageNicknames)]
         public async Task Nickname([RequireUserHierarchy][RequireBotHigherHirachy]SocketGuildUser username = null, [Remainder]string name = null)
@@ -748,6 +750,33 @@ namespace Bot.Modules
             }
 
             return muteRole;
+        }
+        [Command("emojisteal")]
+        [Alias("stealemoji")]
+        [Summary("Put an emoji after the command and the bot will steal it and add it to the server with the same name.")]
+        [Remarks("You and the bot should be able to Manage Emojis for this.")]
+        [RequireUserPermission(GuildPermission.ManageEmojis)]
+        [RequireBotPermission(GuildPermission.ManageEmojis)]
+        public async Task Emojisteal([Summary("The emoji you want to steal.")]string input)
+        {
+            try
+            {
+                var emote = Emote.Parse(input);
+                using (var webclient = new WebClient())
+                {
+                    HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(emote.Url);
+                    HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                    Stream stream = httpWebReponse.GetResponseStream();
+
+                    await Context.Guild.CreateEmoteAsync(emote.Name, new Discord.Image(stream));
+                    stream.Dispose();
+                }
+                await ReplyAsync($"<a:SuccessKB:639875484972351508> Succesfully added the emoji with the name of \"**{emote.Name}**\"");
+            }
+            catch
+            {
+                await ReplyAsync("Something went wrong... did you input a custom emoji which isn't in the server?");
+            }
         }
         [Command("move"), Summary("Moves a message from one channel to another."), Example("k!move 663803219440566272 #boo cool reason")]
         [Cooldown(10, true)]

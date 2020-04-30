@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using Bot.Helpers;
+using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
 using System;
@@ -105,6 +106,7 @@ namespace Bot.Modules
     };
 
         [Command("minesweeper")]
+        [Summary("Play the famous minesweeper the discord style!")]
         public async Task Title(int size = 10, float ratio = 0.15f)
         {
             if (size > 10)
@@ -171,6 +173,8 @@ namespace Bot.Modules
         }
 
         [Command("race", RunMode = RunMode.Async), Alias("rally")]
+        [Summary("Create a virtual race/rally between two or more things/people.")]
+        [Example("k!race Noob1 Noob2 turtle")]
         public async Task Race([Summary("The competitors. (Should be at least two and you need to put a space between each one.)")] [Remainder]string args)
         {
             string[] parts = args.Split(' ');

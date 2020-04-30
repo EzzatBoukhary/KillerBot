@@ -377,9 +377,58 @@ namespace Bot.Modules
                 await ReplyAsync("", false, embed.Build());
             }
         }
+        [Command("clownrate")]
+        [Alias("clown-rate", "howclown")]
+        [Summary("Check the clown rate of yourself or others!")]
+        [Ratelimit(10, 1, Measure.Minutes, RatelimitFlags.None)]
+        public async Task ClownRate([Remainder] [Summary("OPTIONAL: The user you want to know their clown rate.")] SocketGuildUser user = null)
+        {
+            string clown = "";
+            if (user == null)
+            {
+                clown = Context.User.ToString();
+            }
+            else
+            {
+                clown = user.ToString();
+            }
+            int rate = (Global.Rng.Next(0, 101)); //How clown you are!
+            EmbedBuilder emb = new EmbedBuilder()
+                .WithColor(new Color(255, 0, 0))
+                .WithTitle("== Clown Rate 🤡 ==")
+                .WithFooter($"Requested by: {Context.User}", Context.User.GetAvatarUrl());
+            string reply = "";
+            if (rate == 0)
+            {
+                reply = "not a clown! \nCongrats!";
+                emb.WithImageUrl("https://discordapp.com/channels/497373849042812928/509781635089301505/701186410610426006");
+            }
+            else if (rate == 50)
+            {
+                reply = "half a clown.";
+            }
+            else if (rate == 100)
+            {
+                reply = "an expert CLOWN!";
+                emb.WithImageUrl("https://media.giphy.com/media/14kwRD61ir8wW4/giphy.gif");
+            }
+            else if (rate < 50 && rate > 0)
+            {
+                reply = "still an amateur clown.";
+            }
+            else if (rate > 50 && rate < 100)
+            {
+                reply = "a senior CLOWN, almost there!";
+            }
+            if (clown == Context.User.ToString())
+                emb.WithDescription($"\n \nYou are {reply} **({rate}%)**");
+            else
+                emb.WithDescription($"\n \n**{clown}** is {reply} **({rate}%)**");
+            await ReplyAsync("", false, emb.Build());
+        }
 
         [Command("randomcat")]
-        [Cooldown(3)]
+        [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.None)]
         [Alias("meow","cat")]
         [Summary("Retrieve a random cat photo")]
         public async Task CatPic()
@@ -400,7 +449,7 @@ namespace Bot.Modules
        
         // RPS
 
-        [Command("rps")]
+     /*   [Command("rps")]
         [Cooldown(3)]
         [Summary("Do this command to know more info about the game. for example `rps r` for rock, `rps p` for paper and `rps s` for scissors.'")]
 
@@ -540,7 +589,7 @@ namespace Bot.Modules
 
             }
 
-        }
+        } */
         // END
     }
 }

@@ -41,7 +41,7 @@ namespace Bot.Modules
             await ReplyAsync("Permanent invite link to the server for the bot where you can get help and support: https://discord.gg/DNqAShq");
         }
 
-        [Command("Feedback"), Alias("Fb")]
+        [Command("Feedback"), Alias("Fb", "suggest")]
         [Cooldown(25)]
         [Summary("Submit feedback directly to KillerBot HQ.")]
         [Remarks("Usage: k!feedback {feedback}")]
@@ -84,7 +84,6 @@ namespace Bot.Modules
 
         }
 
-        
 
         [Command("Ping", RunMode = RunMode.Async)]
         [Remarks("Returns Gateway latency, Response latency and Delta (response - gateway).")]
@@ -135,12 +134,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.9.1` <:KBupdate:580129240889163787> \n \n**[Changed/Fixed]** \n \n{dot} Added cooldowns and ratelimits to multiple commands. \n \n{dot} Added the missing commands to `k!help` command. \n \n{dot} Fixed the `k!timezones` command that wasn't working. \n \n{dot} Changes in error messages. \n \n{dot} Fixed broken purge command. \n \n{dot} Changes in k!move command. \n \n{dot} Fixed a loophole in the role hierarhcy system which affects most role commands. \n \nPlease report bugs using `k!report (bug)` if you see any in the future!";
+            embed.Description = $" **== Minor Release ==** `v1.10.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} `k!stealemoji` command. \n \n{dot} `k!clownrate` command. \n \n{dot} Added the missing prune days parameter in forced bans. \n \n**[Changed/Fixed]** \n \n{dot} Revamped `k!rps` command and made it part of the economy commands. \n`k!help rps` for more info. \n \n{dot} Better replies for some commands when no parameters are given. \n \n{dot} Added summaries and examples for some commands to help the users. \n \n{dot} `k!suggest` is now an alias to `k!feedback`. \n \n{dot} Nitro users with a GIF pfp will no longer appear as a \"possible nitro user\" in `k!userinfo`, rather only users with special discriminator. \n \n{dot} Revamped `k!serverinfo` and added the changes to the bot owner command. \n \n**[Removed]** \n \n{dot} Removed `k!usercount` command after `k!serverinfo` got its content.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: March 2nd - 2019 1:49 AM GMT");
+                x.WithText("Last updated: April 30th - 2020 3:27 AM GMT");
 
 
 
@@ -194,7 +193,7 @@ namespace Bot.Modules
             
         }
     [Command("status")]
-        [Summary("Wondering about the bot's status?")]
+        [Summary("Wondering about the bot's status? Join the support server and know more about it.")]
         [Remarks("Sends a link to the bot's support server with updates about the status of the bot and connection")]
         public async Task StatusAsync()
         {
@@ -223,9 +222,9 @@ namespace Bot.Modules
             await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
         [Command("serverinfo")]
-        [Cooldown(3)]
         [Alias("sinfo", "aboutserver")]
-        [Summary("Shows server information.")]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
+        [Summary("Shows information about the server this was sent in like creation date, amount of members and more.")]
         public async Task sinfo()
         {
             var channel = (ITextChannel)Context.Channel;
@@ -233,64 +232,55 @@ namespace Bot.Modules
             var ownername = guild.GetUser(guild.OwnerId);
             var textchn = guild.TextChannels.Count();
             var voicechn = guild.VoiceChannels.Count();
+            var mem = guild.MemberCount;
+            var botlist = guild.Users.Count(x => x.IsBot);
+            var guildusers = mem - botlist;
+            string mem2 = $"<:online2:704873654722232361> **{guild.Users.Count(x => x.Status == UserStatus.Online)}** - <:away2:704873837883555902> **{guild.Users.Count(x => x.Status == UserStatus.Idle)}** - <:dnd2:704873772406014104> **{guild.Users.Count(x => x.Status == UserStatus.DoNotDisturb)}** - <:offline2:704873716114260009> **{guild.Users.Count(x => x.Status == UserStatus.Offline)}** (<:members:704874969083019354> **{mem}** - 👤 **{guildusers}** - <:botTag:704886277920784445> **{botlist}**)";
 
             var createdAt = new DateTime(2015, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(guild.Id >> 22);
-            var features = string.Join("\n", guild.Features);
+            var features = string.Join(", ", guild.Features);
             if (string.IsNullOrWhiteSpace(features))
                 features = "-";
-            var embed = new EmbedBuilder()
-                .WithAuthor("== SERVER INFORMATION ==")
-                .WithTitle(guild.Name)
-                .AddField(fb => fb.WithName("ID").WithValue(guild.Id.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Owner").WithValue(ownername.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Created at").WithValue($"{ createdAt:dd/MM/yyyy HH:mm:ss} UTC (dd/mm)").WithIsInline(true))
-                .AddField(fb => fb.WithName("Members").WithValue(guild.MemberCount.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Text channels").WithValue(textchn.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Voice channels").WithValue(voicechn.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Roles").WithValue((guild.Roles.Count - 1).ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Region").WithValue(guild.VoiceRegionId.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Verification Level").WithValue(guild.VerificationLevel.ToString()).WithIsInline(true))
-                .WithColor(9896005);
+            var dot = "<:KBdot:580470791251034123>";
+            var embed = new EmbedBuilder();
+                embed.WithAuthor("== SERVER INFORMATION ==");
+                embed.WithColor(Color.Blue);
+                embed.WithTitle(guild.Name);
+                embed.Description = $"{dot} ID: **{guild.Id}**" +
+                $"\n{dot} Owner: **{ownername.ToString()}**" +
+                $"\n{dot} Creation: **{guild.CreatedAt.DateTime.ToLongDateString()} {guild.CreatedAt.DateTime.ToLongTimeString()} UTC**" +
+                $"\n{dot} Region: **{guild.VoiceRegionId.ToString()}**" +
+                $"\n \n{dot} Members: {mem2}" +
+                $"\n{dot} Roles: **{(guild.Roles.Count - 1).ToString()}**" +
+                $"\n{dot} Channels: Text: **{textchn.ToString()}** - Voice: **{voicechn.ToString()}** - Categories: **{guild.CategoryChannels.Count}**" +
+                $"\n \n{dot} Verification: **{guild.VerificationLevel.ToString()}**";
+
             if (guild.ExplicitContentFilter.ToString() == "MembersWithoutRoles")
-            {
-                embed.AddField(fb =>
-                     fb.WithName("Explict Content Filter")
-                     .WithValue("Scans messages from members without roles").WithIsInline(false));
-            }
-            if (guild.ExplicitContentFilter.ToString() == "Disabled")
-            {
-                embed.AddField(fb =>
-                     fb.WithName("Explict Content Filter")
-                     .WithValue("No message scanning").WithIsInline(true));
-            }
-            if (guild.ExplicitContentFilter.ToString() == "AllMembers")
-            {
-                embed.AddField(fb =>
-                     fb.WithName("Explict Content Filter")
-                     .WithValue("Scans messages from all members").WithIsInline(false));
-            }
+                embed.Description += $"\n{dot} Explicit Content Filter: **Scans messages from members without roles**";
+
+            else if (guild.ExplicitContentFilter.ToString() == "Disabled")
+                embed.Description += $"\n{dot} Explicit Content Filter: **No message scanning**";
+
+            else if (guild.ExplicitContentFilter.ToString() == "AllMembers")
+                embed.Description += $"\n{dot} Explicit Content Filter: **Scans messages from all members**";
+        
             if (Uri.IsWellFormedUriString(guild.IconUrl, UriKind.Absolute))
                 embed.WithThumbnailUrl(guild.IconUrl);
             if (features != "-")
             {
-                embed.AddField(fb =>
-                    fb.WithName("Features")
-                    .WithValue(features).WithIsInline(true));
+                embed.Description += $"\n{dot} Features: **{features}**";
             }
 
             if (guild.Emotes.Any())
             {
-                embed.AddField(fb =>
-                    fb.WithName("Custom emojis " + $"({guild.Emotes.Count})")
-                    .WithValue(string.Join(" ", guild.Emotes
-                        .Take(20)
-                        .Select(e => $"{e.ToString()}"))));
+                embed.Description += $"\n{dot} Custom Emojis `({guild.Emotes.Count})`: ";
+                embed.Description += (string.Join(" ", guild.Emotes
+                        .Take(11)
+                        .Select(e => $"{e.ToString()}")));
             }
-            if (features.Contains("INVITE_SPLASH"))
+            if (features.Contains("INVITE_SPLASH") && (guild.SplashUrl != null))
             {
-                embed.AddField(fb =>
-                    fb.WithName("Splash Icon")
-                    .WithValue($"[Splash picture:]({guild.SplashUrl})").WithIsInline(true));
+                embed.Description += $"\n{dot} [Splash Icon:]({guild.SplashUrl})";
                 embed.WithImageUrl(guild.SplashUrl);
             }
             await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
@@ -298,6 +288,7 @@ namespace Bot.Modules
         
         [Command("roleinfo"), Summary("Returns info about a role."),Alias("RI")]
         [Example("k!roleinfo Cool role")]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [RequireContext(ContextType.Guild)]
         public async Task Role([Remainder, Summary("The role to return information about.")] string args)
         {
@@ -455,7 +446,7 @@ namespace Bot.Modules
         }
         
         [Command("userinfo"), Alias("whois")]
-        [Cooldown(3)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Gets information about the specified user")]
         public async Task UserInfo([Summary("OPTIONAL: User to check their info")][Remainder] IGuildUser user = null)
         {
@@ -473,6 +464,7 @@ namespace Bot.Modules
 
             var picture = user.GetAvatarUrl();
             string nitro = "<:KBNitro:587753434812514324> (Possible nitro user)";
+            string nitro2 = "<:KBNitro:587753434812514324>";
             // If the user has a default avatar
             string useravatar = "";
             if (string.IsNullOrEmpty(user.AvatarId))
@@ -495,7 +487,7 @@ namespace Bot.Modules
             //GIF avatar looking
             if (picture == $"https://cdn.discordapp.com/avatars/{user.Id}/{user.AvatarId}.gif?size=128")
             {
-                emb.Description += $" {nitro}";
+                emb.Description += $" {nitro2}";
             }
 
             //Tags looking for nitro
@@ -617,7 +609,7 @@ namespace Bot.Modules
             var status = $"{(user.Status == UserStatus.DoNotDisturb ? "Do Not Disturb" : user.Status.ToString())} {statusemoji}";
             if (user.Activity != null)
             {
-                status += $"{user.Activity.Type.ToString()} **{user.Activity.Name.ToString()}**";
+                status += $"{user.Activity.Type.ToString()} **{user.Activity.Name}**";
             }
             
             emb.AddField($"Status", status);
@@ -711,7 +703,7 @@ namespace Bot.Modules
         }
 
         [Command("dadjoke")]
-        [Summary("Random dad joke")]
+        [Summary("Random dad joke. vErY fUnNy :)")]
         public async Task DadJoke()
         {
             var wr = (HttpWebRequest)WebRequest.Create("https://icanhazdadjoke.com/");
@@ -785,65 +777,6 @@ namespace Bot.Modules
             embed.Description = $"You have sent a bug report to KillerBot HQ. It will be reviewed soon.";
 
             await Context.Channel.SendMessageAsync("", false, embed.Build());
-        }
-       
-
-        [Command("UserCount")]
-        [Cooldown(3)]
-        [Alias("UC")]
-
-        [Remarks("User Count for the current server")]
-
-        [RequireContext(ContextType.Guild)]
-
-        public async Task Ucount()
-
-        {
-
-            if ((Context.Guild as SocketGuild) != null)
-
-            {
-
-                var botlist = ((SocketGuild)Context.Guild).Users.Count(x => x.IsBot);
-
-                var mem = ((SocketGuild)Context.Guild).MemberCount;
-
-                var guildusers = mem - botlist;
-
-
-
-                var embed = new EmbedBuilder()
-
-                    .WithTitle($"User Count for {Context.Guild.Name}")
-
-                    .AddField(":busts_in_silhouette: Total Members", mem)
-
-                    .AddField(":robot: Total Bots", botlist)
-
-                    .AddField(":man_in_tuxedo: Total Users", guildusers)
-
-                    .AddField(":newspaper2: Total Channels", ((SocketGuild)Context.Guild).Channels.Count)
-
-                    .AddField(":microphone: Text/Voice Channels", $"{((SocketGuild)Context.Guild).TextChannels.Count}/{((SocketGuild)Context.Guild).VoiceChannels.Count}")
-
-                    .AddField(":spy: Role Count", ((SocketGuild)Context.Guild).Roles.Count)
-
-
-                    .WithFooter(x =>
-
-                    {
-
-                        x.WithText("KillerBot   ");
-
-                        x.WithIconUrl(Context.Client.CurrentUser.GetAvatarUrl());
-
-                    });
-
-
-
-                await ReplyAsync("", false, embed.Build());
-
-            }
         }
     }
 }

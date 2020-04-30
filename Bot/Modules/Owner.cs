@@ -70,68 +70,60 @@ namespace Bot.Modules
             var ownername = guild.GetUser(guild.OwnerId);
             var textchn = guild.TextChannels.Count();
             var voicechn = guild.VoiceChannels.Count();
+            var mem = guild.MemberCount;
+            var botlist = guild.Users.Count(x => x.IsBot);
+            var guildusers = mem - botlist;
+            string mem2 = $"<:online2:704873654722232361> **{guild.Users.Count(x => x.Status == UserStatus.Online)}** - <:away2:704873837883555902> **{guild.Users.Count(x => x.Status == UserStatus.Idle)}** - <:dnd2:704873772406014104> **{guild.Users.Count(x => x.Status == UserStatus.DoNotDisturb)}** - <:offline2:704873716114260009> **{guild.Users.Count(x => x.Status == UserStatus.Offline)}** (<:members:704874969083019354> **{mem}** - 👤 **{guildusers}** - <:botTag:704886277920784445> **{botlist}**)";
 
-            var features = string.Join("\n", guild.Features);
+            var createdAt = new DateTime(2015, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(guild.Id >> 22);
+            var features = string.Join(", ", guild.Features);
             if (string.IsNullOrWhiteSpace(features))
                 features = "-";
-            var embed = new EmbedBuilder()
-                .WithAuthor("== SERVER INFORMATION ==")
-                .WithTitle(guild.Name)
-                .AddField(fb => fb.WithName("ID").WithValue(guild.Id.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Owner").WithValue($"{ownername.ToString()} | {Context.Guild.OwnerId}").WithIsInline(true))
-                .AddField(fb => fb.WithName("Created at").WithValue($"{guild.CreatedAt.DateTime.ToLongDateString()} {guild.CreatedAt.DateTime.ToLongTimeString()} (By UTC)").WithIsInline(true))
-                .AddField(fb => fb.WithName("Members").WithValue(guild.MemberCount.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Text channels").WithValue(textchn.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Voice channels").WithValue(voicechn.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Roles").WithValue((guild.Roles.Count - 1).ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Region").WithValue(guild.VoiceRegionId.ToString()).WithIsInline(true))
-                .AddField(fb => fb.WithName("Verification Level").WithValue(guild.VerificationLevel.ToString()).WithIsInline(true))
-                .WithColor(9896005);
+            var dot = "<:KBdot:580470791251034123>";
+            var embed = new EmbedBuilder();
+            embed.WithAuthor("== SERVER INFORMATION ==");
+            embed.WithColor(Color.Blue);
+            embed.WithTitle(guild.Name);
+            embed.Description = $"{dot} ID: **{guild.Id}**" +
+            $"\n{dot} Owner: **{ownername.ToString()}**" +
+            $"\n{dot} Creation: **{guild.CreatedAt.DateTime.ToLongDateString()} {guild.CreatedAt.DateTime.ToLongTimeString()} UTC**" +
+            $"\n{dot} Region: **{guild.VoiceRegionId.ToString()}**" +
+            $"\n \n{dot} Members: {mem2}" +
+            $"\n{dot} Roles: **{(guild.Roles.Count - 1).ToString()}**" +
+            $"\n{dot} Channels: Text: **{textchn.ToString()}** - Voice: **{voicechn.ToString()}** - Categories: **{guild.CategoryChannels.Count}**" +
+            $"\n \n{dot} Verification: **{guild.VerificationLevel.ToString()}**";
+
             if (guild.ExplicitContentFilter.ToString() == "MembersWithoutRoles")
-            {
-                embed.AddField(fb =>
-                     fb.WithName("Explict Content Filter")
-                     .WithValue("Scans messages from members without roles").WithIsInline(false));
-            }
-            if (guild.ExplicitContentFilter.ToString() == "Disabled")
-            {
-                embed.AddField(fb =>
-                     fb.WithName("Explict Content Filter")
-                     .WithValue("No message scanning").WithIsInline(true));
-            }
-            if (guild.ExplicitContentFilter.ToString() == "AllMembers")
-            {
-                embed.AddField(fb =>
-                     fb.WithName("Explict Content Filter")
-                     .WithValue("Scans messages from all members").WithIsInline(false));
-            }
+                embed.Description += $"\n{dot} Explicit Content Filter: **Scans messages from members without roles**";
+
+            else if (guild.ExplicitContentFilter.ToString() == "Disabled")
+                embed.Description += $"\n{dot} Explicit Content Filter: **No message scanning**";
+
+            else if (guild.ExplicitContentFilter.ToString() == "AllMembers")
+                embed.Description += $"\n{dot} Explicit Content Filter: **Scans messages from all members**";
+
             if (Uri.IsWellFormedUriString(guild.IconUrl, UriKind.Absolute))
                 embed.WithThumbnailUrl(guild.IconUrl);
             if (features != "-")
             {
-                embed.AddField(fb =>
-                    fb.WithName("Features")
-                    .WithValue(features).WithIsInline(true));
+                embed.Description += $"\n{dot} Features: **{features}**";
             }
 
             if (guild.Emotes.Any())
             {
-                embed.AddField(fb =>
-                    fb.WithName("Custom emojis " + $"({guild.Emotes.Count})")
-                    .WithValue(string.Join(" ", guild.Emotes
-                        .Take(20)
-                        .Select(e => $"{e.ToString()}"))));
+                embed.Description += $"\n{dot} Custom Emojis `({guild.Emotes.Count})`: ";
+                embed.Description += (string.Join(" ", guild.Emotes
+                        .Take(11)
+                        .Select(e => $"{e.ToString()}")));
             }
-            if (features.Contains("INVITE_SPLASH"))
+            if (features.Contains("INVITE_SPLASH") && (guild.SplashUrl != null))
             {
-                embed.AddField(fb =>
-                    fb.WithName("Splash Icon")
-                    .WithValue($"[Splash picture:]({guild.SplashUrl})").WithIsInline(true));
+                embed.Description += $"\n{dot} [Splash Icon:]({guild.SplashUrl})";
                 embed.WithImageUrl(guild.SplashUrl);
             }
-            
-           await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
+            await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }
+
         [Command("getinvite")]
         [RequireOwner]
         [Remarks("Provides invite link to a given server by its id")]

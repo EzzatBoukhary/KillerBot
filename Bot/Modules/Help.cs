@@ -138,8 +138,7 @@ namespace Bot.Modules
             {
                 var cmd = match.Command;
                 var parameters = cmd.Parameters.Select(p => string.IsNullOrEmpty(p.Summary) ? p.Name : p.Summary);
-                var paramsString = $"Parameters: {string.Join(", ", parameters)}" +
-                                     //$"\nAttributes: {cmd.Attributes.ToString()}" +
+                var paramsString = ((cmd.Parameters.Count == 0) ? "" : $"Parameters: {string.Join(", ", parameters)}") +
                                    (string.IsNullOrEmpty(cmd.Remarks) ? "" : $"\nRemarks: {cmd.Remarks}") +
                                    (string.IsNullOrEmpty(cmd.Summary) ? "" : $"\nSummary: {cmd.Summary}");
                 ExampleAttribute example = cmd.Attributes.OfType<ExampleAttribute>().FirstOrDefault();

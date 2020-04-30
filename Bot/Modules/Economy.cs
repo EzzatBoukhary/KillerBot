@@ -10,6 +10,8 @@ using static Bot.Global;
 using Bot.Preconditions;
 using Bot.Entities;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using Bot.Helpers;
 // ReSharper disable ConvertIfStatementToSwitchStatement
 
 namespace Bot.Modules
@@ -51,7 +53,7 @@ namespace Bot.Modules
 
         }
 
-        [Command("Daily"), Remarks("Gives you some coins, but can only be used once a day")]
+        [Command("Daily"), Summary("Gives you some coins, but can only be used once a day")]
         [Alias("GetDaily", "ClaimDaily")]
         public async Task GetDaily()
         {
@@ -101,7 +103,7 @@ namespace Bot.Modules
             }
         }
 
-        [Command("money"), Remarks("Shows how much money you have")]
+        [Command("money"), Summary("Shows how much money you have")]
         [Alias("Cash", "balance", "coins", "bal")]
         public async Task CheckMiunies()
         {
@@ -166,7 +168,7 @@ namespace Bot.Modules
             await ReplyAsync("", false, emb.Build());
         }
 
-        [Command("money"), Remarks("Shows how much money the mentioned user has")]
+        [Command("money"), Summary("Shows how much money the mentioned user has")]
         [Alias("Cash", "balance", "coins", "bal")]
         public async Task CheckMiuniesOther([Remainder] [Summary("user to check")]IGuildUser target)
         {
@@ -235,7 +237,7 @@ namespace Bot.Modules
             await ReplyAsync("", false, emb.Build());
         }
 
-        [Command("Leaderboard"), Remarks("Shows a user list of the sorted by money. Pageable to see lower ranked users.")]
+        [Command("Leaderboard"), Summary("Shows a user list of the sorted by money. Pageable to see lower ranked users.")]
         [Alias("Top", "Top10", "Richest", "lb")]
         [Cooldown(5)]
         public async Task ShowRichesPeople(int page = 1)
@@ -307,7 +309,7 @@ namespace Bot.Modules
         }
 
         [Command("Transfer")]
-        [Remarks("Transfers specified amount of your coins to the mentioned person.")]
+        [Summary("Transfers specified amount of your coins to the mentioned person.")]
         [Alias("Give", "Gift")]
         public async Task TransferMinuies(
             [Summary("User to transfer money to")]IGuildUser target,
@@ -331,7 +333,7 @@ namespace Bot.Modules
             }
         }
 
-        [Command("newslot"), Summary("Creates a new slot machine if you feel the current one is unlucky"), Remarks("Usage: k!newslots [Optional: (amount of pieces)}]")]
+        [Command("newslot"), Summary("Creates a new slot machine if you feel the current one is unlucky"), Remarks("Usage: k!newslots [Optional: (amount of pieces)]")]
         [Alias("newslots")]
         public async Task NewSlot([Summary("OPTIONAL: Amount of items in the slot machine")]int amount = 0)
         {
@@ -624,9 +626,13 @@ namespace Bot.Modules
         [Command("rob")]
         [Alias("steal")]
         [Remarks("Really want that money that person has? go for it, but don't get caught!")]
-        public async Task Rob([Remainder] [NoSelf] IGuildUser target)
+        public async Task Rob([Remainder] [NoSelf] IGuildUser target = null)
         {
-
+            if (target == null)
+            {
+                await ReplyAsync("<:rob:593876945205329966> Please specify the user you want to rob!");
+                return;
+            }
             string[] FailSuccess = new string[]
        {
       $"{Context.User} has robbed {target} " ,
@@ -861,7 +867,175 @@ namespace Bot.Modules
             }
         }
 
+        // RPS
 
+        [Command("rps")]
+        [Ratelimit(5, 2, Measure.Minutes, RatelimitFlags.None)]
+        [Summary("Do this command to know more info about the game. for example.'")]
+        [Example("k!rps 30 rock")]
+        [Remarks("Put a bet and play rock paper scissors")]
+
+        public async Task Rps([Summary("Your bet (positive number)")] uint bet = 0 , [Summary("Your pick")] string input = null)
+        {
+            var user = _globalUserAccounts.GetById(Context.User.Id);
+            bool Double = false;
+            bool NoLoss = false;
+            if (user.Coins < bet)
+            {
+                await ReplyAsync("You betted more coins than what you have in your wallet!");
+                return;
+            }
+            var embed = new EmbedBuilder();
+
+            for (int i = 0; i < user.Bought_Items.Count; i++) // If the user has specific items bought from the shop
+            {
+                if (user.Bought_Items[i].Duration.CompareTo(new TimeSpan(long.MaxValue)) < 0)
+                {
+                    if (DateTime.UtcNow - user.Bought_Items[i].Date > user.Bought_Items[i].Duration)
+                    {
+                        user.Bought_Items.Remove(user.Bought_Items[i]);
+                    }
+                    else if (user.Bought_Items[i].name == "Double Day")
+                    {
+                        Double = true;
+                    }
+                    else if (user.Bought_Items[i].name == "No Loss Day")
+                    {
+                        NoLoss = true;
+                    }
+
+                }
+                continue;
+            }
+
+            if (input == null || bet == 0)
+            {
+                await ReplyAsync(
+                    " To play rock, paper, scissors:" +
+                    "\n\n Specify the amount of coins you want to bet, then" +
+                    "\n:new_moon: type `rock` or `r` to pick rock" +
+                    "\n\n:newspaper: type `paper` or `p` to pick paper" +
+                    "\n\n✂️ type `scissors` or `s` to pick scissors" 
+                );
+            }
+
+            else
+            {
+                int pick;
+                switch (input)
+
+                {
+
+                    case "r":
+
+                    case "rock":
+
+                        pick = 0;
+
+                        break;
+
+                    case "p":
+
+                    case "paper":
+
+                        pick = 1;
+
+                        break;
+
+                    case "scissors":
+
+                    case "s":
+
+                        pick = 2;
+
+                        break;
+
+                    default:
+                        await ReplyAsync("Only choose one of the 3 weapons! (rock/paper/scissors)");
+                        return;
+
+                }
+                var choice = new Random().Next(0, 3);
+                string msg;
+
+                if (pick == choice)
+                {
+                    embed.WithTitle("Draw!");
+                    embed.WithColor(new Color(255, 140, 0));
+                    msg = "We both chose: " + GetRpsPick(pick) + "\nNah, not today.\nNo money was gained/lost.";
+                }
+
+                else if (pick == 0 && choice == 1 ||
+                         pick == 1 && choice == 2 ||
+                         pick == 2 && choice == 0)
+                {
+                    embed.WithTitle("You lose!");
+                    embed.WithColor(new Color(255, 0, 0));
+                    if (NoLoss == true)
+                    {
+                        msg = "My Pick: " + GetRpsPick(choice) + " Beats Your Pick: " + GetRpsPick(pick) +
+                          $"\nTry Again boi! \nYou lost **{bet} coins**...or NOT \n:spy: **No Loss Day** is here to save you!";
+                    }
+                    else
+                    {
+                        msg = "My Pick: " + GetRpsPick(choice) + " Beats Your Pick: " + GetRpsPick(pick) +
+                          $"\nTry Again boi! \nYou lost **{bet} coins**!";
+                        user.Coins -= bet;
+                        _globalUserAccounts.SaveAccounts(user.Id);
+                    }
+                }
+                else
+                {
+                    embed.WithTitle("You win!");
+                    embed.WithColor(new Color(0, 255, 0));
+                    if (Double == true)
+                    {
+                        msg = "Your Pick: " + GetRpsPick(pick) + " Beats mine: " + GetRpsPick(choice) +
+                               $"\nCongratulations! \nYou gained **{bet * 2} coins**! \n**Double Day** is in effect and gave you double the amount! **({bet * 3} coins)**";
+                        user.Coins -= bet;
+                        user.Coins += bet * 3;
+                        _globalUserAccounts.SaveAccounts(user.Id);
+                    }
+                    else
+                    {
+                        msg = "Your Pick: " + GetRpsPick(pick) + " Beats mine: " + GetRpsPick(choice) +
+                              $"\nCongratulations! \nYou gained **{bet * 2} coins**!";
+                        user.Coins -= bet;
+                        user.Coins += bet * 2;
+                        _globalUserAccounts.SaveAccounts(user.Id);
+                    }
+                }                
+                    embed.WithDescription($"{msg}");
+                    embed.WithFooter($"New Wallet balance: {user.Coins}", Context.User.GetAvatarUrl());
+            
+                await ReplyAsync("", false, embed.Build());
+            }
+        }
+
+        private static string GetRpsPick(int p)
+
+        {
+
+            switch (p)
+
+            {
+
+                case 0:
+
+                    return ":new_moon:";
+
+                case 1:
+
+                    return ":newspaper:";
+
+                default:
+
+                    return "✂️";
+
+            }
+
+        }
+        // END
         // ============ Economy Shop ============
 
         [Command("inventory"), Alias("inven")]
@@ -960,17 +1134,17 @@ namespace Bot.Modules
             [Ratelimit(7, 1, Measure.Minutes, RatelimitFlags.None)]
             public async Task Buy([Remainder] [Summary("The name of the item you want to buy from the shop (k!shop)")] string item = null)
             {
-                var account = _globalUserAccounts.GetById(Context.User.Id);
-                var item2 = item.ToUpper();
-                Item i = _items.Find((a) => a.name.ToUpper() == item2);
-                
                 if (item == null)
                 {
                     await ReplyAsync("Please specify the item you need to buy. You can find the list of items by doing `k!shop`");
                     return;
                 }
 
-                else if (i == null)
+                var account = _globalUserAccounts.GetById(Context.User.Id);
+                var item2 = item.ToUpper();
+                Item i = _items.Find((a) => a.name.ToUpper() == item2);
+                
+                if (i == null)
                 {
                     await Context.Channel.SendMessageAsync($"<:KBfail:580129304592252995> Sorry but i couldn't find `{item}` in the shop. Make sure you type the item's name correctly from `k!shop`. \n \n**How to buy items:** https://cdn.discordapp.com/attachments/497373849042812930/620597247515688980/KB_How_To_Shop.jpg");
                     return;
@@ -1015,15 +1189,15 @@ namespace Bot.Modules
             [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
             public async Task iteminfo([Remainder] [Summary("The name of the item you want info about.")] string item = null)
             {
-                var item2 = item.ToUpper();
-                Item i = _items.Find((a) => a.name.ToUpper() == item2);
                 if (item == null)
                 {
                     await ReplyAsync("Please specify the item you need to know information about. You can find the list of items by doing `k!shop`");
                     return;
                 }
-
-                else if (i == null)
+                var item2 = item.ToUpper();
+                Item i = _items.Find((a) => a.name.ToUpper() == item2);
+                
+                if (i == null)
                 {
                     await Context.Channel.SendMessageAsync($"<:KBfail:580129304592252995> Sorry but i couldn't find `{item}` in the shop. Make sure you type the item's name correctly from `k!shop`. \n \n**Example:** https://cdn.discordapp.com/attachments/596436675383656459/608481133243400202/unknown.png");
                     return;
