@@ -120,7 +120,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.9.1`");
+            builder.AddField("Version", $"The current version of the bot is: `1.10.0`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]
@@ -138,6 +138,7 @@ namespace Bot.Modules
         string usage;
 
         [Command("calculate", RunMode = RunMode.Async)]
+        [Alias("math")]
         [Cooldown(4)]
         [Summary("Calculate anything, you can use + for addition, - for subtraction, / ÷ or for division, x or * for multiplication, PI to get the PI value, E for 2.718281828459045, % for Mod")]
         [Remarks("You can use multiple signs at once for example `calculate 4 + 2 * 4`")]
