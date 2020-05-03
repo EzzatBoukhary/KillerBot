@@ -228,6 +228,8 @@ namespace Bot.Handlers
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cacheMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
+            _logger.Log(LogSeverity.Error, "DiscordEventHandler.cs", "ReactionAdded Event will start now!");
+            _logger.Log(LogSeverity.Error, "DiscordEventHandler.cs", $"{reaction.Message}");
             if (reaction.User.Value.IsBot) { return; }
 
             var user = _client.Guilds.First().GetUser(reaction.UserId);

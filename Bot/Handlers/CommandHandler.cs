@@ -150,7 +150,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Multiple Matches");
-                         errormsg.WithDescription($"Multiple commands were found like {cmdSearchResult.Text}. Please be more specific");
+                         errormsg.WithDescription($"Multiple matches found. Please be more specific.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }

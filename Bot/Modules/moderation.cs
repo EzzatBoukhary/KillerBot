@@ -409,9 +409,16 @@ namespace Bot.Modules
             embed.Title = "=== Forced Ban ===";
             embed.Description = $"**Banned User: ** {user.Username}#{user.Discriminator} || {user.Id} \n**Banned by: ** {Context.User}\n**Reason: **{reason}";
             embed.ImageUrl = "https://i.redd.it/psv0ndgiqrny.gif";
-            await gld.AddBanAsync(id, pruneDays, $"{Context.User}: {reason}");
-            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT FORCEFULLY BANNED*** :hammer: :fire: ");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+            try
+            {
+                await gld.AddBanAsync(id, pruneDays, $"{Context.User}: {reason}");
+                await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT FORCEFULLY BANNED*** :hammer: :fire: ");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync("Something went wrong... Is the user banned already?");
+            }
         }
         [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 3 Being a bad boy.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
