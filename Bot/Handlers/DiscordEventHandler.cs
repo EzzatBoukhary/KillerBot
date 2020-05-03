@@ -228,18 +228,12 @@ namespace Bot.Handlers
 
         private async Task ReactionAdded(Cacheable<IUserMessage, ulong> cacheMessage, ISocketMessageChannel channel, SocketReaction reaction)
         {
-            _logger.Log(LogSeverity.Error, "DiscordEventHandler.cs", "ReactionAdded Event will start now!");
-            _logger.Log(LogSeverity.Error, "DiscordEventHandler.cs", $"{reaction.Message}");
             if (reaction.User.Value.IsBot) { return; }
-
-            var user = _client.Guilds.First().GetUser(reaction.UserId);
-            var roleIds = user.Roles.Select(r => r.Id).ToArray();
-            (new ListReactionHandler()).HandleReactionAdded(new ListHelper.UserInfo(user.Id, roleIds), _listManager, cacheMessage, reaction);
-
+            //var user = _client.Guilds.First().GetUser(reaction.UserId);
+            //var roleIds = user.Roles.Select(r => r.Id).ToArray();
+            //(new ListReactionHandler()).HandleReactionAdded(new ListHelper.UserInfo(user.Id, roleIds), _listManager, cacheMessage, reaction);
             _triviaGames.HandleReactionAdded(cacheMessage, reaction);
-            
             _blogHandler.ReactionAdded(reaction);
-
         }
 
         private async Task ReactionRemoved(Cacheable<IUserMessage, ulong> cacheMessage, ISocketMessageChannel channel, SocketReaction reaction)

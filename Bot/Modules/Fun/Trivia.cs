@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-/*using Bot.Extensions;
+using Bot.Extensions;
 using Bot.Features.Trivia;
 using Bot.Preconditions;
 using Discord.Commands;
@@ -26,4 +26,4 @@ namespace Bot.Modules.Fun
         }
         
     }
-} */
+}
