@@ -134,12 +134,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.10.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} `k!stealemoji` command. \n \n{dot} `k!clownrate` command. \n \n{dot} Added the missing prune days parameter in forced bans. \n \n**[Changed/Fixed]** \n \n{dot} Revamped `k!rps` command and made it part of the economy commands. \n`k!help rps` for more info. \n \n{dot} Better replies for some commands when no parameters are given. \n \n{dot} Added summaries and examples for some commands to help the users. \n \n{dot} `suggest` is now an alias to `k!feedback`. \n \n{dot} Nitro users with a GIF pfp will no longer appear as a \"possible nitro user\" in `k!userinfo`, rather only users with special discriminator. \n \n{dot} Revamped `k!serverinfo` and added the changes to the bot owner command. \n \n{dot} `math` is now an alias to `k!calculate` \n \n**[Removed]** \n \n{dot} Removed `k!usercount` command after `k!serverinfo` got its content.";
+            embed.Description = $" **== Patch ==** `v1.10.1` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added back `k!trivia` command after it got fixed. \n \n**[Changed/Fixed]** \n \n{dot} Fixed a big bug for commands that need users to react to the message to do something which wasn't working.\nThis fix affected: `k!poll`, `k!trivia`, and the subscribe reaction when posting a blog post.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: May 1st - 2020 1:13 AM GMT");
+                x.WithText("Last updated: May 3rd - 2020 5:22 AM GMT");
 
 
 
