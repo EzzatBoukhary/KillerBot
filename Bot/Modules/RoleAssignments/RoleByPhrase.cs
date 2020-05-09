@@ -51,7 +51,7 @@ namespace Bot.Modules.RoleAssignments
             embed.AddField("Phrases", phrases);
             embed.AddField("Roles", roles);
             embed.AddField("Relations", relations);
-            embed.WithFooter(Global.GetRandomDidYouKnow());
+            embed.WithFooter("In order to get a role you need to do k!(phrase) after setting a relation.");
             embed.WithCurrentTimestamp();
 
             await Context.Channel.SendMessageAsync("", embed: embed.Build());
