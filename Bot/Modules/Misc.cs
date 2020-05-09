@@ -24,6 +24,7 @@ using Gommon;
 using Newtonsoft.Json.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
+using Discord.Net;
 
 namespace Bot.Modules
 {
@@ -180,14 +181,20 @@ namespace Bot.Modules
         {
             var embed = EmbedHandler.CreateEmbed("Message by: " + Context.Message.Author.Username, message, EmbedHandler.EmbedMessageType.Info, true);
 
+            try
+            {
                 await Context.Channel.SendMessageAsync("", false, embed);
+            }
+            catch
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> Oopsie! I couldn't send that embed message.");
+            }
             try
             { 
                 await Context.Message.DeleteAsync();
             }
             catch
             {
-                await ReplyAsync("<:KBfail:580129304592252995> Oopsie! I wasn't able to delete your message.");
             }
         }
 
