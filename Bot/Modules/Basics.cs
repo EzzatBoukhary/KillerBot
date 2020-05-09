@@ -134,12 +134,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.10.2` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added a feature to the RoleByPhrase which allows users to remove the role by doing the phrase again. \n \n{dot} Added replies for the RoleByPhrase (self-roles) after doing `k!(phrase)` like telling the user that the role was given. \n \n**[Changed/Fixed]** \n \n{dot} Fixed bugs in `k!unban` and `k!ban` (forced ban). \n \n{dot} Changed the animated check command used in some commands. \n \n{dot} Changes in `k!invite` command.";
+            embed.Description = $" **== Patch ==** `v1.10.2` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added a feature to the RoleByPhrase which allows users to remove the role by doing the phrase again. \n \n{dot} Added replies for the RoleByPhrase (self-roles) after doing `k!(phrase)` like telling the user that the role was given. \n \n**[Changed/Fixed]** \n \n{dot} Fixed bugs in `k!unban` and `k!ban` (forced ban). \n \n{dot} Changed the animated check command used in some commands. \n \n{dot} Changes in `k!invite` command. \n \n{dot} Made a better reply for `k!echo` when the bot doesn't have permission to delete the message.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: May 9th - 2020 4:33 AM GMT");
+                x.WithText("Last updated: May 9th - 2020 6:53 PM GMT");
 
 
 

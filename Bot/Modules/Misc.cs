@@ -180,8 +180,15 @@ namespace Bot.Modules
         {
             var embed = EmbedHandler.CreateEmbed("Message by: " + Context.Message.Author.Username, message, EmbedHandler.EmbedMessageType.Info, true);
 
-            await Context.Channel.SendMessageAsync("", false, embed);
-            await Context.Message.DeleteAsync();
+                await Context.Channel.SendMessageAsync("", false, embed);
+            try
+            { 
+                await Context.Message.DeleteAsync();
+            }
+            catch
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> Oopsie! I wasn't able to delete your message.");
+            }
         }
 
          [Command("ud"),Alias("urbandictionary"), Summary("Gives you the definition of your word on Urban Dictionary.")]
