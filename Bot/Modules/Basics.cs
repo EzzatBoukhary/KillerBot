@@ -31,7 +31,7 @@ namespace Bot.Modules
         [Cooldown(5)]
         public async Task InviteBot()
         {
-            await ReplyAsync("Add the bot to any server you want to by clicking this link: <https://goo.gl/h3xHqU> (shortened)");
+            await ReplyAsync("**Add KillerBot to a server by clicking this link:** https://goo.gl/h3xHqU \n*Note: You need `Manage Server` or `Administrator` permission in a server in order to be able to add the bot.*");
         }
         [Command("server"), Alias("botserver" , "support")]
         [Cooldown(5)]
@@ -61,7 +61,7 @@ namespace Bot.Modules
             };
             if (feedback.Contains("discord.gg/"))
             {
-                embed2.WithDescription($"[Message contained a server invite link] \n \n || {feedback} ||");
+                embed2.WithDescription($"[Message contained a server invite link]");
             }
             else
             {
@@ -134,12 +134,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.10.1` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added back `k!trivia` command after it got fixed. \n \n**[Changed/Fixed]** \n \n{dot} Fixed a big bug for commands that need users to react to the message to do something which wasn't working.\nThis fix affected: `k!poll`, `k!trivia`, and the subscribe reaction when posting a blog post.";
+            embed.Description = $" **== Patch ==** `v1.10.2` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added a feature to the RoleByPhrase which allows users to remove the role by doing the phrase again. \n \n{dot} Added replies for the RoleByPhrase (self-roles) after doing `k!(phrase)` like telling the user that the role was given. \n \n**[Changed/Fixed]** \n \n{dot} Fixed bugs in `k!unban` and `k!ban` (forced ban). \n \n{dot} Changed the animated check command used in some commands. \n \n{dot} Changes in `k!invite` command.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: May 3rd - 2020 5:22 AM GMT");
+                x.WithText("Last updated: May 9th - 2020 4:33 AM GMT");
 
 
 

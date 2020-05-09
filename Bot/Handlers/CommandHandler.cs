@@ -71,6 +71,7 @@ namespace Bot.Handlers
             var context = new MiunieCommandContext(_client, msg, _globalUserAccounts);
             await _roleByPhraseProvider.EvaluateMessage(
                  context.Guild,
+                 context.Channel,
                  context.Message.Content,
                  (SocketGuildUser)context.User
              );

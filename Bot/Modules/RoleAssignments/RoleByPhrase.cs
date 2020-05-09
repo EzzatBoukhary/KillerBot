@@ -20,7 +20,21 @@ namespace Bot.Modules.RoleAssignments
             _globalGuildAccounts = globalGuildAccounts;
             _roleByPhraseProvider = roleByPhraseProvider;
         }
+        /* [Command("list")]
+        [Summary("Sends the list of self-roles if there is any setup in the server.")]
+        public async Task RbpList()
+        {
+            var rbp = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild).RoleByPhraseSettings;
+            
+            var relations = rbp.Relations.Any() ? string.Join("\n", rbp.Relations.Select(r => $"Phrase {r.PhraseIndex} => Role: {r.RoleIdIndex}")) : "There are no self-roles setup in this server. \n \nIf you have Admin perms and want to add some do `k!rbp status`.";
+            var embed = new EmbedBuilder();
+            embed.WithColor(Color.Blue);
+            embed.WithFooter("To gain self-roles do: k!(phrase)");
+            embed.WithTitle($"Self-Roles for {Context.Guild.Name}");
+            embed.WithDescription(relations);
 
+            embed.WithDescription("")
+        } */
         [Command("status"), Alias("s"), RequireUserPermission(GuildPermission.Administrator)]
         [Remarks("Returns the current state of RoleByPhrase lists and relations.")]
         public async Task RbpStatus()
@@ -61,8 +75,8 @@ namespace Bot.Modules.RoleAssignments
         }
 
         [Command("addRole"), Alias("arole"), RequireUserPermission(GuildPermission.Administrator)]
-        [Remarks("Adds a new phrase to the guild's settings. (Phrase is a Remainder, so no double quotes are needed)")]
-        public async Task RbpAddRole(IRole role)
+        [Remarks("Adds a new role to the guild's settings. (The role is a Remainder, so no double quotes are needed)")]
+        public async Task RbpAddRole([Remainder]IRole role)
         {
             var result = _roleByPhraseProvider.AddRole(Context.Guild, role);
 

@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Bot.Extensions;
 using Bot.Features.GlobalAccounts;
 using Bot.Features.RoleAssignment;
 using Discord;
+using Discord.Commands;
+using Discord.WebSocket;
 
 namespace Bot.Providers
 {
-    public class RoleByPhraseProvider
+    public class RoleByPhraseProvider : ModuleBase<MiunieCommandContext>
     {
         private readonly GlobalGuildAccounts _globalGuildAccounts;
         public RoleByPhraseProvider(GlobalGuildAccounts globalGuildAccounts)
@@ -132,7 +135,7 @@ namespace Bot.Providers
             _globalGuildAccounts.SaveAccounts();
         }
 
-        public async Task EvaluateMessage(IGuild guild, string message, IGuildUser sender)
+        public async Task EvaluateMessage(IGuild guild, ISocketMessageChannel channel ,string message, IGuildUser sender)
         {
             var guildSettings = _globalGuildAccounts.GetFromDiscordGuild(guild);
 
@@ -159,10 +162,24 @@ namespace Bot.Providers
 
             foreach (var roleId in roleIdsToGet)
             {
-                if (sender.RoleIds.Contains(roleId)) continue;
+                
                 var role = guild.GetRole(roleId);
                 if(role is null) continue;
-                await sender.AddRoleAsync(role);
+                if (sender.RoleIds.Contains(roleId))
+                {
+                    await sender.RemoveRoleAsync(role);
+                    await channel.SendMessageAsync($"<a:SuccessKB:639875484972351508> I have taken away from you **{role.Name}**!");
+                    return;
+                }
+                try
+                {
+                    await sender.AddRoleAsync(role);
+                    await channel.SendMessageAsync($"<a:SuccessKB:639875484972351508> I have given you **{role.Name}**!");
+                }
+                catch
+                {
+                    await channel.SendMessageAsync($"<:KBfail:580129304592252995> Something went wrong...please make sure I have permissions to give you that role.");
+                }
             }
         }
     }

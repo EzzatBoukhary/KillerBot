@@ -199,7 +199,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.10.1 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.10.2 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
 
@@ -251,7 +251,7 @@ namespace Bot.Handlers
             await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", $"https://twitch.tv/Killer30kill", ActivityType.Streaming);
             _repeatedTaskFunctions.InitRepeatedTasks();
             var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
-            channel.SendMessageAsync("<a:KBtick:580851374070431774>");
+            channel.SendMessageAsync("<a:SuccessKB:639875484972351508>");
             // ServerBots.Init(_globalGuildAccounts);
 
         }

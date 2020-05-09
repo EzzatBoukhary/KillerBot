@@ -1180,7 +1180,7 @@ namespace Bot.Modules
                 account.Bought_Items.Add(new UserItem(i));
                 account.Coins -= i.price;
                 _globalUserAccounts.SaveAccounts(Context.User.Id);
-                await ReplyAsync($"<a:KBtick:580851374070431774> You succesfully bought **{i.name}** for **{i.price} coins** from the KillerBot Economy Shop!");
+                await ReplyAsync($"<a:SuccessKB:639875484972351508> You succesfully bought **{i.name}** for **{i.price} coins** from the KillerBot Economy Shop!");
             }
             
 
