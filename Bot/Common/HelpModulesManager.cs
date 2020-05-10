@@ -7,7 +7,7 @@ namespace Bot.Common
 {
 	public static class HelpModulesManager
 	{
-		private const string HelpModulesFile = "resources/HelpModules.json";
+		private static readonly string HelpModulesFile = $"{Constants.ResourceFolder}/HelpModules.json";
 		private static List<HelpModule> _helpModules;
 
 		static HelpModulesManager()
