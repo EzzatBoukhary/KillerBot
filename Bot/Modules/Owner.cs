@@ -39,7 +39,7 @@ namespace Bot.Modules
                ;
         }
        
-        [Command("guildlist")]
+        [Command("guildlistnew")]
         [RequireOwner]
         public async Task GuildList()
         {
