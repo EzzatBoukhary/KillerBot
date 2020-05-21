@@ -21,10 +21,12 @@ namespace Bot.Modules
     {
         private static readonly OverwritePermissions denyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
         private readonly GlobalUserAccounts _globalUserAccounts;
+        private readonly Logger _logger;
 
-        public Owner(GlobalUserAccounts globalUserAccounts)
+        public Owner(GlobalUserAccounts globalUserAccounts, Logger logger)
         {
             _globalUserAccounts = globalUserAccounts;
+            _logger = logger;
         }
         [Command("SetStream")]
         [Remarks("Usage: k!setstream {streamer} {streamName}")]
@@ -56,7 +58,7 @@ namespace Bot.Modules
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                await _logger.Log(LogSeverity.Error, "[Owner > guildlist]", $"{e}");
 
             }
         }
