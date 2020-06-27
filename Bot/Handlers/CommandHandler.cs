@@ -122,6 +122,15 @@ namespace Bot.Handlers
                              guild = $"{context.Guild.Id}";
                          _logger.Log(LogSeverity.Error, $"Guild:{guild} - User:{context.User.Id}", task.Result.ErrorReason);
                      }
+                     var command = "";
+                     if (cmd.Command.Module.Group != null || (cmd.Command.Module.Group != null && cmd.Command.Name == ""))
+                     {
+                         command = $"{cmd.Command.Module.Group} {cmd.Command.Name}";
+                     }
+                     else
+                     {
+                         command = cmd.Command.Name;
+                     }
                      if (task.Result.IsSuccess == true) { return; }
                      /*else if (task.Result.Error == CommandError.UnknownCommand)
                      {
@@ -134,14 +143,13 @@ namespace Bot.Handlers
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }*/
-
                      else if (task.Result.Error == CommandError.BadArgCount)
                      {
                          EmbedBuilder errormsg = new EmbedBuilder();
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Bad Usage:");
-                         errormsg.WithDescription($"Command did not have the right amount of parameters. \nType `{prefix}help {cmd.Command.Name}` for more info.");
+                         errormsg.WithDescription($"Command did not have the right amount of parameters. \nType `{prefix}help {command}` for more info.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -151,7 +159,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Unmet Precondition");
-                         errormsg.WithDescription($"**{task.Result.ErrorReason}** \nA precondition for the command was not met. Type `{prefix}help {cmd.Command.Name}` for more info.");
+                         errormsg.WithDescription($"**{task.Result.ErrorReason}** \nA precondition for the command was not met. Type `{prefix}help {command}` for more info.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -171,7 +179,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Parse Failed:");
-                         errormsg.WithDescription($"Command could not be parsed. \nMake sure to do `{prefix}help {cmd.Command.Name}` for more info on the command's usage.");
+                         errormsg.WithDescription($"Command could not be parsed. \nMake sure to do `{prefix}help {command}` for more info on the command's usage.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }

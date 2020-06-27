@@ -450,16 +450,17 @@ namespace Bot.Modules
                     });
                 }
                 builder.Clear();
-                string perms = "No perms";
-                if (mentionedRole.Permissions.ToString() == "512")
+                string perms = "";
+                if (mentionedRole.Permissions.ToList().Count == 0)
                 {
-                    perms = "No perms";
+                    perms += "[No permissions]";
                 }
                 foreach (GuildPermission perm in mentionedRole.Permissions.ToList())
                 {
                     if (perm.ToString() == "512")
-                        continue;
-                    perms += $"`{perm.ToString()}`, ";
+                        perms += "`Video`, ";
+                    else
+                        perms += $"`{perm.ToString()}`, ";
                     
                 }
                 embed.AddField(x => {

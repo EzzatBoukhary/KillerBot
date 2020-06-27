@@ -51,7 +51,7 @@ namespace Bot.Modules
             {
                 Author = new EmbedAuthorBuilder { Name = "KillerBot Commands" },
                 Color = Color.Blue,
-                Description = $"For more help on a specific command do `{Global.BotPrefix}help [command]`" +
+                Description = $"Use the reactions to navigate through pages. For more help on a specific command do `{Global.BotPrefix}help [command]`" +
                 "\n \n**Moderation Commands:** \nReact with :1234: then send `2` in chat." +
                 "\n \n**Basic Commands:** \nReact with :1234: then send `3` in chat." +
                 "\n \n**Utility Commands:** \nReact with :1234: then send `4` in chat." +

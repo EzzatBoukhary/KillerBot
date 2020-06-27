@@ -887,7 +887,7 @@ namespace Bot.Modules
         [Command("emojisteal")]
         [Alias("stealemoji")]
         [Summary("Put an emoji after the command and the bot will steal it and add it to the server with the same name.")]
-        [Remarks("You and the bot should be able to Manage Emojis for this.")]
+        [Remarks("You and the bot should be able to Manage Emojis for this. You can attach an image with your message as another method of stealing emojis but make sure to provide a name.")]
         [RequireUserPermission(GuildPermission.ManageEmojis)]
         [RequireBotPermission(GuildPermission.ManageEmojis)]
         [RequireContext(ContextType.Guild)]
@@ -1067,11 +1067,14 @@ namespace Bot.Modules
                         Color = Color.Orange,
 
                     };
-                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
-                    {
-                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    var perms = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
 
-                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Deny));
+                    foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                    {
+                        var perms2 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Allow));
                     }
                     await Context.Channel.SendMessageAsync("", false, builder.Build());
                 }
@@ -1094,11 +1097,14 @@ namespace Bot.Modules
                         Color = Color.Orange,
 
                     };
-                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
-                    {
-                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    var perms = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
 
-                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Deny));
+                    foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                    {
+                        var perms2 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Allow));
                     }
                     await Context.Channel.SendMessageAsync("", false, builder.Build());
 
@@ -1114,11 +1120,14 @@ namespace Bot.Modules
                             Color = Color.DarkGreen,
 
                         };
-                        foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                        var perms2 = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms2.Modify(sendMessages: PermValue.Inherit));
+                        foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
                         {
-                            var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
-                            if (role.Name != "Muted")
-                                await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                            var perms3 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await textChannel.AddPermissionOverwriteAsync(role, perms3.Modify(sendMessages: PermValue.Inherit));
                         }
                         await Context.Channel.SendMessageAsync("", false, builder2.Build());
                     }
@@ -1157,11 +1166,14 @@ namespace Bot.Modules
                         Color = Color.Orange,
 
                     };
-                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
-                    {
-                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    var perms = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
 
-                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Deny));
+                    foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                    {
+                        var perms2 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Allow));
                     }
                     await Context.Channel.SendMessageAsync("", false, builder.Build());
                 }
@@ -1184,11 +1196,14 @@ namespace Bot.Modules
                         Color = Color.Orange,
 
                     };
-                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
-                    {
-                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    var perms = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
 
-                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Deny));
+                    foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                    {
+                        var perms2 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Allow));
                     }
                     await Context.Channel.SendMessageAsync("", false, builder.Build());
 
@@ -1204,11 +1219,14 @@ namespace Bot.Modules
                             Color = Color.DarkGreen,
 
                         };
-                        foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                        var perms2 = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms2.Modify(sendMessages: PermValue.Inherit));
+                        foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
                         {
-                            var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
-                            if (role.Name != "Muted")
-                                await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                            var perms3 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await textChannel.AddPermissionOverwriteAsync(role, perms3.Modify(sendMessages: PermValue.Inherit));
                         }
                         await Context.Channel.SendMessageAsync("", false, builder2.Build());
                     }
@@ -1245,11 +1263,14 @@ namespace Bot.Modules
                     Color = Color.DarkGreen,
 
                 };
-                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                var perms2 = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+
+                await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms2.Modify(sendMessages: PermValue.Inherit));
+                foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
                 {
-                    var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
-                    if (role.Name != "Muted")
-                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                    var perms3 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                    await textChannel.AddPermissionOverwriteAsync(role, perms3.Modify(sendMessages: PermValue.Inherit));
                 }
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
@@ -1279,11 +1300,14 @@ namespace Bot.Modules
                     Color = Color.DarkGreen,
 
                 };
-                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                var perms2 = textChannel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+
+                await textChannel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms2.Modify(sendMessages: PermValue.Inherit));
+                foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
                 {
-                    var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
-                    if (role.Name != "Muted")
-                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                    var perms3 = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                    await textChannel.AddPermissionOverwriteAsync(role, perms3.Modify(sendMessages: PermValue.Inherit));
                 }
                 await Context.Channel.SendMessageAsync("", false, builder.Build());
             }
@@ -1321,21 +1345,31 @@ namespace Bot.Modules
                         Color = Color.Orange,
 
                     };
-                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    foreach (var channel in guild.TextChannels)
                     {
-                        foreach (var channel in guild.TextChannels)
-                        {
-                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                        var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                        await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Deny));
 
-                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
-                        }
-                        foreach (var channel in guild.VoiceChannels)
+                        foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
                         {
-                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                            var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
 
-                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Deny));
+                            await channel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Allow));
                         }
                     }
+                    foreach (var channel in guild.VoiceChannels)
+                    {
+                        var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                        await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(connect: PermValue.Deny));
+
+                        foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                        {
+                            var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await channel.AddPermissionOverwriteAsync(role, perms2.Modify(connect: PermValue.Allow));
+                        }
+                    }
+                
                     await msg.ModifyAsync(m => m.Embed = builder.Build());
                 }
                 catch
@@ -1356,19 +1390,28 @@ namespace Bot.Modules
                         Color = Color.Orange,
 
                     };
-                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    foreach (var channel in guild.TextChannels)
                     {
-                        foreach (var channel in guild.TextChannels)
-                        {
-                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                        var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                        await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Deny));
 
-                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                        foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                        {
+                            var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await channel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Allow));
                         }
-                        foreach (var channel in guild.VoiceChannels)
-                        {
-                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    }
+                    foreach (var channel in guild.VoiceChannels)
+                    {
+                        var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                        await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(connect: PermValue.Deny));
 
-                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Deny));
+                        foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                        {
+                            var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await channel.AddPermissionOverwriteAsync(role, perms2.Modify(connect: PermValue.Allow));
                         }
                     }
                     await msg.ModifyAsync(m => m.Embed = builder.Build());
@@ -1384,21 +1427,28 @@ namespace Bot.Modules
                             Color = Color.DarkGreen,
 
                         };
-                        foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                        foreach (var channel in guild.TextChannels)
                         {
-                            foreach (var channel in guild.TextChannels)
-                            {
-                                var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                            var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                            await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Inherit));
 
-                                if (role.Name != "Muted")
-                                    await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                            foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                            {
+                                var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                                await channel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Inherit));
                             }
-                            foreach (var channel in guild.VoiceChannels)
-                            {
-                                var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                        }
+                        foreach (var channel in guild.VoiceChannels)
+                        {
+                            var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                            await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(connect: PermValue.Inherit));
 
-                                if (role.Name != "Muted")
-                                    await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Allow));
+                            foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                            {
+                                var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                                await channel.AddPermissionOverwriteAsync(role, perms2.Modify(connect: PermValue.Inherit));
                             }
                         }
                         await Context.Channel.SendMessageAsync("", false, builder2.Build());
@@ -1440,21 +1490,28 @@ namespace Bot.Modules
                     Color = Color.DarkGreen,
 
                 };
-                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                foreach (var channel in guild.TextChannels)
                 {
-                    foreach (var channel in guild.TextChannels)
-                    {
-                        var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                    await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(sendMessages: PermValue.Inherit));
 
-                        if (role.Name != "Muted")
-                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                    foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                    {
+                        var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await channel.AddPermissionOverwriteAsync(role, perms2.Modify(sendMessages: PermValue.Inherit));
                     }
-                    foreach (var channel in guild.VoiceChannels)
-                    {
-                        var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+                }
+                foreach (var channel in guild.VoiceChannels)
+                {
+                    var perms = channel.GetPermissionOverwrite(Context.Guild.EveryoneRole).GetValueOrDefault();
+                    await channel.AddPermissionOverwriteAsync(Context.Guild.EveryoneRole, perms.Modify(connect: PermValue.Inherit));
 
-                        if (role.Name != "Muted")
-                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Allow));
+                    foreach (IRole role in Context.Guild.Roles.Where(r => r.Permissions.ManageMessages))
+                    {
+                        var perms2 = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await channel.AddPermissionOverwriteAsync(role, perms2.Modify(connect: PermValue.Inherit));
                     }
                 }
                 await msg.ModifyAsync(m => m.Embed = builder.Build());
