@@ -77,7 +77,7 @@ namespace Bot.Common
 			HelpModule account = new HelpModule
 			{
 				Group = "Economy",
-				Modules = new List<string> { "Economy", "Shop" }
+				Modules = new List<string> { "Economy", "RussianRoulette", "Shop" }
 			};
 			helpModules.Add(account);
 

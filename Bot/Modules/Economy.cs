@@ -873,8 +873,8 @@ namespace Bot.Modules
         }
 
         #region Russian Roulette Commands
-        [Group("rr")]
-        [Alias("russian-roulette", "russianroulette")]
+        [Group("RussianRoulette")]
+        [Alias("russian-roulette", "rr")]
         [Summary("The set of commands for the economy russian-roulette game!")]
         public class RussianRoulette : ModuleBase<MiunieCommandContext>
         {

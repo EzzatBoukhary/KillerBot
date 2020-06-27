@@ -169,7 +169,7 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.11.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added a new item to the economy shop. \n \n{dot} Added a russian-roulette game to economy: `rr start`, `rr join`, `rr leave`, `rr pt`, `rr delete` \n \n{dot} Added a unique and advanced auto role system: `autorole-setup`, `autorole-info`, `autorole-toggle` \n \n{dot} Added commands: `dog`, `birb`, `foxfact`, `roll`, `clearwarns`, `mywarnings`, `lock`, `lock-server`, `unlock`, `unlock-server`, `donate`, `uud`, `ugd`, `premium`. \n \n{dot} Added autologging to some errors. \n \n**[Changed/Fixed]** \n \n{dot} `k!help` and `k!minesweeper` command revamps. \n \n{dot} Fixed typos in some commands. \n \n{dot} Added/changed ratelimits, and command information to some commands. \n \n{dot} Changes to `userinfo`, `serverinfo`, and `account info` to include donations-related stuff. \n \n{dot} Changes in some error replies. \n \n{dot} Fixed the self-role system. \n \n{dot} Fixes to `k!purge` and `k!ri` in the role hex code and embed error. \n \n{dot} Updated `k!info` and `k!invite` \n \n{dot} `k!inventory` and `k!warnings` now allow a user parameter. \n \n{dot} Made `k!warnings`, `k!listbans` and `k!blacklists` paged and fixed a bug in `guildlist` \n \n{dot} Changes to `k!emojisteal` and added an option to add emojis by attaching an image to the command message.";
+            embed.Description = $" **== Minor Release ==** `v1.11.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added a new item to the economy shop. \n \n{dot} Added a russian-roulette game to economy: `rr start`, `rr join`, `rr leave`, `rr pt`, `rr delete` \n \n{dot} Added a unique and advanced auto role system: `autorole-setup`, `autorole-info`, `autorole-toggle` \n \n{dot} Added commands: `dog`, `birb`, `foxfact`, `roll`, `clearwarns`, `mywarnings`, `lock`, `lock-server`, `unlock`, `unlock-server`, `tree`, `donate`, `uud`, `ugd`, `premium`. \n \n{dot} Added autologging to some errors. \n \n**[Changed/Fixed]** \n \n{dot} `k!help` and `k!minesweeper` command revamps. \n \n{dot} Fixed typos in some commands. \n \n{dot} Added/changed ratelimits, and command information to some commands. \n \n{dot} Changes to `userinfo`, `serverinfo`, and `account info` to include donations-related stuff. \n \n{dot} Changes in some error replies. \n \n{dot} Fixed the self-role system. \n \n{dot} Fixes to `k!purge` and `k!ri` in the role hex code and embed error. \n \n{dot} Updated `k!info` and `k!invite` \n \n{dot} `k!inventory` and `k!warnings` now allow a user parameter. \n \n{dot} Made `k!warnings`, `k!listbans` and `k!blacklists` paged and fixed a bug in `guildlist` \n \n{dot} Changes to `k!emojisteal` and added an option to add emojis by attaching an image to the command message. \n \n{dot} Allowed command usage in KillerBot's DMs";
             embed.WithFooter(x =>
 
             {
@@ -784,6 +784,7 @@ namespace Bot.Modules
             wr.UserAgent = "KillerBot";
             await ReplyAsync(JsonConvert.DeserializeObject<Dadjoke>(new StreamReader(wr.GetResponse().GetResponseStream()).ReadToEnd()).joke);
         }
+        /*
         [Command("embed")]
         [Summary("Create an embed in a specific channel.")]
         [Remarks("You can seperate the embed title from the description with a |")]
@@ -802,7 +803,7 @@ namespace Bot.Modules
                 embed.Description = $"{td.Take(2)}";
             }
             await channel.SendMessageAsync("", false, embed.Build());
-        }
+        }*/
         [Command("FindMessageID"), Alias("getmessageid", "messageid", "fmi", "gmi")]
         [Summary("Gets the message id of a message in the current channel with the provided message text")]
         [Remarks("Keep in mind that this isn't the best efficient way to get the ID of a message. If you're having any trouble try doing it manually.")]
