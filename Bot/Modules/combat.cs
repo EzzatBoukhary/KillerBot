@@ -45,15 +45,23 @@ namespace Bot.Modules
         [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         [Alias("Fight")]
         [Summary("starts a fight with the @Mention user (example: `fight @Panda#8822`")]
-        public async Task Fight([Summary("The user you want to fight!")]IUser user)
+        public async Task Fight([Summary("The user you want to fight!")]IUser user = null)
         {
-            
+            if (user == null)
+            {
+                await ReplyAsync(Context.User.Mention + " please provide the user you want to fight! (e.g: k!fight @Panda#8822");
+                return;
+            }
             if (Context.User.Mention == user.Mention || SwitchCaseString != "nofight")
             {
                 await ReplyAsync(Context.User.Mention + " sorry but there is already a fight going on, or u simply tried to kill youself.");
                 return;
             }
-           
+           if (user.IsBot == true)
+            {
+                await ReplyAsync(Context.User.Mention + " are you really trying to fight a robot? Go fight real people!");
+                return;
+            }
 
             SwitchCaseString = "fight_p1";
             player1 = Context.User.Mention;

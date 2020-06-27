@@ -1,4 +1,5 @@
 ﻿using Bot.Helpers;
+using Bot.Modules.Helpers;
 using Discord;
 using Discord.Addons.Interactive;
 using Discord.Commands;
@@ -104,72 +105,34 @@ namespace Bot.Modules
         {  7 , ":seven:" },
         {  8 , ":eight:" },
     };
-
+        private static readonly Discord.Color EMBED_COLOR = Color.DarkOrange;
         [Command("minesweeper")]
-        [Summary("Play the famous minesweeper the discord style!")]
-        public async Task Title(int size = 10, float ratio = 0.15f)
+        [Summary("Minesweeper minigame")]
+        [Remarks("You can customize the width, height, and bomb count by putting the corresponding numbers in the parameters. (k!minesweeper <width> <height> <bomb count)>")]
+        [Example("k!minesweeper 8 8 20")]
+        public async Task Minesweeper([Summary("width")]int width = 10, [Summary("height")]int height = 10, [Summary("bomb count")]int bombs = 35)
         {
-            if (size > 10)
+            if (width < 1 || height < 1 || bombs < 0)
             {
-                await ReplyAsync("Can only go up to size 10");
-                return;
+                await Context.Channel.SendMessageAsync("Invalid grid size or bomb count");
             }
-
-            int[,] data = new int[size + 2, size + 2];
-
-            Random random = new Random();
-
-            for (int iy = 1; iy <= size; iy++)
+            else if (width > 10 || height > 10)
             {
-                for (int ix = 1; ix <= size; ix++)
-                {
-                    if (random.NextDouble() < ratio)
-                    {
-                        data[ix, iy] = -1;
-
-                        if (data[ix - 1, iy - 1] >= 0)
-                        {
-                            data[ix - 1, iy - 1]++;
-                        }
-
-                        if (data[ix, iy - 1] >= 0)
-                        {
-                            data[ix, iy - 1]++;
-                        }
-
-                        if (data[ix + 1, iy - 1] >= 0)
-                        {
-                            data[ix + 1, iy - 1]++;
-                        }
-
-                        if (data[ix - 1, iy] >= 0)
-                        {
-                            data[ix - 1, iy]++;
-                        }
-
-                        data[ix + 1, iy]++;
-                        data[ix - 1, iy + 1]++;
-                        data[ix, iy + 1]++;
-                        data[ix + 1, iy + 1]++;
-                    }
-                }
+                await Context.Channel.SendMessageAsync("Max Grid Size: 10 x 10");
             }
-
-            StringBuilder result = new StringBuilder();
-
-            for (int iy = 1; iy <= size; iy++)
+            else if (bombs >= height * width)
             {
-                for (int ix = 1; ix <= size; ix++)
-                {
-                    result.Append("||");
-                    result.Append(minesweeperValues[data[ix, iy]]);
-                    result.Append("||");
-                }
-
-                result.AppendLine();
+                await Context.Channel.SendMessageAsync("Too many bombs!");
             }
-
-            await ReplyAsync(result.ToString());
+            else
+            {
+                MinesweeperBoard game = new MinesweeperBoard(height, width, bombs);
+                EmbedBuilder builder = new EmbedBuilder();
+                builder.Title = ":bomb: Minesweeper";
+                builder.Color = EMBED_COLOR;
+                builder.Description = game.ToString();
+                await SendEmbed(builder.Build());
+            }
         }
 
         [Command("race", RunMode = RunMode.Async), Alias("rally")]
@@ -276,6 +239,132 @@ namespace Bot.Modules
                     properties.Content = "It's a tie between " + winners;
                 }
             });
+        }
+        [Command("roll")]
+        [Summary("Roll some dice")]
+        [Example("k!roll 1d20")]
+        public async Task RollDice([Summary("dice")] string diceStr = "")
+        {
+            try
+            {
+                Dice dice = Dice.FromString(diceStr);
+                await Context.Channel.SendMessageAsync(string.Join(" ", dice.GenerateRolls()));
+            }
+            catch (ArgumentException e)
+            {
+                // This exception occurs when parsing the dice string,
+                // and is meant to be displayed to the user
+                // there is no need to log it
+                await Context.Channel.SendMessageAsync(e.Message);
+            }
+        }
+
+        [Command("catfact")]
+        [Summary("Responds with a random cat fact")]
+        public async Task RequestCatFact()
+        {
+            string fact = await ApiFetcher.RequestStringFromApi("https://catfact.ninja/fact", "fact");
+            if (!string.IsNullOrEmpty(fact))
+            {
+                await Context.Channel.SendMessageAsync(fact);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The catfact command is currently unavailable.");
+            }
+        }
+
+        [Command("foxfact")]
+        [Summary("Responds with a random fox fact")]
+        public async Task RequestFoxFact()
+        {
+            string fact = await ApiFetcher.RequestStringFromApi("https://some-random-api.ml/facts/fox", "fact");
+            if (!string.IsNullOrEmpty(fact))
+            {
+                await Context.Channel.SendMessageAsync(fact);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The foxfact command is currently unavailable.");
+            }
+        }
+
+        [Command("cat")]
+        [Alias("meow", "randomcat")]
+        [Summary("Responds with a random cat")]
+        public async Task RequestCat()
+        {
+            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://aws.random.cat/meow", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                await SendAnimalEmbed(":cat:", fileUrl);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The cat command is currently unavailable.");
+            }
+        }
+
+        [Command("dog")]
+        [Alias("randomdog")]
+        [Summary("Responds with a random dog")]
+        public async Task RequestDog()
+        {
+            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.dog/woof.json", "url");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                await SendAnimalEmbed(":dog:", fileUrl);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The dog command is currently unavailable.");
+            }
+        }
+
+        [Command("fox")]
+        [Alias("randomfox")]
+        [Summary("Responds with a random fox")]
+        public async Task RequestFox()
+        {
+            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://wohlsoft.ru/images/foxybot/randomfox.php", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                await SendAnimalEmbed(":fox:", fileUrl);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The fox command is currently unavailable.");
+            }
+        }
+
+        [Command("birb")]
+        [Alias("randombirb", "randombird", "bird")]
+        [Summary("Responds with a random birb")]
+        public async Task RequestBirb()
+        {
+            string fileUrl = await ApiFetcher.RequestEmbeddableUrlFromApi("https://random.birb.pw/tweet.json", "file");
+            if (!string.IsNullOrEmpty(fileUrl))
+            {
+                fileUrl = "https://random.birb.pw/img/" + fileUrl;
+                await SendAnimalEmbed(":bird:", fileUrl);
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync("The birb command is currently unavailable.");
+            }
+        }
+        private async Task SendAnimalEmbed(string title, string fileUrl)
+        {
+            EmbedBuilder builder = new EmbedBuilder()
+                .WithTitle(title)
+                .WithColor(EMBED_COLOR)
+                .WithImageUrl(fileUrl);
+            await SendEmbed(builder.Build());
+        }
+
+        private async Task SendEmbed(Embed embed)
+        {
+            await Context.Channel.SendMessageAsync("", false, embed);
         }
     }
 }

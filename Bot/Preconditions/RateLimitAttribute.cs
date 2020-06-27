@@ -20,12 +20,12 @@ namespace Bot.Preconditions
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false)]
     public class RatelimitAttribute : PreconditionAttribute
     {
-        private readonly Logger _logger;
+        /*private readonly Logger _logger;
         public RatelimitAttribute(Logger logger)
         {
             _logger = logger;
 
-        }
+        }*/
         private readonly bool _applyPerGuild;
         private readonly bool _applyPerUser;
         private readonly uint _invokeLimit;
@@ -119,10 +119,7 @@ namespace Bot.Preconditions
                 _invokeTracker[key] = timeout;
                 return Task.FromResult(PreconditionResult.FromSuccess());
             }
-            //(LogSeverity.Critical, $"{DateTime.Now}", $"{context.User} has triggered the rate limit of a command. ({context.User.Id})");
-            //Console.Write($"{context.User} has triggered the rate limit of a command. ({context.User.Id})");
-           // Console.WriteLine($"{context.User} has triggered the rate limit of a command. ({context.User.Id})");
-            
+            //_logger.Log(LogSeverity.Warning, $"Guild: {context.Guild.Id}", $"User: {context.User.Id} has triggered the rate limit of a command.");            
             return Task.FromResult(PreconditionResult.FromError("Cooldown! You have broke the rate limit of the command."));
             
             

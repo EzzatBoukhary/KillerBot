@@ -147,13 +147,14 @@ namespace Bot
             return result;
         }
         [Command("weather")]
-       // [Cooldown(8)]
-        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Shows weather info about a certain city.")]
         public async Task WeatherAsync([Remainder] string city = null)
         {
             if (city == null)
                 throw new ArgumentException("Please mention a city to check its weather.");
+            if (city == "NYC" || city == "NY")
+                city = "New York City";
             WeatherDataCurrent.WeatherReportCurrent weather;
             weather = JsonConvert.DeserializeObject<WeatherDataCurrent.WeatherReportCurrent>(GetWeatherAsync(city).Result);
             if (weather.Cod == 404)

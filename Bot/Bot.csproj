@@ -21,8 +21,10 @@
     <PackageReference Include="Google.Apis.YouTube.v3" Version="1.42.0.1758" />
     <PackageReference Include="Humanizer" Version="2.6.2" />
     <PackageReference Include="ImageProcessor" Version="2.7.0.100" />
+    <PackageReference Include="ksemenenko.ColorThief" Version="1.1.1.4" />
     <PackageReference Include="Ofl.Google.Maps" Version="3.0.22" />
     <PackageReference Include="Qmmands" Version="2.3.0" />
+    <PackageReference Include="Serilog" Version="2.10.0-dev-01187" />
     <PackageReference Include="System.Drawing.Common" Version="4.6.0-preview6.19303.8" />
     <PackageReference Include="System.Text.Json" Version="4.6.0" />
     <PackageReference Include="Urban.NET" Version="1.0.0" />

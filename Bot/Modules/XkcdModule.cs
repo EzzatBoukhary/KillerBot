@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Bot.Extensions;
 using Bot.Helpers;
+using Bot.Preconditions;
 
 namespace Bot.Modules
 {
@@ -26,6 +27,7 @@ namespace Bot.Modules
         [Remarks("Gets a random xkcd comic or the latest xkcd comic by appending \"latest\" to the command")]
         [Priority(0)]
         [Example("!xkcd latest")]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task GetXkcdAsync(string arg = "")
         {
@@ -39,6 +41,7 @@ namespace Bot.Modules
         [Remarks("Gets the xkcd comic with the specified number")]
         [Priority(1)]
         [Example("!xkcd 101")]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         public async Task GetXkcdAsync(int number)
         {

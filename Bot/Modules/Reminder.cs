@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Bot.Entities;
 using Bot.Extensions;
 using Bot.Features.GlobalAccounts;
+using Bot.Helpers;
 using Discord;
 using Discord.Commands;
 
@@ -38,7 +39,7 @@ namespace Bot.Modules
     }
 
  
-    [Group("Reminder"), Alias("Remind", "r")]
+    [Group("Reminder"), Alias("Remind", "r", "alarm", "remindme")]
     [Summary("Tell the bot to remind you in some amount of time. The bot will send you a DM with the text you specified.")]
     public class Reminder : ModuleBase<MiunieCommandContext>
     {
@@ -49,10 +50,16 @@ namespace Bot.Modules
             _globalUserAccounts = globalUserAccounts;
         }
 
-        [Command(""), Priority(0), Remarks("Add a reminder")]
-        [Summary("How to use: e.g: `k!remind DO THE THING! :rage: in 2d 23h 3m 12s` __in__ is very important to be there. ")]
-        public async Task AddReminder([Summary("The thing you want the bot to remind you about, in (how much time till it sends the reminder)")][Remainder] string args)
+        [Command(""), Priority(0), Remarks("Usage: {prefix}remind {thing to remind} in {time until I remind you} (__in__ is very important to be there.)")]
+        [Summary("Adds a reminder.")]
+        [Example("k!remind DO THE THING! :rage: in 2d 23h 3m 12s")]
+        public async Task AddReminder([Summary("The thing you want the bot to remind you about, in (how much time till it sends the reminder)")][Remainder] string args = null)
         {
+            if (args == null)
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> No arguments were given! Please do `k!help remind` for more information.");
+                return;
+            }
             string[] splittedArgs = null;
             if (args.Contains(" in ")) splittedArgs = args.Split(new string[] {" in "}, StringSplitOptions.None);
              if (splittedArgs == null || splittedArgs.Length < 2)
@@ -69,9 +76,16 @@ namespace Bot.Modules
 
             splittedArgs[splittedArgs.Length - 1] = "";
             var reminderString = string.Join(" in ", splittedArgs, 0, splittedArgs.Length - 1);
-
-            var timeDateTime = DateTime.UtcNow + TimeSpan.ParseExact(timeString, ReminderFormat.Formats, CultureInfo.CurrentCulture);
-
+            var timeDateTime = DateTime.UtcNow;
+            try
+            {
+               timeDateTime = DateTime.UtcNow + TimeSpan.ParseExact(timeString, ReminderFormat.Formats, CultureInfo.CurrentCulture);
+            }
+            catch
+            {
+                await ReplyAsync("Please provide a valid time I can remind you in. Make sure its a positive 2 digit number. \nExample: `k!remind DO THE THING! :rage: in 2d 23h 3m 12s` \nNotes: The `in` before the time parameters is very important! and the time parameters can't be more than 2 digit numbers.");
+                return;
+            }
             var newReminder = new ReminderEntry(timeDateTime, reminderString);
 
             var account = _globalUserAccounts.GetById(Context.User.Id);
@@ -158,14 +172,14 @@ namespace Bot.Modules
 
 
 
-        [Command("List"), Priority(2), Remarks("List all your reminders")]
+        [Command("List"), Priority(2), Summary("List all your reminders")]
         public async Task ShowReminders()
         {
             var reminders = _globalUserAccounts.GetById(Context.User.Id).Reminders;
             var embB = new EmbedBuilder()
                 .WithTitle("Your Reminders (Times are in UTC / GMT+0)")
                 //.WithFooter("Did you know? " + Global.GetRandomDidYouKnow())
-                .WithDescription("To delete a reminder use the command `reminder remove <number>` " +
+                .WithDescription("To delete a reminder use the command `{prefix}reminder remove <number>` " +
                                  "and the number is the one to the left of the Dates inside the [].");
 
             for (var i = 0; i < reminders.Count; i++)
@@ -176,11 +190,11 @@ namespace Bot.Modules
             await ReplyAsync("", false, embB.Build(), null);
         }
 
-        [Command("Remove"), Priority(2), Remarks("Delete one of your reminders")]
+        [Command("Remove"), Priority(2), Summary("Delete one of your reminders")]
         public async Task DeleteReminder(int index)
         {
             var reminders = _globalUserAccounts.GetById(Context.User.Id).Reminders;
-            var responseString = "Reminder doesn't exist, maybe use `remind list` before you try to " +
+            var responseString = "Reminder doesn't exist, maybe use `{prefix}remind list` before you try to " +
                                  "delete a reminder.";
             if (index > 0 && index <= reminders.Count)
             {

@@ -12,6 +12,9 @@ using Bot.Entities;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using Bot.Helpers;
+using Bot.Handlers;
+using System.Diagnostics;
+using Discord.WebSocket;
 // ReSharper disable ConvertIfStatementToSwitchStatement
 
 namespace Bot.Modules
@@ -43,13 +46,15 @@ namespace Bot.Modules
         private readonly IDailyMiunies _dailyMiunies;
         private readonly IMiuniesTransfer _miuniesTransfer;
         private readonly GlobalUserAccounts _globalUserAccounts;
+        private readonly MinigameHandler minigameHandler;
 
-        public Economy(IDailyMiunies dailyMiunies, IMiuniesTransfer miuniesTransfer, GlobalUserAccounts globalUserAccounts)
+        public Economy(IDailyMiunies dailyMiunies, IMiuniesTransfer miuniesTransfer, GlobalUserAccounts globalUserAccounts, MinigameHandler minigameHandler)
         {
             _dailyMiunies = dailyMiunies;
 
             _miuniesTransfer = miuniesTransfer;
             _globalUserAccounts = globalUserAccounts;
+            this.minigameHandler = minigameHandler;
 
         }
 
@@ -324,7 +329,7 @@ namespace Bot.Modules
             try
             {
                 _miuniesTransfer.UserToUser(Context.User.Id, target.Id, amount);
-                await ReplyAsync($"<a:KBtick:580851374070431774> **{Context.User.Username}** has given **{target.Username}** {amount} coin(s)!");
+                await ReplyAsync($"{Constants.success} **{Context.User.Username}** has given **{target.Username}** {amount} coin(s)!");
             }
             catch (InvalidOperationException e)
             {
@@ -333,12 +338,13 @@ namespace Bot.Modules
             }
         }
 
+        #region Slots Commands
         [Command("newslot"), Summary("Creates a new slot machine if you feel the current one is unlucky"), Remarks("Usage: k!newslots [Optional: (amount of pieces)]")]
         [Alias("newslots")]
         public async Task NewSlot([Summary("OPTIONAL: Amount of items in the slot machine")]int amount = 0)
         {
             Global.Slot = new Slot(amount);
-            await ReplyAsync("<a:KBtick:580851374070431774> A new slot machine got generated! Good luck!");
+            await ReplyAsync($"{Constants.success} A new slot machine got generated! Good luck!");
         }
 
         [Command("slots"), Summary("Play the slots! Win or lose some coins!")]
@@ -479,14 +485,13 @@ namespace Bot.Modules
         {
             await ReplyAsync(string.Join("\n", Global.Slot.GetCylinderEmojis(true)));
         }
-
+        #endregion
 
         [Command("work")]
         [Summary("Work every hour and receive some coins!")]
         [Cooldown(7200)]
         public async Task Work()
         {
-            
             int randomIndex = Global.Rng.Next(Constants.Jobs.Length);
             string job = Constants.Jobs[randomIndex];
             if (job.Contains("A") || job.Contains("E") || job.Contains("I") || job.Contains("O") || job.Contains("U") || job.Contains("Y"))
@@ -497,6 +502,7 @@ namespace Bot.Modules
             {
                 job = $"a {job}";
             }
+
             var account = _globalUserAccounts.GetById(Context.User.Id);
             var emb = new EmbedBuilder();
             var result = Global.Rng.Next(Constants.WorkRewardMinMax.Item1, Constants.WorkRewardMinMax.Item2 + 1);
@@ -512,24 +518,22 @@ namespace Bot.Modules
                     else if (account.Bought_Items[i].name == "Double Day")
                     {
                         account.Coins += result * 2;
-                        _globalUserAccounts.SaveAccounts();
+                        _globalUserAccounts.SaveAccounts(account.Id);
                         emb.WithColor(Color.Green);
                         emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
                         emb.WithCurrentTimestamp();
-                        emb.WithDescription($"<a:KBtick:580851374070431774> You work as {job} and earn **{result * 2} coins**. Double Day is in effect and gave you double the amount!");
+                        emb.WithDescription($"{Constants.success} You work as {job} and earn **{result * 2} coins**. Double Day is in effect and gave you double the amount!");
                         await ReplyAsync("", false, emb.Build());
                         return;
                     }
-                    
                 }
-                continue;
             }
             account.Coins += result;
-            _globalUserAccounts.SaveAccounts();
+            _globalUserAccounts.SaveAccounts(account.Id);
             emb.WithColor(Color.Green);
             emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
             emb.WithCurrentTimestamp();
-            emb.WithDescription($"<a:KBtick:580851374070431774> You work as {job} and earn **{result} coins**.");
+            emb.WithDescription($"{Constants.success} You work as {job} and earn **{result} coins**.");
             await ReplyAsync("", false, emb.Build());
         }
 
@@ -549,7 +553,7 @@ namespace Bot.Modules
             }
             else
             {
-                await ReplyAsync($"<a:KBtick:580851374070431774> {amount} coins were deposited to your bank.");
+                await ReplyAsync($"{Constants.success} {amount} coins were deposited to your bank.");
                 account.Coins -= amount;
                 account.BankCoins += amount;
                 _globalUserAccounts.SaveAccounts(Context.User.Id);
@@ -570,7 +574,7 @@ namespace Bot.Modules
                 }
                 else
                 {
-                    await ReplyAsync($"<a:KBtick:580851374070431774> {account.Coins} coins were deposited to your bank.");
+                    await ReplyAsync($"{Constants.success} {account.Coins} coins were deposited to your bank.");
                     account.BankCoins += account.Coins;
                     account.Coins -= account.Coins;
                     _globalUserAccounts.SaveAccounts(Context.User.Id);
@@ -594,7 +598,7 @@ namespace Bot.Modules
             }
             else
             {
-                await ReplyAsync($"<a:KBtick:580851374070431774> {amount} coins were withdrew from your bank.");
+                await ReplyAsync($"{Constants.success} {amount} coins were withdrew from your bank.");
                 account.BankCoins -= amount;
                 account.Coins += amount;
                 _globalUserAccounts.SaveAccounts(Context.User.Id);
@@ -615,7 +619,7 @@ namespace Bot.Modules
                 }
                 else
                 {
-                    await ReplyAsync($"<a:KBtick:580851374070431774> {account.BankCoins} coins were withdrew from your bank.");
+                    await ReplyAsync($"{Constants.success} {account.BankCoins} coins were withdrew from your bank.");
                     account.Coins += account.BankCoins;
                     account.BankCoins -= account.BankCoins;
                     _globalUserAccounts.SaveAccounts(Context.User.Id);
@@ -671,6 +675,7 @@ namespace Bot.Modules
                         if (DateTime.UtcNow - robber.Bought_Items[i].Date > robber.Bought_Items[i].Duration)
                         {
                             robber.Bought_Items.Remove(robber.Bought_Items[i]);
+                            _globalUserAccounts.SaveAccounts(robber.Id);
                         }
                         else if (robber.Bought_Items[i].name == "Double Day")
                         {
@@ -867,9 +872,124 @@ namespace Bot.Modules
             }
         }
 
-        // RPS
+        #region Russian Roulette Commands
+        [Group("rr")]
+        [Alias("russian-roulette", "russianroulette")]
+        [Summary("The set of commands for the economy russian-roulette game!")]
+        public class RussianRoulette : ModuleBase<MiunieCommandContext>
+        {
+            private readonly GlobalUserAccounts _globalUserAccounts;
+            private readonly MinigameHandler minigameHandler;
+            public RussianRoulette(GlobalUserAccounts globalUserAccounts, MinigameHandler minigameHandler)
+            {
+                _globalUserAccounts = globalUserAccounts;
+                this.minigameHandler = minigameHandler;
+            }
 
-        [Command("rps")]
+            // RR menu or try to start a game of RR
+            [Command("start")]
+            [Alias("create")]
+            [Summary("Start a russian-roulette game.")]
+            [Remarks("Do \"k!rr start\" for more information on the command.")]
+            [RequireContext(ContextType.Guild)]
+            [Example("k!rr start 4 100")]
+            public async Task RRTryToStart([Summary("The amount of players")]string input = null, [Summary("The bet of the game")]string bet = null)
+            {
+                var user = _globalUserAccounts.GetById(Context.User.Id);
+                int res;
+                int parsedBet;
+                if (input == null || !int.TryParse(input, out res) || bet == null || !int.TryParse(bet, out parsedBet))
+                {
+                    EmbedBuilder Embed = new EmbedBuilder();
+                    Embed.WithTitle(":gun: Russian Roulette");
+                    Embed.WithColor(Color.Red);
+                    Embed.WithDescription("Please enter the amount of bet for the game and an amount of players.\n\nUsage: `k!rr start <player slots> <bet>` \n\nExample: \n`k!rr start 5 200` will start a game with 5 players and 200 coins bet.");
+                    await Context.Channel.SendMessageAsync("", false, Embed.Build());
+                    return;
+
+                }
+
+                await minigameHandler.CreateGame(Context, MinigameHandler.Games.RussianRoulette, res, parsedBet);
+            }
+
+            // Join RR
+            [Command("join")]
+            [Alias("enter")]
+            [Summary("Join a user's russian-roulette game.")]
+            [Example("k!rr join @Panda#8822")]
+            public async Task RRJoin([Summary("Game hoster user")] [Remainder] SocketGuildUser user = null)
+            {
+                if (user == null)
+                {
+                    throw new ArgumentException("Please provide the user hosting a russian-roulette game to join their game");
+                }
+                await minigameHandler.JoinGame(Context, MinigameHandler.Games.RussianRoulette, user.Id);
+            }
+            [Command("leave")]
+            [Alias("quit")]
+            [Summary("Leave a user's russian-roulette game.")]
+            [Example("k!rr leave")]
+            public async Task RRLeave([Summary("Game hoster user")] [Remainder] SocketGuildUser user = null)
+            {
+                if (user == null)
+                {
+                    throw new ArgumentException("Please provide the user hosting a russian-roulette game to join their game");
+                }
+                await minigameHandler.LeaveGame(Context, MinigameHandler.Games.RussianRoulette, user.Id);
+            }
+            [Command("delete")]
+            [Alias("cancel", "remove")]
+            [Summary("Delete your russian-roulette game.")]
+            [Example("k!rr delete")]
+            public async Task RRDelete()
+            {
+                var response = await AwaitMessageYesNo("I will delete your current on-going russian-roulette game, are you sure?", "Yes", "No");
+                if (response is null)
+                {
+                    await Context.Channel.SendMessageAsync($"{Context.User.Mention} you took so long to reply!");
+                }
+                else
+                {
+                    await EvaluateResponse(response, "Yes");
+                }
+            }
+            // Pull the trigger in RR
+            [Command("pt")]
+            [Alias("pulltriger")]
+            [Summary("Pull the trigger when its your turn in a russian-roulette game.")]
+            [Example("k!rr pt")]
+            public async Task RRPullTrigger() => await minigameHandler.PlayGame(Context, MinigameHandler.Games.RussianRoulette);
+
+            private async Task EvaluateResponse(SocketMessage response, string optionYes)
+            {
+                var message = "";
+                if (response.Content.ToLower().Contains(optionYes.ToLower()))
+                {
+                    await minigameHandler.DeleteGame(Context, MinigameHandler.Games.RussianRoulette);
+                }
+                else
+                {
+                    message = "Alright, nevermind then!";
+                }
+
+                await Context.Channel.SendMessageAsync(Context.User.Mention + " " + message);
+            }
+
+            private async Task<SocketMessage> AwaitMessageYesNo(string message, string optionYes, string optionNo)
+            {
+                await Context.Channel.SendMessageAsync(
+                    $"{Context.User.Mention} {message} Reply with `{optionYes}` or `{optionNo}`");
+                var response = await Context.Channel.AwaitMessage(msg => EvaluateResponse(msg, optionYes, optionNo));
+                return response;
+            }
+
+            private bool EvaluateResponse(SocketMessage arg, params String[] options)
+                => options.Any(option => arg.Content.ToLower().Contains(option.ToLower()) && arg.Author.Id == Context.User.Id);
+        }
+    #endregion
+
+    #region Rock Paper Scissors Commands
+    [Command("rps")]
         [Ratelimit(5, 2, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Do this command to know more info about the game. for example.'")]
         [Example("k!rps 30 rock")]
@@ -1035,55 +1155,98 @@ namespace Bot.Modules
             }
 
         }
-        // END
+        #endregion
         // ============ Economy Shop ============
-
+        #region Economy Shop
         [Command("inventory"), Alias("inven")]
         [Summary("The list of items you have if there's any.")]
         [Remarks("To get new stuff do `k!buy {item}`")]
-        public async Task Inv([Summary("The number of the page in the shop menu if any other pages exist.")]int page = 1)
+        public async Task Inv([Summary("The number of the page in the shop menu if any other pages exist.")] int page = 1)
         {
             const int ItemsPerPage = 3;
-            var account = _globalUserAccounts.GetById(Context.User.Id);
-            // Calculate the highest accepted page number => amount of pages we need to be able to fit all users in them
-            // (amount of users) / (how many to show per page + 1) results in +1 page more every time we exceed our usersPerPage  
-            var lastPageNumber = 1 + (account.Bought_Items.Count / (ItemsPerPage + 1));
-            if (page > lastPageNumber)
-            {
-                await ReplyAsync($"There are not that many pages...\nPage {lastPageNumber} is the last one...");
-                return;
-            }
-            EmbedBuilder embed = new EmbedBuilder();
-            embed.WithAuthor("Inventory", Context.User.GetAvatarUrl());
-            embed.WithFooter($"Page {page}/{lastPageNumber} (The time is set by UTC timezone)");
-            embed.WithColor(Color.Blue);
-            embed.WithTitle("This is the list of items you have:");
-            int endIndex = page * ItemsPerPage;
-            int startIndex = endIndex - ItemsPerPage;
-            for (int i = startIndex; i < endIndex && i < account.Bought_Items.Count; i++)
-            {
-                var duration = "";
-                if (account.Bought_Items[i].Duration == new TimeSpan(long.MaxValue))
-                    duration = "Permanent";
-                else if (DateTime.UtcNow - account.Bought_Items[i].Date > account.Bought_Items[i].Duration)
+                var account = _globalUserAccounts.GetById(Context.User.Id);
+                // Calculate the highest accepted page number => amount of pages we need to be able to fit all users in them
+                // (amount of users) / (how many to show per page + 1) results in +1 page more every time we exceed our usersPerPage  
+                var lastPageNumber = 1 + (account.Bought_Items.Count / (ItemsPerPage + 1));
+                if (page > lastPageNumber)
                 {
-                    duration = "The item's duration is finished.";
+                    await ReplyAsync($"There are not that many pages...\nPage {lastPageNumber} is the last one...");
+                    return;
                 }
-                else
+                EmbedBuilder embed = new EmbedBuilder();
+                embed.WithAuthor("Inventory", Context.User.GetAvatarUrl());
+                embed.WithFooter($"Page {page}/{lastPageNumber} (The time is set by UTC timezone)");
+                embed.WithColor(Color.Blue);
+                embed.WithTitle("This is the list of items you have:");
+                int endIndex = page * ItemsPerPage;
+                int startIndex = endIndex - ItemsPerPage;
+                for (int i = startIndex; i < endIndex && i < account.Bought_Items.Count; i++)
                 {
-                    var time_left = account.Bought_Items[i].Duration - (DateTime.UtcNow - account.Bought_Items[i].Date);
-                    duration = $"{time_left.Days}D , {time_left.Hours}h , {time_left.Minutes}m";
+                    var duration = "";
+                    if (account.Bought_Items[i].Duration == new TimeSpan(long.MaxValue))
+                        duration = "Permanent";
+                    else if (DateTime.UtcNow - account.Bought_Items[i].Date > account.Bought_Items[i].Duration)
+                    {
+                        duration = "The item's duration is finished.";
+                    }
+                    else
+                    {
+                        var time_left = account.Bought_Items[i].Duration - (DateTime.UtcNow - account.Bought_Items[i].Date);
+                        duration = $"{time_left.Days}d , {time_left.Hours}h , {time_left.Minutes}m";
+                    }
+                    embed.Description += $":white_small_square: **{account.Bought_Items[i].name}** \n \n:calendar: Bought on: {account.Bought_Items[i].Date.ToShortDateString()} {account.Bought_Items[i].Date.ToShortTimeString()} \n \n:alarm_clock: Time left: {duration}\n \n \n";
                 }
-                embed.Description += $":white_small_square: **{account.Bought_Items[i].name}** \n \n:calendar: Bought on: {account.Bought_Items[i].Date.ToShortDateString()} {account.Bought_Items[i].Date.ToShortTimeString()} \n \n:alarm_clock: Time left: {duration}\n \n \n";
-            }
-            if (account.Bought_Items.Count == 0)
-            {
-                embed.Description += "There's nothing here... :worried: \n \n \nYou can do `k!shop` and check out what you can get yourself there!";
-            }
-            await ReplyAsync("", false, embed.Build());
+                if (account.Bought_Items.Count == 0)
+                {
+                    embed.Description += "There's nothing here... :worried: \n \n \nYou can do `k!shop` and check out what you can get yourself there!";
+                }
+                await ReplyAsync("", false, embed.Build());
         }
-
-        [Group("shop")]
+        [Command("inventory"), Alias("inven")]
+        [Summary("The list of items you have if there's any.")]
+        [Remarks("To get new stuff do `k!buy {item}`")]
+        public async Task Inv([Summary("OPTIONAL: The user you want to check their inventory. Use \"\" if the name has spaces.")] SocketUser user, [Summary("The number of the page in the shop menu if any other pages exist.")] int page = 1)
+        {
+            const int ItemsPerPage = 3;
+                var account = _globalUserAccounts.GetById(user.Id);
+                // Calculate the highest accepted page number => amount of pages we need to be able to fit all users in them
+                // (amount of users) / (how many to show per page + 1) results in +1 page more every time we exceed our usersPerPage  
+                var lastPageNumber = 1 + (account.Bought_Items.Count / (ItemsPerPage + 1));
+                if (page > lastPageNumber)
+                {
+                    await ReplyAsync($"There are not that many pages...\nPage {lastPageNumber} is the last one...");
+                    return;
+                }
+                EmbedBuilder embed2 = new EmbedBuilder();
+                embed2.WithAuthor("Inventory", user.GetAvatarUrl());
+                embed2.WithFooter($"Page {page}/{lastPageNumber} (The time is set by UTC timezone)");
+                embed2.WithColor(Color.Blue);
+                embed2.WithTitle($"This is the list of items {user.Username} has:");
+                int endIndex = page * ItemsPerPage;
+                int startIndex = endIndex - ItemsPerPage;
+                for (int i = startIndex; i < endIndex && i < account.Bought_Items.Count; i++)
+                {
+                    var duration = "";
+                    if (account.Bought_Items[i].Duration == new TimeSpan(long.MaxValue))
+                        duration = "Permanent";
+                    else if (DateTime.UtcNow - account.Bought_Items[i].Date > account.Bought_Items[i].Duration)
+                    {
+                        duration = "The item's duration is finished.";
+                    }
+                    else
+                    {
+                        var time_left = account.Bought_Items[i].Duration - (DateTime.UtcNow - account.Bought_Items[i].Date);
+                        duration = $"{time_left.Days}d , {time_left.Hours}h , {time_left.Minutes}m";
+                    }
+                    embed2.Description += $":white_small_square: **{account.Bought_Items[i].name}** \n \n:calendar: Bought on: {account.Bought_Items[i].Date.ToShortDateString()} {account.Bought_Items[i].Date.ToShortTimeString()} \n \n:alarm_clock: Time left: {duration}\n \n \n";
+                }
+                if (account.Bought_Items.Count == 0)
+                {
+                    embed2.Description += "There's nothing here... :worried: \n \n \nYou can do `k!shop` and check out what you can get yourself there!";
+                }
+                await ReplyAsync("", false, embed2.Build());
+        }
+        [Group("Shop")]
         [Summary("The economy shop of KillerBot, use your coins to buy some cool stuff!")]
         public class Shop : ModuleBase<MiunieCommandContext>
         {
@@ -1092,8 +1255,8 @@ namespace Bot.Modules
             public Shop(GlobalUserAccounts globalUserAccounts)
             {
                 _globalUserAccounts = globalUserAccounts;
-                _items = new List<Item> { new Item("KillerBot Starter Pack", 2000, "Buy KillerBot's starter pack to get some special stuff! **[COMING SOON]**"),
-                new Item("No Loss Day", 4000, "No money loss for a whole 24 hours from slot machines or robbers.", new TimeSpan(1, 0, 0, 0)),
+                _items = new List<Item> { new Item("Life Saver", 2000, "1 time use Life Saver (currently only for russian roulette)!"),
+                new Item("No Loss Day", 4000, "No money loss from any economy command for a whole 24 hours.", new TimeSpan(1, 0, 0, 0)),
                 new Item("Double Day", 8000, "Get double the won money in any economy command for 24 hours!", new TimeSpan(1, 0, 0, 0)),
                 //new Item("Pro Robber", 8000, "Get a higher chance for a successful robbing."),
 
@@ -1216,7 +1379,8 @@ namespace Bot.Modules
                     .AddField($"Item name: {i.name}", $"**Description:** {i.description} \n**Price:** {i.price} coins \n**Duration:** {duration}");
                 await ReplyAsync("", false, emb.Build());
             }
-        } 
+            #endregion
+        }
     }
 }
 

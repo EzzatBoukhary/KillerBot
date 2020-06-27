@@ -63,21 +63,21 @@ namespace Bot.Common
             HelpModule basic = new HelpModule
 			{
 				Group = "Basic",
-				Modules = new List<string> { "Help", "Basics", "Misc", "QuoteCommand" }
+				Modules = new List<string> { "Help", "Basics", "Misc", "QuoteCommand", "ManageUserAccount" }
 			};
 			helpModules.Add(basic);
 
 			HelpModule utils = new HelpModule
 			{
-				Group = "Utils",
-				Modules = new List<string> { "PollModule", "Blogs", "Tags", "WeatherReportCurrent", "Reminder", "auctions", "RoleByPhrase" }
+				Group = "Utility",
+				Modules = new List<string> { "PollModule", "ServerSetup", "Tags", "WeatherReportCurrent", "Reminder", "RoleByPhrase", "Blogs", "auctions" }
 			};
 			helpModules.Add(utils);
 
 			HelpModule account = new HelpModule
 			{
 				Group = "Economy",
-				Modules = new List<string> { "Economy", "ManageUserAccount" }
+				Modules = new List<string> { "Economy", "Shop" }
 			};
 			helpModules.Add(account);
 

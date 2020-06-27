@@ -255,12 +255,12 @@ namespace Bot.Features.Trivia
                 ? GuessingResponse(socketMsg.Embeds.FirstOrDefault(), reaction) 
                 : null;
             await NewQuestion();
-            // Set the gamestate in case we are came from the main menue
+            // Set the gamestate in case we are came from the main menu
             _gamestate = GameStates.Playing;
             _emb = _triviaGames.QuestionToEmbed(_currentQuestion, _emb);
-            // Add empty field for cosmetics and one that tells how to get back to the main menue
+            // Add empty field for cosmetics and one that tells how to get back to the main menu
             _emb.AddField(Constants.InvisibleString, $"{wrongRightMessage}{Constants.InvisibleString}");
-            _emb.AddField(Constants.InvisibleString, $"{_triviaGames.ReactOptions["ok"]} to get back to the main menue");
+            _emb.AddField(Constants.InvisibleString, $"{_triviaGames.ReactOptions["ok"]} to get back to the main menu");
         }
 
         /// <summary>

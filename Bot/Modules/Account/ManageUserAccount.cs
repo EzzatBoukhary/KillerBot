@@ -25,18 +25,19 @@ namespace Bot.Modules.Account
 
         [Command("info")]
         [Summary("Shows your or someone's account info if mentioned.")]
-        public async Task AccountInformation([Summary("The user you want to check. (if not mentioned it'll check yours")]SocketGuildUser user = null)
+        public async Task AccountInformation([Summary("The user you want to check. (if not mentioned it'll check yours")]SocketUser user = null)
         {
-            user = user ?? (SocketGuildUser)Context.User;
+            user = user ?? Context.User;
 
             var userAccount = _globalUserAccounts.GetFromDiscordUser(user);
-
+            var donator = await CheckForDonator.CheckIfDonator(Context.User.Id, Context);
             var embed = new EmbedBuilder()
                 .WithAuthor($"{user.Username}'s account information", user.GetAvatarUrl())
-                .AddField("Joined at: ", user.JoinedAt.Value.DateTime.ToString())
+                .AddField("Created at: ", user.CreatedAt.UtcDateTime.ToString())
                 .AddField("Last message:", userAccount.LastMessage.ToString(), true)
                 .AddField("Number of reminders: ", userAccount.Reminders.Count, true)
                 .AddField("Coins: ", userAccount.NetWorth.ToString())
+                .AddField("Donator: ", donator)
                 .WithColor(Color.Blue)
                 .WithCurrentTimestamp()
                 .WithFooter($"Requested by {Context.User.Username}", Context.User.GetAvatarUrl())

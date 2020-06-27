@@ -16,11 +16,20 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Net.Http;
 using Bot.Entities;
+using Bot.Features.GlobalAccounts;
 
 namespace Bot.Modules
 {
     public class Basics : ModuleBase<MiunieCommandContext>
     {
+        private readonly GlobalGuildAccounts _globalGuildAccounts;
+        private readonly Logger _logger;
+
+        public Basics(GlobalUserAccounts globalUserAccounts, GlobalGuildAccounts globalGuildAccounts, Logger logger)
+        {
+            _globalGuildAccounts = globalGuildAccounts;
+            _logger = logger;
+        }
         [Command("Hello"),Summary("Hey!")]
         [Cooldown(2)]
         public async Task SayHello()
@@ -31,7 +40,32 @@ namespace Bot.Modules
         [Cooldown(5)]
         public async Task InviteBot()
         {
-            await ReplyAsync("**Add KillerBot to a server by clicking this link:** https://goo.gl/h3xHqU \n*Note: You need `Manage Server` or `Administrator` permission in a server in order to be able to add the bot.*");
+            try
+            {
+                EmbedBuilder emb = new EmbedBuilder()
+                    .WithColor(Color.Blue)
+                    .WithTitle("Invite KillerBot:")
+                    .WithDescription("**Add KillerBot:** [Click Here!](https://discord.com/oauth2/authorize?client_id=263753726324375572&scope=bot&permissions=1480615958) \n**Need help?** [Support Server](https://discord.gg/DNqAShq) \n**Want to support KillerBot?** [Donate!](https://www.patreon.com/KillerBot) \n \n*Note: You need `Manage Server` or `Administrator` permission in a server in order to be able to add the bot to it.*");
+                await ReplyAsync("", false, emb.Build());
+            }
+            catch
+            {
+                await ReplyAsync("**Add KillerBot:** https://discord.com/oauth2/authorize?client_id=263753726324375572&scope=bot&permissions=1480615958 \n \n*Note: You need `Manage Server` or `Administrator` permission in a server in order to be able to add the bot to a server.*");
+            }
+        }
+        [Command("donate")]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
+        public async Task Donate()
+        {
+            EmbedBuilder emb = new EmbedBuilder()
+                    .WithColor(Color.Green)
+                    .WithTitle("Support KillerBot!")
+                    .WithDescription("Do you love KillerBot and want to support it? Feel free to donate!")
+                    .AddField("Why?", "By donating to KillerBot you: \n- **Help it to continue to exist.** \n- **Show your support to KillerBot.** \n- **Help with bringing MORE FEATURES!** \n- **Get amazing rewards within KillerBot and the support server.**")
+                    .AddField("How?", "All you have to do is go to KillerBot's patreon page by [Clicking Here](https://www.patreon.com/KillerBot) and donate! Make sure to join the [Support Server](https://discord.gg/DNqAShq) though so you can get the rewards! :hugging_face:")
+                    .AddField("Thanks!", "We appreciate every single one of you whether you donate or not and thanks for supporting KillerBot every step on the way! :heart:")
+                    .WithThumbnailUrl(Context.Client.CurrentUser.GetAvatarUrl());
+            await ReplyAsync("", false, emb.Build());
         }
         [Command("server"), Alias("botserver" , "support")]
         [Cooldown(5)]
@@ -53,8 +87,7 @@ namespace Bot.Modules
             {
                 Color = (Color.Green)
             };
-            embed.WithDescription($"Feedback sent! Message: ```{feedback}```");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
+
             var embed2 = new EmbedBuilder()
             {
                 Color = (Color.LightGrey)
@@ -78,7 +111,9 @@ namespace Bot.Modules
             }
             else
             {
-                channel.SendMessageAsync("",false, embed2.Build());
+                embed.WithDescription($"Feedback sent! Message: ```{feedback}```");
+                await Context.Channel.SendMessageAsync("", false, embed.Build());
+                await channel.SendMessageAsync("",false, embed2.Build());
             }
             
 
@@ -134,12 +169,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.10.3` <:KBupdate:580129240889163787> \n \n**[Changed/Fixed]** \n \n{dot} Fixed the `k!help` error.";
+            embed.Description = $" **== Minor Release ==** `v1.11.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added a new item to the economy shop. \n \n{dot} Added a russian-roulette game to economy: `rr start`, `rr join`, `rr leave`, `rr pt`, `rr delete` \n \n{dot} Added a unique and advanced auto role system: `autorole-setup`, `autorole-info`, `autorole-toggle` \n \n{dot} Added commands: `dog`, `birb`, `foxfact`, `roll`, `clearwarns`, `mywarnings`, `lock`, `lock-server`, `unlock`, `unlock-server`, `donate`, `uud`, `ugd`, `premium`. \n \n{dot} Added autologging to some errors. \n \n**[Changed/Fixed]** \n \n{dot} `k!help` and `k!minesweeper` command revamps. \n \n{dot} Fixed typos in some commands. \n \n{dot} Added/changed ratelimits, and command information to some commands. \n \n{dot} Changes to `userinfo`, `serverinfo`, and `account info` to include donations-related stuff. \n \n{dot} Changes in some error replies. \n \n{dot} Fixed the self-role system. \n \n{dot} Fixes to `k!purge` and `k!ri` in the role hex code and embed error. \n \n{dot} Updated `k!info` and `k!invite` \n \n{dot} `k!inventory` and `k!warnings` now allow a user parameter. \n \n{dot} Made `k!warnings`, `k!listbans` and `k!blacklists` paged and fixed a bug in `guildlist` \n \n{dot} Changes to `k!emojisteal` and added an option to add emojis by attaching an image to the command message.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: May 10th - 2020 10:16 PM GMT");
+                x.WithText("Last updated: June 27th - 2020 02:12 AM GMT");
 
 
 
@@ -203,6 +238,7 @@ namespace Bot.Modules
     [Command("Avatar"), Alias("av")]
         [Summary("Shows the mentioned user's avatar, or yours if no one is mentioned.")]
         [Remarks("Usage: `k!avatar [@user]`")]
+        [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.None)]
         public async Task AvatarAsync([Remainder] SocketGuildUser user = null)
         {
             var u = user ?? Context.User;
@@ -224,6 +260,7 @@ namespace Bot.Modules
         [Command("serverinfo")]
         [Alias("sinfo", "aboutserver")]
         [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
+        [RequireContext(ContextType.Guild)]
         [Summary("Shows information about the server this was sent in like creation date, amount of members and more.")]
         public async Task sinfo()
         {
@@ -232,6 +269,8 @@ namespace Bot.Modules
             var ownername = guild.GetUser(guild.OwnerId);
             var textchn = guild.TextChannels.Count();
             var voicechn = guild.VoiceChannels.Count();
+            int daysOld = Context.Message.CreatedAt.Subtract(guild.CreatedAt).Days;
+            string daysAgo = $"" + ((daysOld == 0) ? "today!" : (daysOld == 1) ? $"yesterday!" : $"{daysOld} days ago!");
             var mem = guild.MemberCount;
             var botlist = guild.Users.Count(x => x.IsBot);
             var guildusers = mem - botlist;
@@ -245,6 +284,7 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
                 embed.WithAuthor("== SERVER INFORMATION ==");
                 embed.WithColor(Color.Blue);
+                embed.WithFooter($"Created {daysAgo}");
                 embed.WithTitle(guild.Name);
                 embed.Description = $"{dot} ID: **{guild.Id}**" +
                 $"\n{dot} Owner: **{ownername.ToString()}**" +
@@ -283,16 +323,26 @@ namespace Bot.Modules
                 embed.Description += $"\n{dot} [Splash Icon:]({guild.SplashUrl})";
                 embed.WithImageUrl(guild.SplashUrl);
             }
+            var guild2 = _globalGuildAccounts.GetById(guild.Id);
+            if (guild2.KBPremium == false)
+                embed.Description += $"\n{dot} [KB Premium](https://www.patreon.com/KillerBot): {Constants.fail}";
+            else if (guild2.KBPremium == true)
+                embed.Description += $"\n{dot} [KB Premium](https://www.patreon.com/KillerBot): <a:KBPremium:706944892215230495>";
             await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }
         
         [Command("roleinfo"), Summary("Returns info about a role."),Alias("RI")]
         [Example("k!roleinfo Cool role")]
+        [RequireContext(ContextType.Guild)]
         [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [RequireContext(ContextType.Guild)]
-        public async Task Role([Remainder, Summary("The role to return information about.")] string args)
+        public async Task Role([Remainder, Summary("The role to return information about.")] string args = null)
         {
-
+            if (args == null)
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> Please put the name of the role you want information on.");
+                return;
+            }
             EmbedBuilder embed = new EmbedBuilder();
             StringBuilder builder = new StringBuilder();
             args = args.ToLower();
@@ -315,7 +365,7 @@ namespace Bot.Modules
             else
             {
                 await channel.TriggerTypingAsync();
-
+                string hex = '#' + mentionedRole.Color.ToString().Substring(1).PadLeft(6, '0');
                 embed.Title = $"{mentionedRole.Name}";
                 embed.Color = mentionedRole.Color;
                 embed.Footer = new EmbedFooterBuilder()
@@ -356,8 +406,8 @@ namespace Bot.Modules
                     x.IsInline = true;
                 });
                 embed.AddField(x => {
-                    x.Name = $"Color";
-                    x.Value = $"{mentionedRole.Color}";
+                    x.Name = "Color";
+                    x.Value = hex;
                     x.IsInline = true;
                 });
                 var membercount = Context.Guild.Users.Where(u => u.Roles.Contains(mentionedRole)).Count();
@@ -381,7 +431,7 @@ namespace Bot.Modules
                     });
                 }
                 
-                else if (memberstext.ToString().Length > 2048)
+                else if (memberstext.ToString().Length > 1024)
                 {
                     embed.AddField(x =>
                     {
@@ -400,7 +450,7 @@ namespace Bot.Modules
                     });
                 }
                 builder.Clear();
-                string perms = "";
+                string perms = "No perms";
                 if (mentionedRole.Permissions.ToString() == "512")
                 {
                     perms = "No perms";
@@ -448,12 +498,15 @@ namespace Bot.Modules
         [Command("userinfo"), Alias("whois")]
         [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Gets information about the specified user")]
+        [RequireContext(ContextType.Guild)]
         public async Task UserInfo([Summary("OPTIONAL: User to check their info")][Remainder] IGuildUser user = null)
         {
             user = user ?? (SocketGuildUser)Context.User;
             EmbedBuilder emb = new EmbedBuilder();
 
             string userRoles = DiscordHelpers.GetListOfUsersRoles(user);
+            if (userRoles.Length > 1024)
+                userRoles = "Too many! Woah.";
 
             // Find user's highest role so the embed will be coloured with the role's colour
 
@@ -465,6 +518,7 @@ namespace Bot.Modules
             var picture = user.GetAvatarUrl();
             string nitro = "<:KBNitro:587753434812514324> (Possible nitro user)";
             string nitro2 = "<:KBNitro:587753434812514324>";
+
             // If the user has a default avatar
             string useravatar = "";
             if (string.IsNullOrEmpty(user.AvatarId))
@@ -472,16 +526,23 @@ namespace Bot.Modules
             else
                 useravatar = user.GetAvatarUrl();
             emb.WithThumbnailUrl(useravatar);
+
             string userpic = "";
             // If the user has a default avatar
             if (string.IsNullOrEmpty(Context.User.AvatarId))
                 userpic = $"https://discordapp.com/assets/dd4dbc0016779df1378e7812eabaa04d.png";
             else
                 userpic = Context.User.GetAvatarUrl();
+
             emb.WithFooter($"User info requested by {Context.User.Username}", userpic);
             emb.Description = $"{user.Username}#{user.Discriminator} | {user.Id}";
-            if (user.IsBot)
-                emb.Description += "<:Bot:593232908735741989>";
+
+            if (user.IsBot) //if the user is a bot
+                emb.Description += " <:Bot:593232908735741989>";
+
+            if (CheckForDonator.CheckIfDonator(user.Id, Context).Result == true) //if the user is a donator
+                emb.Description += $" <a:KBDonator:706944857964544040>";
+
             emb.WithTitle("=== USER INFORMATION ===");
             emb.WithCurrentTimestamp();
             //GIF avatar looking
@@ -617,12 +678,24 @@ namespace Bot.Modules
             string KBTeam = "";
             var ID = user.Id.ToString();
             // Display the KB team position if found
-            if (ID == "333988268439764994")
-                KBTeam += "KB Support";
-            if (ID == "238353818125991936" || ID == "196354024491057152")
-                KBTeam += "KBHQ Staff";
+            try
+            {
+                var kbhq = Context.Client.GetGuild(550064334714175512);
+                var supportrole = kbhq.GetRole(550070352907337751);
+                var user2 = kbhq.GetUser(user.Id) as IGuildUser;
+                if (user2.RoleIds.Contains(supportrole.Id)) //Checks if the user has support role in KBHQ
+                    KBTeam = "KB Support";
+            }
+            catch
+            {
+
+            }
+            //Bot owner (me)
             if (ID == "223530903773773824")
-                KBTeam += "Bot owner";
+                KBTeam = "Bot owner";
+            //KBHQ Staff => Shane, Ehsan
+            if (ID == "238353818125991936" || ID == "196354024491057152")
+                KBTeam = "KBHQ Staff";
             if (string.IsNullOrEmpty(KBTeam) == false)
                 emb.AddField("KillerBot Team", KBTeam);
 
@@ -708,15 +781,32 @@ namespace Bot.Modules
         {
             var wr = (HttpWebRequest)WebRequest.Create("https://icanhazdadjoke.com/");
             wr.Accept = "application/json";
-            wr.UserAgent = "Hatsune Miku Discord Bot (speyd3r@meek.moe)";
+            wr.UserAgent = "KillerBot";
             await ReplyAsync(JsonConvert.DeserializeObject<Dadjoke>(new StreamReader(wr.GetResponse().GetResponseStream()).ReadToEnd()).joke);
         }
-
+        [Command("embed")]
+        [Summary("Create an embed in a specific channel.")]
+        [Remarks("You can seperate the embed title from the description with a |")]
+        public async Task Embed(SocketTextChannel channel, string color, [Remainder] string args)
+        {
+            var td = args.Split('|', StringSplitOptions.RemoveEmptyEntries);
+            var embed = new EmbedBuilder();
+                //.WithColor()
+            if (td.Length == 1)
+            {
+                embed.Title = args;
+            }
+            else if (td.Length == 2)
+            {
+                embed.Title = $"{td.Take(1)}";
+                embed.Description = $"{td.Take(2)}";
+            }
+            await channel.SendMessageAsync("", false, embed.Build());
+        }
         [Command("FindMessageID"), Alias("getmessageid", "messageid", "fmi", "gmi")]
         [Summary("Gets the message id of a message in the current channel with the provided message text")]
         [Remarks("Keep in mind that this isn't the best efficient way to get the ID of a message. If you're having any trouble try doing it manually.")]
         [Example("k!messageid Hey find my id!")]
-        [RequireContext(ContextType.Guild)]
         public async Task FindMessageIDAsync([Summary("The content of the message to search for")][Remainder] string messageContent)
         {
             if (messageContent.IsEmptyOrWhiteSpace())
@@ -746,8 +836,13 @@ namespace Bot.Modules
         [Command("report"), Alias("bug", "bugreport", "reportbug")]
         [Cooldown(10)]
         [Summary("Send a report about a bug to the bot owner. Spam/troll is not tolerated.")]
-        public async Task BugReport([Summary("Information about the bug you want to report")][Remainder] string report)
+        public async Task BugReport([Summary("Information about the bug you want to report")][Remainder] string report = null)
         {
+            if (report == null)
+            {
+                await ReplyAsync($"{Constants.fail} Please provide information about the bug you want to report. Make sure to explain about the bug so the team can easily find it out!");
+                return;
+            }
             var channel = Context.Client.GetChannel(588015155015843903) as SocketTextChannel;
             var application = await Context.Client.GetApplicationInfoAsync();
 

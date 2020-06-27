@@ -47,10 +47,10 @@ namespace Bot.Modules.Fun
 				return;
 			}
 
-			if (maxSearchResults > 12)
+			if (maxSearchResults > 10)
 			{
 				await Context.Channel.SendMessageAsync(
-					$"The max search amount you have put in is too high! It has to be below 12.");
+					$"The max search amount you have put in is too high! It has to be below 10.");
 				return;
 			}
 

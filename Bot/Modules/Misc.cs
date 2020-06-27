@@ -25,6 +25,7 @@ using Newtonsoft.Json.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
 using Discord.Net;
+using System.Text.RegularExpressions;
 
 namespace Bot.Modules
 {
@@ -33,6 +34,7 @@ namespace Bot.Modules
         private CommandService _service;
         private readonly ListManager _listManager;
         private int _fieldRange = 10;
+        private static readonly HttpClient client = new HttpClient();
 
         public Misc(CommandService service, ListManager listManager)
         {
@@ -41,79 +43,6 @@ namespace Bot.Modules
         }
 
 
-       /* [Command("help"), Alias("h"),
-            Remarks(
-                "DMs you a huge message if called without parameter - otherwise shows help to the provided command or module")]
-        [Cooldown(5)]
-        public async Task Help()
-        {
-            await Context.Channel.SendMessageAsync("Check your DMs.");
-
-            var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
-
-            var contextString = Context.Guild?.Name ?? "DMs with me";
-            var builder = new EmbedBuilder()
-            {
-                Title = "Help",
-                Description = $"These are the commands you can use in {contextString} \n \nImportant Note: This is a temporary help message, if you want more information on a specific command please do \"k!help (command name)\". We will bring a better and improved help message ASAP.",
-                Color = new Color(114, 137, 218)
-            };
-
-            foreach (var module in _service.Modules)
-            {
-                await AddModuleEmbedField(module, builder);
-            }
-
-            // We have a limit of 6000 characters for a message, so we are taking first ten fields
-            // and then sending the message. In the current state it will send 2 messages.
-
-            var fields = builder.Fields.ToList();
-            while (builder.Length > 6000)
-            {
-                builder.Fields.RemoveRange(0, fields.Count);
-                var firstSet = fields.Take(_fieldRange);
-                builder.Fields.AddRange(firstSet);
-                if (builder.Length > 6000)
-                {
-                    _fieldRange--;
-                    continue;
-                }
-                await dmChannel.SendMessageAsync("", false, builder.Build());
-                fields.RemoveRange(0, _fieldRange);
-                builder.Fields.RemoveRange(0, _fieldRange);
-                builder.Fields.AddRange(fields);
-            }
-
-            await dmChannel.SendMessageAsync("", false, builder.Build());
-
-            while (builder.Length > 6000)
-            {
-                builder.Fields.RemoveRange(0, fields.Count);
-                var secondset = fields.Take(_fieldRange);
-                builder.Fields.AddRange(secondset);
-                if (builder.Length > 6000)
-                {
-                    _fieldRange--;
-                    continue;
-                }
-                await dmChannel.SendMessageAsync("", false, builder.Build());
-                fields.RemoveRange(0, _fieldRange);
-                builder.Fields.RemoveRange(0, _fieldRange);
-                builder.Fields.AddRange(fields);
-            }
-            // Embed are limited to 24 Fields at max. So lets clear some stuff
-            // out and then send it in multiple embeds if it is too big.
-            builder.WithTitle("")
-                .WithDescription("")
-                .WithAuthor("");
-            while (builder.Fields.Count > 24)
-            {
-                builder.Fields.RemoveRange(0, 25);
-                await dmChannel.SendMessageAsync("", false, builder.Build());
-                
-            }
-        } */
-
         [Command("version"), Alias("ver")]
         [Remarks("Returns the current version of the bot.")]
         [Cooldown(3)]
@@ -121,7 +50,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.10.3`");
+            builder.AddField("Version", $"The current version of the bot is: `1.11.0`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]
@@ -136,16 +65,18 @@ namespace Bot.Modules
 
         }
 
-        string usage;
-
         [Command("calculate", RunMode = RunMode.Async)]
         [Alias("math")]
-        [Cooldown(4)]
+        [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.None)]
         [Summary("Calculate anything, you can use + for addition, - for subtraction, / ÷ or for division, x or * for multiplication, PI to get the PI value, E for 2.718281828459045, % for Mod")]
         [Remarks("You can use multiple signs at once for example `calculate 4 + 2 * 4`")]
-        public async Task Calculate([Remainder]string equation)
-        { //Needs improvement
-            usage = "Usage : `k!calculate <equation>` , where `equation` must not contain any functions.";
+        public async Task Calculate([Remainder]string equation = null)
+        {
+            if (equation == null)
+            {
+                await ReplyAsync("Usage : `{prefix}calculate <equation>` , where `equation` must not contain any functions.");
+                return;
+            }
             //Replaces all the possible math symbols that may appear
             //Invalid for the computer to compute
             equation = equation.ToUpper()
@@ -174,11 +105,17 @@ namespace Bot.Modules
             }
         }
 
-        [Command("echo")]
-        [Remarks("Make The Bot Say A Message")]
+        [Command("say")]
+        [Alias("echo")]
+        [Remarks("Make KillerBot say anything!")]
 
-        public async Task Echo([Remainder] string message)
+        public async Task Echo([Remainder] string message = null)
         {
+            if (message == null)
+            {
+                await ReplyAsync($"{Constants.fail} Please put the message you want me to echo.");
+                return;
+            }
             var embed = EmbedHandler.CreateEmbed("Message by: " + Context.Message.Author.Username, message, EmbedHandler.EmbedMessageType.Info, true);
 
             try
@@ -256,6 +193,15 @@ namespace Bot.Modules
                 .AddField(":statue_of_liberty: New York", TimeZoneInfo.ConvertTimeBySystemTimeZoneId(DateTime.Now, "America/New_York").ToString(format, enAU), true)
                 .Build()
                 );
+        }
+        [Command("owo")]
+        [Summary("hewwo uwu! owo your text here.")]
+        [Ratelimit(7, 1, Measure.Minutes, RatelimitFlags.None)]
+        public async Task OWO([Remainder] [Summary("The text you want to owo-ify")]string phrase)
+        {
+            String str = phrase.Replace("r", "w");
+            str = str.Replace("l", "w");
+            await ReplyAsync($"*" + str + " uwu*");
         }
 
         //8ball
@@ -365,7 +311,7 @@ namespace Bot.Modules
                                                      y.IsInline = false;
                                                  });
 
-                await this.ReplyAsync("", false, embed.Build());
+                await ReplyAsync("", false, embed.Build());
             }
 
         }
@@ -386,16 +332,52 @@ namespace Bot.Modules
                 embed.ThumbnailUrl = application.IconUrl;  /*pulls bot Avatar. Not needed can be removed*/
                 embed.WithColor(new Color(0x4900ff));  /*Hexacode colours*/
                 embed.WithTitle("KillerBot Information");
-                embed.WithDescription("KillerBot is a multi-purpose bot with unique moderation, fun and utility commands that'll change how servers work to the better. \n \n**About my dev** \nI was made with :heart: by Panda#8822 with the help of some testers and support (<@238353818125991936> and <@333988268439764994>). I work on this bot as a hobby and i love to bring joy to my users by adding the features they want. \n \n**When was i created** \nKillerBot started back in 2016 and got hosted for a while until the hosting was stopped and the bot died in 2017. I then decided to bring it back and recode it completely in Discord.Net 2.0.1 and so i did, bringing KillerBot back at 03/03/2019 in a beta state until 05/23/2019 where it was officially released. And we're still going! <:Killerbot:587360915284819998> \n \n**Links** \n[Invite me!](https://discordapp.com/oauth2/authorize?client_id=263753726324375572&scope=bot&permissions=406874134) \n[Discord Support Server](https://discord.gg/DNqAShq) \n[Apply for bot support!](https://docs.google.com/forms/d/e/1FAIpQLSeyl-pHKe9hHic1UcpKaG4lzaMCt2a6Mgaj0PPPnurSgptrIw/viewform) \n------------- \n**Support the bot by upvoting it on these websites!** \n[Discord Bot List Website](https://discordbotlist.com/bots/263753726324375572) \n[Discordbots.org Website](https://discordbots.org/bot/263753726324375572) \n[Discord.bots.gg Website](https://discord.bots.gg/bots/263753726324375572)");
+                embed.WithDescription("KillerBot is a multi-purpose bot with unique moderation, fun and utility commands that'll change how servers work to the better. \n \n**About my dev** \nI was made with :heart: by Panda#8822 with the help of some testers and support (<@238353818125991936> , <@333988268439764994> and others). I work on this bot as a hobby and I love to bring joy to my users by adding the features they want. \n \n**When was I created** \nKillerBot started back in 2016 and got hosted for a while until the hosting was stopped and the bot died in 2017. I then decided to bring it back and recode it completely in Discord.Net 2.0.1 and so I did, bringing KillerBot back at 03/03/2019 in a beta state until 05/23/2019 where it was officially released. And we're still going! <:Killerbot:587360915284819998> \n \n**Links** \n[Invite me!](https://discord.com/oauth2/authorize?client_id=263753726324375572&scope=bot&permissions=1480615958) \n[Discord Support Server](https://discord.gg/DNqAShq) \n[Donate!](https://www.patreon.com/KillerBot) \n------------- \n**Support the bot by upvoting it on these websites!** \n[Discord Bot List Website](https://discordbotlist.com/bots/263753726324375572) \n[Top.gg Website](https://discordbots.org/bot/263753726324375572) \n[Discord.bots.gg Website](https://discord.bots.gg/bots/263753726324375572)");
                 embed.WithCurrentTimestamp();
 
                 await ReplyAsync("", false, embed.Build());
             }
         }
+        [Command("Tree")]
+        [RequireContext(ContextType.Guild)]
+        [Summary("Shows all categories in this guild and their children channels.")]
+        //[Remarks("tree")]
+        public async Task TreeAsync()
+        {
+            var uncategorized = new StringBuilder().AppendLine(Format.Bold("Uncategorized"));
+            var categories = new StringBuilder();
+
+            foreach (var c in Context.Guild.TextChannels
+                .Where(c => c.CategoryId == null)
+                .Cast<SocketGuildChannel>()
+                .Concat(Context.Guild.VoiceChannels
+                    .Where(a => a.CategoryId == null)).OrderBy(c => c.Position))
+            {
+                uncategorized.AppendLine($"- {(c is IVoiceChannel ? $"{c.Name}" : $"{c.Cast<ITextChannel>()?.Mention}")}");
+            }
+
+            uncategorized.AppendLine();
+            foreach (var category in Context.Guild.CategoryChannels.OrderBy(x => x.Position))
+            {
+                var categoryBuilder = new StringBuilder().AppendLine($"{Format.Bold(category.Name)}");
+                foreach (var child in category.Channels.OrderBy(c => c.Position))
+                {
+                    categoryBuilder.AppendLine($"- {(child is IVoiceChannel ? $"{child.Name}" : $"{child.Cast<ITextChannel>()?.Mention}")}");
+                }
+                categories.AppendLine(categoryBuilder.ToString());
+            }
+
+            var res = uncategorized.AppendLine(categories.ToString()).ToString();
+            if (res.Length >= 2048)
+            {
+                throw new ArgumentException("This guild is too large; I cannot list all channels here");
+            }
+            await ReplyAsync(res);
+        }
         [Command("clownrate")]
-        [Alias("clown-rate", "howclown")]
+        [Alias("clown-rate", "howclown", "klownrate")]
         [Summary("Check the clown rate of yourself or others!")]
-        [Ratelimit(10, 1, Measure.Minutes, RatelimitFlags.None)]
+        [Ratelimit(6, 1, Measure.Minutes, RatelimitFlags.None)]
         public async Task ClownRate([Remainder] [Summary("OPTIONAL: The user you want to know their clown rate.")] SocketGuildUser user = null)
         {
             string clown = "";
@@ -416,7 +398,7 @@ namespace Bot.Modules
             if (rate == 0)
             {
                 reply = "not a clown! \nCongrats!";
-                emb.WithImageUrl("https://discordapp.com/channels/497373849042812928/509781635089301505/701186410610426006");
+                emb.WithImageUrl("https://cdn.discordapp.com/attachments/509781635089301505/701186408668201082/KBnowclown.gif");
             }
             else if (rate == 50)
             {
@@ -442,169 +424,5 @@ namespace Bot.Modules
             await ReplyAsync("", false, emb.Build());
         }
 
-        [Command("randomcat")]
-        [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.None)]
-        [Alias("meow","cat")]
-        [Summary("Retrieve a random cat photo")]
-        public async Task CatPic()
-        {
-            var http = new HttpClient();
-            var results = await http.GetStringAsync("http://aws.random.cat/meow").ConfigureAwait(false);
-            string url = JObject.Parse(results)["file"].ToString();
-
-            if (string.IsNullOrWhiteSpace(url))
-                throw new ArgumentException("Connection to random.cat failed!");
-
-            EmbedBuilder output = new EmbedBuilder()
-                .WithTitle(":cat: Meow!")
-                .WithImageUrl(url)
-                .WithColor(Color.Orange);
-            await ReplyAsync("",false, output.Build());
-        }
-       
-        // RPS
-
-     /*   [Command("rps")]
-        [Cooldown(3)]
-        [Summary("Do this command to know more info about the game. for example `rps r` for rock, `rps p` for paper and `rps s` for scissors.'")]
-
-        [Remarks("rock paper scissors!")]
-
-        public async Task Rps([Summary("Your pick")][Optional] string input)
-
-        {
-
-            if (input == null)
-
-            {
-
-                await ReplyAsync(
-
-                    " To play rock, paper, scissors" +
-
-                    "\n:waning_gibbous_moon: type `k!rps rock` or `k!rps r` to pick rock" +
-
-                    "\n\n:newspaper: type `k!rps paper` or `k!rps p` to pick paper" +
-
-                    "\n\n✂️ type `k!rps scissors` or `k!rps s` to pick scissors"
-
-                );
-
-            }
-
-            else
-
-            {
-
-                int pick;
-
-                switch (input)
-
-                {
-
-                    case "r":
-
-                    case "rock":
-
-                        pick = 0;
-
-                        break;
-
-                    case "p":
-
-                    case "paper":
-
-                        pick = 1;
-
-                        break;
-
-                    case "scissors":
-
-                    case "s":
-
-                        pick = 2;
-
-                        break;
-
-                    default:
-
-                        return;
-
-                }
-
-                var choice = new Random().Next(0, 3);
-
-
-
-                string msg;
-
-                if (pick == choice)
-
-                    msg = "We both chose: " + GetRpsPick(pick) + " Draw, Try again";
-
-                else if (pick == 0 && choice == 1 ||
-
-                         pick == 1 && choice == 2 ||
-
-                         pick == 2 && choice == 0)
-
-                    msg = "My Pick: " + GetRpsPick(choice) + " Beats Your Pick: " + GetRpsPick(pick) +
-
-                          "\nYou Lose! Try Again boi!";
-
-                else
-
-                    msg = "Your Pick: " + GetRpsPick(pick) + " Beats meh: " + GetRpsPick(choice) +
-
-                          "\nCongratulations! You win!";
-
-
-
-
-
-                var embed = new EmbedBuilder
-
-                {
-
-                    Title = "KillerBot - Rock Paper Scissors",
-
-                    Description = $"{msg}",
-
-                    ThumbnailUrl = Context.Client.CurrentUser.GetAvatarUrl()
-
-                };
-
-                await ReplyAsync("", false, embed.Build());
-
-            }
-
-        }
-
-
-
-        private static string GetRpsPick(int p)
-
-        {
-
-            switch (p)
-
-            {
-
-                case 0:
-
-                    return ":waning_gibbous_moon: ";
-
-                case 1:
-
-                    return ":newspaper:";
-
-                default:
-
-                    return "✂️";
-
-            }
-
-        } */
-        // END
     }
 }

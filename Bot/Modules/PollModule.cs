@@ -145,9 +145,8 @@ namespace Bot.Modules
                   PollDuration = time,
                   Answers = answers.Select((ans, i) => new PollAnswer(ans, new Emoji(DiscordHelpers.GetUnicodeRegionalLetter(i)))).ToList()
               };
-              _ = await InlineReactionReplyAsync(GeneratePoll(poll), false).ConfigureAwait(false);
+              var a = await InlineReactionReplyAsync(GeneratePoll(poll), false).ConfigureAwait(false);
           } 
-
         private static ReactionCallbackData GeneratePoll(Poll poll)
         {
             string answers = string.Join(Environment.NewLine, poll.Answers.Select(x => $"{x.AnswerEmoji} {x.Answer}"));

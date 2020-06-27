@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Bot.Features.GlobalAccounts;
 using Bot.Features.RoleAssignment;
 using Discord;
+using Discord.WebSocket;
 //using static Bot.Modules.ServerBots;
 
 namespace Bot.Entities
@@ -27,20 +28,30 @@ namespace Bot.Entities
 
         public List<WarnEntry> Warns { get; set; } = new List<WarnEntry>();
 
-       // public List<UsersEntered> Russian_Roulette { get; set; } = new List<UsersEntered>();
-
         //public Modules.ServerBots.GuildData BotData { get; private set; }
 
         public RoleByPhraseSettings RoleByPhraseSettings { get; set; } = new RoleByPhraseSettings();
 
         public int ServerActivityLog { get; set; }
 
+        public bool KBPremium { get; set; }
+
+        public bool Blacklisted { get; set; }
+
         public ulong LogChannelId { get; set; }
 
-        public string RoleOnJoin { get; set; }
+        public ulong RoleOnJoin { get; set; }
+
+        public string RoleOnJoinMethod { get; set; }
+
+        public List<string> RoleOnJoinPhrase { get; set; } = new List<string>();
+
+        public TimeSpan RoleOnJoinTime { get; set; }
+
+        public bool RoleOnJoinToggle { get; set; }
 
         /* Add more values to store */
-        
+
         public GlobalGuildAccount Modify(Action<GuildAccountSettings> func, GlobalGuildAccounts globalGuildAccounts)
         {
             var settings = new GuildAccountSettings();
@@ -56,10 +67,14 @@ namespace Bot.Entities
                 LeaveMessages = settings.LeaveMessages.Value;
             if (settings.Tags.IsSpecified)
                 Tags = settings.Tags.Value;
+            if (settings.KBPremium.IsSpecified)
+                KBPremium = settings.KBPremium.Value;
+            if (settings.RoleOnJoin.IsSpecified)
+                RoleOnJoin = settings.RoleOnJoin.Value;
+            if (settings.Blacklisted.IsSpecified)
+                Blacklisted = settings.Blacklisted.Value;
             if (settings.Warns.IsSpecified)
                 Warns = settings.Warns.Value;
-          //  if (settings.Russian_Roulette.IsSpecified)
-          //      Warns = settings.Russian_Roulette.Value;
             //if (settings.BotData.IsSpecified)
             //    BotData = settings.BotData.Value;
             if (settings.RoleByPhraseSettings.IsSpecified)
@@ -110,8 +125,14 @@ namespace Bot.Entities
         public Optional<Dictionary<string, string>> Tags { get; private set; }
         public GuildAccountSettings SetTags(Dictionary<string, string> tags) { Tags = tags; return this; }
 
-        //public Optional<List<UsersEntered>> Russian_Roulette { get; private set; }
-       // public GuildAccountSettings SetRR(List<UsersEntered> rrgame) { Russian_Roulette = rrgame; return this; }
+        public Optional<bool> KBPremium { get; private set; }
+        public GuildAccountSettings SetKBPremium(bool Premium) { KBPremium = Premium; return this; }
+
+        public Optional<ulong> RoleOnJoin { get; private set; }
+        public GuildAccountSettings SetRoleOnJoin(ulong Role) { RoleOnJoin = Role; return this; }
+
+        public Optional<bool> Blacklisted { get; private set; }
+        public GuildAccountSettings SetBlacklisted(bool blacklisted) { Blacklisted = blacklisted; return this; }
 
         public Optional<List<WarnEntry>> Warns { get; private set; }
         public GuildAccountSettings SetWarns(List<WarnEntry> warns) { Warns = warns; return this; }
@@ -126,26 +147,16 @@ namespace Bot.Entities
         public DateTime Time;
         public string Moderator;
         public string Reason;
-        public string Warned_user;
+        public string Warned_username;
+        public ulong Warned_userid;
 
-        public WarnEntry(string moderator, string warned_user, DateTime time, string reason)
+        public WarnEntry(string moderator, string warned_username, ulong warned_userid, DateTime time, string reason)
         {
             Moderator = moderator;
-            Warned_user = warned_user;
+            Warned_username = warned_username;
+            Warned_userid = warned_userid;
             Time = time;
             Reason = reason;
         }
     }
-  /*  public struct UsersEntered
-    {
-        public ulong _id { get; set; }
-        public string name { get; set; }
-        public uint Bet;
-        public UsersEntered(IUser user, uint bet)
-        {
-            _id = user.Id;
-            name = user.Username;
-            Bet = bet;
-        }
-    }*/
 }

@@ -17,7 +17,6 @@ namespace Bot.Modules
     {
         private CommandService _service;
         private readonly ListManager _listManager;
-        private int _fieldRange = 10;
 
         public QuoteCommand(CommandService service, ListManager listManager)
         {
@@ -28,8 +27,14 @@ namespace Bot.Modules
         [Command("Quote"), Priority(0)]
         [Summary("Quotes a user from a given message's ID.")]
         [Remarks("Usage: k!quote {messageID}")]
-        public async Task QuoteAsync(ulong messageId)
+        [RequireContext(ContextType.Guild)]
+        public async Task QuoteAsync(ulong messageId = 0)
         {
+            if (messageId == 0)
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> Please provide a message ID to quote.");
+                return;
+            }
             var m = await Context.Channel.GetMessageAsync(messageId);
             if (m is null)
             {
@@ -72,6 +77,7 @@ namespace Bot.Modules
         [Command("Quote"), Priority(1)]
         [Summary("Quotes a user in a different chanel from a given message's ID.")]
         [Remarks("Usage: |prefix |quote |channel {messageID}  or message ID then channel, same thing")]
+        [RequireContext(ContextType.Guild)]
         public async Task QuoteAsync(SocketTextChannel channel, ulong messageId)
         {
             var m = await channel.GetMessageAsync(messageId);

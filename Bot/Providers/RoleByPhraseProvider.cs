@@ -138,7 +138,10 @@ namespace Bot.Providers
         public async Task EvaluateMessage(IGuild guild, ISocketMessageChannel channel ,string message, IGuildUser sender)
         {
             var guildSettings = _globalGuildAccounts.GetFromDiscordGuild(guild);
-
+            var message2 = "";
+            if (guild is null) return;
+            var prefixes = _globalGuildAccounts.GetById(guild.Id).Prefixes;
+            var tmpArgPos = 0;
             var triggeredPhrases = guildSettings.RoleByPhraseSettings.Phrases.Where(message.Contains).ToList();
 
             if (!triggeredPhrases.Any()) return;
@@ -147,6 +150,17 @@ namespace Bot.Providers
 
             foreach (var phrase in triggeredPhrases)
             {
+                var success = prefixes.Any(pre =>
+                {
+                    if (!message.StartsWith(pre)) return false;
+                    tmpArgPos = pre.Length;
+                    message2 = message.Remove(0, tmpArgPos);
+                    if (!message.EndsWith(phrase)) return false;
+                    if (phrase != message2) return false;
+                    return true;
+                });
+                if (success == false)
+                    return;
                 var phraseIndex = guildSettings.RoleByPhraseSettings.Phrases.IndexOf(phrase);
                 var roleIds = guildSettings.RoleByPhraseSettings.Relations
                     .Where(r => r.PhraseIndex == phraseIndex)

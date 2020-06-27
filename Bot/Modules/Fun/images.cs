@@ -488,10 +488,10 @@ namespace Bot.Modules.Fun
             return;
         }
         public static readonly HttpClient httpClient = new HttpClient();
-        [Command("minecraftach"), Alias("mcach", "ach"), Summary("Generate an epic minecraft echievement with customizable yellow and white text")]
+        [Command("minecraftach"), Alias("mcach", "ach"), Summary("Generate an epic minecraft achievement with customizable yellow and white text")]
         [Remarks("Make sure to put quotes \"\" for the yellow text if you need it to be a sentence. However there's no need to put it for the white text.")]
         public async Task MCAchievmentACH([Summary("The yellow text at the top of the achievement")] string yellowtext = null,
-            [Remainder, Summary("The white text at the bottom of the achievment")] string text =  null)
+            [Remainder, Summary("The white text at the bottom of the achievement")] string text =  null)
         {
             if (yellowtext == null)
             {
@@ -510,8 +510,8 @@ namespace Bot.Modules.Fun
                 await Context.Channel.SendFileAsync(response, "achievement.png");
             }
         }
-        [Command("minecraft"), Alias("mc"), Summary("Generate an epic minecraft echievement with customizable white text only.")]
-        public async Task MCAchievment([Remainder, Summary("The white text at the bottom of the achievment")] string text = null)
+        [Command("minecraft"), Alias("mc"), Summary("Generate an epic minecraft achievement with customizable white text only.")]
+        public async Task MCAchievment([Remainder, Summary("The white text at the bottom of the achievement")] string text = null)
         {
             if (text == null)
             {

@@ -18,16 +18,17 @@ using System.Runtime.Serialization;
 using Bot.Entities;
 using Bot.Features.GlobalAccounts;
 using Bot.Helpers;
+using System.Globalization;
 
 namespace Bot.Modules
 {
-    public class moderation : ModuleBase<MiunieCommandContext>
+    public class moderation : InteractiveBase
     {
         private static readonly OverwritePermissions denyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
-        private int _fieldRange = 10;
         private CommandService _service;
         private readonly GlobalGuildAccounts _globalGuildAccounts;
         private readonly Logger _logger;
+
         public moderation(GlobalGuildAccounts globalGuildAccounts, Logger logger)
         {
             _globalGuildAccounts = globalGuildAccounts;
@@ -41,15 +42,22 @@ namespace Bot.Modules
         [Example("k!purge 30")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
         public async Task Clear(
-            [Summary("Amount of messages you want to delete from the channel")]int amountOfMessagesToDelete)
+            [Summary("Amount of messages you want to delete from the channel")]string amountOfMessagesToDelete = null)
         {
+            int msgs;
+            if (amountOfMessagesToDelete == null || !int.TryParse(amountOfMessagesToDelete, out msgs))
+            {
+                await ReplyAsync($"{Constants.fail} Please enter the amount of messages you want to delete.");
+                return;
+            }
             try
             {
-                var messages = await Context.Channel.GetMessagesAsync(amountOfMessagesToDelete + 1).FlattenAsync();
+                var messages = await Context.Channel.GetMessagesAsync(msgs + 1).FlattenAsync();
                 await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
-                var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
-                await Task.Delay(5000);
+                var m = await ReplyAsync($"Deleted {messages.Count() - 1} Messages 👌");
+                await Task.Delay(3000);
                 await m.DeleteAsync();
             }
             catch (Exception ex)
@@ -65,23 +73,28 @@ namespace Bot.Modules
         [Example("k!purge @Panda#8822 15")]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
         public async Task Clear(
             [Summary("OPTIONAL: The user you want to delete their messages")]SocketGuildUser user,
-            [Summary("Amount of messages you want to delete")]int amountOfMessagesToDelete = 100)
+            [Summary("Amount of messages you want to delete")]string amountOfMessagesToDelete = null)
         {
+            int msgs;
+            if (!int.TryParse(amountOfMessagesToDelete, out msgs))
+            {
+                await ReplyAsync($"{Constants.fail} Please enter the amount of messages you want to delete.");
+                return;
+            }
             await Context.Message.DeleteAsync();
-            if (user == Context.User)
-                amountOfMessagesToDelete++; //Because it will count the purge command as a message
 
             var messages = await Context.Message.Channel.GetMessagesAsync().FlattenAsync();
 
             var result = messages.Where(x => x.Author.Id == user.Id && x.CreatedAt >= DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(14)));
-            var result2 = result.Take(amountOfMessagesToDelete);
+            var result2 = result.Take(msgs);
             try
             {
                 await (Context.Message.Channel as SocketTextChannel).DeleteMessagesAsync(result2);
-                var m = await ReplyAsync($"Deleted {amountOfMessagesToDelete} Messages 👌");
-                await Task.Delay(5000);
+                var m = await ReplyAsync($"Deleted {result2.Count()} Messages 👌");
+                await Task.Delay(3000);
                 await m.DeleteAsync();
             }
             catch (Exception ex)
@@ -95,6 +108,7 @@ namespace Bot.Modules
         [Example("k!kick @Panda#8822 Good bye")]
         [RequireBotPermission(GuildPermission.KickMembers)]
         [RequireUserPermission(GuildPermission.KickMembers)]
+        [RequireContext(ContextType.Guild)]
         public async Task KickAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy]
         [Summary("The user you want to kick")]SocketGuildUser user = null, [Remainder]
         [Summary("OPTIONAL: The reason behind the kick")]string reason = null)
@@ -138,6 +152,7 @@ namespace Bot.Modules
         [Example("k!addrole @Panda#8822 Members")]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [RequireUserPermission(GuildPermission.ManageRoles)]
+        [RequireContext(ContextType.Guild)]
         public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
         {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
@@ -162,6 +177,7 @@ namespace Bot.Modules
         [Command("AddRole")]
         [Remarks("Usage: k!addrole {@role/ rolename (NO SPACES)} {@user/ user's name}")]
         [Summary("Adds a role to a user.")]
+        [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy] SocketRole role, [Remainder] SocketGuildUser user)
@@ -217,6 +233,7 @@ namespace Bot.Modules
         [Remarks("Usage: k!addrole {rolename/@role (NO SPACES)} {@user/ user's name}")]
         [Summary("Removes a role from a user.")]
         [Example("k!removerole Members Panda")]
+        [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.ManageRoles)]
         [RequireUserPermission(GuildPermission.ManageRoles)]
         public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketRole role, [Remainder] SocketGuildUser user)
@@ -245,6 +262,7 @@ namespace Bot.Modules
         [Summary("Mutes A User")]
         [Example("k!mute @Panda#8822 Have fun in silence.")]
         [RequireUserPermission(GuildPermission.MuteMembers)]
+        [RequireContext(ContextType.Guild)]
         public async Task Mute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy]
         [Summary("The user you want to mute")]SocketGuildUser user = null,
             [Summary("OPTIONAL: The reason behind the mute")][Remainder] string reason = null)
@@ -297,6 +315,7 @@ namespace Bot.Modules
         [Command("tempmute")]
         [Summary("Mutes a user for a limited time")]
         [Example("k!tempmute @Panda#8822 10 I SAID NO!")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task MuteTime([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy]
         [Summary("The user you want to tempmute")]SocketGuildUser user = null,
@@ -365,6 +384,7 @@ namespace Bot.Modules
         [Command("unmute")]
         [Summary("Unmutes a user")]
         [Example("k!unmute @Panda#8822 You're a good boy now.")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.MuteMembers)]
         public async Task Unmute([NoSelf][RequireUserHierarchy][RequireBotHigherHirachy][Summary("REQUIRED: The user you want to unmute")] SocketGuildUser user = null, [Summary("OPTIONAL: The reason behind the unmute")] [Remainder] string reason = null)
         {
@@ -396,6 +416,7 @@ namespace Bot.Modules
         [Command("ban"), Summary("Usage: k!ban {User ID} {Prune days} Reason"), Remarks("Force bans a user from the guild."), Example("k!ban 223530903773773824 You're not Welcome here ever.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
         public async Task ForceBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The ID of user you want to ban")] ulong id,
            [Summary("OPTIONAL: The amount of days of messages you want to delete from that user")]  int pruneDays = 0,
            [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
@@ -440,6 +461,7 @@ namespace Bot.Modules
         [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 3 Being a bad boy.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
         public async Task BanAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")] SocketGuildUser user = null,
           [Summary("OPTIONAL: The amount of days of messages you want to delete from that user")]  int pruneDays = 0,
            [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
@@ -477,6 +499,7 @@ namespace Bot.Modules
         [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
         public async Task BanAsync2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")]SocketGuildUser user = null,
            [Summary("OPTIONAL: The reason behind the ban")] [Remainder] string reason = null)
         {
@@ -511,6 +534,7 @@ namespace Bot.Modules
         [Command("ban"), Summary("Usage: k!ban {User ID} Reason"), Remarks("Force bans a user from the guild."), Example("k!ban 223530903773773824 You're not Welcome here ever.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
         public async Task ForceBan2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The ID of user you want to ban")] ulong id,
            [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
         {
@@ -552,6 +576,7 @@ namespace Bot.Modules
         }
         [Command("unban")]
         [Remarks("Unbans a user. However if you want the user's name has spaces I'd recommend using the ID method (you need to enable developer mode)")]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task UnbanName([Summary("The name of the user you want to unban")] string user = null, [Remainder] string reason = null)
         {
@@ -578,7 +603,7 @@ namespace Bot.Modules
             else if (user == $"{UsernameUser.User.Username}")
             {
                 await Context.Guild.RemoveBanAsync(UsernameUser.User, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
-                await ReplyAsync($"{user} has been unbanned. <a:KBtick:580851374070431774>");
+                await ReplyAsync($"{Constants.success} {user} has been unbanned.");
             }
             
         }
@@ -586,6 +611,7 @@ namespace Bot.Modules
         [Command("unban")]
         [Remarks("Unban a user with their ID. (If you don't know how search it up or use the name method)")]
         [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
         public async Task Unban([Summary("The ID of the user you want to unban")]ulong id, [Remainder] string reason = null)
         {
             var bans = await Context.Guild.GetBansAsync();
@@ -600,7 +626,7 @@ namespace Bot.Modules
                 reason = "[No reason was provided]";
             }
             await Context.Guild.RemoveBanAsync(theUser.User, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" });
-            await ReplyAsync($"<a:KBtick:580851374070431774> **{theUser.User}** of ID ({id}) has been unbanned. ");
+            await ReplyAsync($"{Constants.success} **{theUser.User}** of ID ({id}) has been unbanned. ");
              
         }
 
@@ -608,6 +634,7 @@ namespace Bot.Modules
         [Summary("Bans and unbans a user instantly. The purpose of this is to get rid of the user's messages.")]
         [Example("k!softban @Panda#8822 2 Spamming")]
         [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task SoftBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy][Summary("The user to softban")] SocketGuildUser user = null,
                                   [Summary("Number of days for which to prune the user's messages (1 day is default)")] int pruneDays = 1,
@@ -646,6 +673,7 @@ namespace Bot.Modules
         [Command("sban"), Alias("soft", "softban")]
         [Example("k!sban @Panda#8822 Spam harder next time.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         [Summary("Bans a user and immediately unbans them.")]
         public async Task SoftBan2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy][Summary("The user to softban")] SocketGuildUser user = null,
@@ -686,6 +714,7 @@ namespace Bot.Modules
         [Example("k!setnick Panda NotPanda")]
         [RequireUserPermission(GuildPermission.ManageNicknames)]
         [RequireBotPermission(GuildPermission.ManageNicknames)]
+        [RequireContext(ContextType.Guild)]
         public async Task Nickname([RequireUserHierarchy][RequireBotHigherHirachy]SocketGuildUser username = null, [Remainder]string name = null)
         {
             if (username == null)
@@ -697,18 +726,18 @@ namespace Bot.Modules
         }
 
         [Command("list-bans", RunMode = RunMode.Async)]
+        [Alias("banlist", "ban-list", "listbans", "serverbans", "server-bans")]
         [Example("k!list-bans")]
         [Summary("List the users currently banned on the server")]
+        [RequireContext(ContextType.Guild)]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireUserPermission(GuildPermission.BanMembers)]
         public async Task ListBans()
         {
-            var embed = new EmbedBuilder();
-            embed.ThumbnailUrl = Context.Guild.IconUrl;
-            StringBuilder sb = new StringBuilder();
+            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+            List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
             try
             {
-                embed.Title = $"Ban list of '{Context.Guild.Name}':";
                 var bans = await Context.Guild.GetBansAsync();
                 if (bans.Count > 0)
                 {
@@ -719,29 +748,64 @@ namespace Bot.Modules
                         {
                             reason = "[No Reason was set]";
                         }
-                        sb.AppendLine($":black_medium_small_square: **{ban.User.Username}** (*{reason}*) \nID: **{ban.User.Id}**");
+                        fields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = ban.User.Username,
+                            Value = $"ID: **{ban.User.Id}** \nReason: **{reason}**",
+                            IsInline = false
+                        });
+                        if (fields.Count > 4)
+                        {
+                            List<EmbedFieldBuilder> firstpart = new List<EmbedFieldBuilder>();
+                            firstpart.AddRange(fields);
+                            fields.RemoveRange(0, 4);
+                            firstpart.RemoveRange(4, fields.Count);
+                            pages.Add(new PaginatedMessage.Page
+                            {
+                                Author = new EmbedAuthorBuilder { Name = $"Ban list of \"{Context.Guild.Name}\":" },
+                                Description = $"Count: {bans.Count} \nOnly the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number.",
+                                Fields = new List<EmbedFieldBuilder>(firstpart)
+                            });
+
+                        }
                     }
+                    pages.Add(new PaginatedMessage.Page
+                    {
+                        Author = new EmbedAuthorBuilder { Name = $"Ban list of \"{Context.Guild.Name}\":" },
+                        Description = $"Count: {bans.Count} \nOnly the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number.",
+                        Fields = new List<EmbedFieldBuilder>(fields)
+                    });
+                    var pager = new PaginatedMessage
+                    {
+                        Pages = pages,
+                        Color = Color.DarkGreen,
+                        FooterOverride = null,
+                        Options = PaginatedAppearanceOptions.Default,
+                    };
+                        await PagedReplyAsync(pager, new ReactionList
+                        {
+                            Forward = true,
+                            Backward = true,
+                            Jump = true,
+                            Trash = true
+                        }, true);
                 }
                 else
                 {
-                    sb.AppendLine($"Looks like its empty in here... \nI guess there's much space to fill :wink:");
+                    await ReplyAsync("Looks like its empty in here... \nI guess there's much space to fill :wink:");
                 }
-
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                embed.Title = $"Error attempting to list bans for **{Context.Guild.Name}**";
-                sb.AppendLine($"[{ex.Message}]");
+                await ReplyAsync($"Error: {e.Message}");
             }
-            embed.Description = sb.ToString();
-            embed.WithColor(new Color(0, 0, 255));
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
         }
 
         [Command("createtext")]
         [Remarks("Make A Text Channel")]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
+        [RequireContext(ContextType.Guild)]
         public async Task Text(string channelname = null)
         {
             if (channelname == null)
@@ -754,6 +818,7 @@ namespace Bot.Modules
         [Remarks("Make A Voice Channel")]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
+        [RequireContext(ContextType.Guild)]
         public async Task Voice([Remainder]string channelname = null)
         {
             if (channelname == null)
@@ -767,6 +832,7 @@ namespace Bot.Modules
         [Remarks("Make A Announcement")]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
+        [RequireContext(ContextType.Guild)]
         public async Task Announce([Remainder]string announcement = null)
         {
             if (announcement == null)
@@ -824,31 +890,71 @@ namespace Bot.Modules
         [Remarks("You and the bot should be able to Manage Emojis for this.")]
         [RequireUserPermission(GuildPermission.ManageEmojis)]
         [RequireBotPermission(GuildPermission.ManageEmojis)]
-        public async Task Emojisteal([Summary("The emoji you want to steal.")]string input)
+        [RequireContext(ContextType.Guild)]
+        public async Task Emojisteal([Summary("The emoji you want to steal.")]string input = null)
         {
+            if (input == null)
+            {
+                await ReplyAsync($"{Constants.fail} Please include the emoji you want to steal. 😈");
+                return;
+            }
             try
             {
                 var emote = Emote.Parse(input);
+                var msg = "";
                 using (var webclient = new WebClient())
                 {
-                    HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(emote.Url);
+                    HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(emote.Url);
                     HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse();
                     Stream stream = httpWebReponse.GetResponseStream();
-
-                    await Context.Guild.CreateEmoteAsync(emote.Name, new Discord.Image(stream));
+                    try
+                    {
+                        var emoji = await Context.Guild.CreateEmoteAsync(emote.Name, new Image(stream));
+                        msg = $"<a:SuccessKB:639875484972351508> Succesfully added {emoji} with the name of \"**{emoji.Name}**\"";
+                    }
+                    catch
+                    {
+                        await ReplyAsync($"Something went wrong... Possible errors: Maximum amount of emojis was reached or not a custom emoji.");
+                    }
                     stream.Dispose();
                 }
-                await ReplyAsync($"<a:SuccessKB:639875484972351508> Succesfully added the emoji with the name of \"**{emote.Name}**\"");
+                await ReplyAsync(msg);
             }
-            catch
+            catch (Exception e)
             {
-                await ReplyAsync("Something went wrong... did you input a custom emoji which isn't in the server?");
+                if (Context.Message.Attachments.Count == 1)
+                {
+                    try
+                    {
+                        var msg = "";
+                        foreach (var attach in Context.Message.Attachments)
+                        {
+                            using (var webclient = new WebClient())
+                            {
+                                HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(attach.Url);
+                                HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                                Stream stream = httpWebReponse.GetResponseStream();
+
+                                var emoji = await Context.Guild.CreateEmoteAsync(input, new Image(stream));
+                                msg = $"<a:SuccessKB:639875484972351508> Succesfully added {emoji} with the name of \"**{input}**\"";
+                                stream.Dispose();
+                            }
+                            await ReplyAsync(msg);
+                        }
+                    }
+                    catch
+                    {
+                        await ReplyAsync("Something went wrong... Possible errors: Maximum amount of emojis was reached, invalid characters for the name, or the file size is too big for an emoji.");
+                    }
+                }
             }
         }
+
         [Command("move"), Summary("Moves a message from one channel to another."), Example("k!move 663803219440566272 #boo cool reason")]
         [Cooldown(10, true)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
         public async Task Run(ulong messageId, SocketTextChannel channel, [Remainder] string reason = null)
         {
             // Ignore bots and same channel-to-channel requests
@@ -910,8 +1016,456 @@ namespace Bot.Modules
         [Cooldown(10, true)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
         [RequireBotPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
         public async Task Run(SocketTextChannel channel, ulong messageId, [Remainder] string reason = null)
             => await Run(messageId, channel, reason);
+
+        public static string[] Formats =
+        {
+            // Used to parse stuff like 1d14h2m11s and 1d 14h 2m 11s could add/remove more if needed
+
+            "d'd'",
+            "d'd'm'm'", "d'd 'm'm'",
+            "d'd'h'h'", "d'd 'h'h'",
+            "d'd'h'h's's'", "d'd 'h'h 's's'",
+            "d'd'm'm's's'", "d'd 'm'm 's's'",
+            "d'd'h'h'm'm'", "d'd 'h'h 'm'm'",
+            "d'd'h'h'm'm's's'", "d'd 'h'h 'm'm 's's'",
+
+            "h'h'",
+            "h'h'm'm'", "h'h m'm'",
+            "h'h'm'm's's'", "h'h 'm'm 's's'",
+            "h'h's's'", "h'h s's'",
+            "h'h'm'm'", "h'h 'm'm'",
+            "h'h's's'", "h'h 's's'",
+
+            "m'm'",
+            "m'm's's'", "m'm 's's'",
+
+            "s's'"
+        };
+        #region Channel locking/unlocking
+        [Command("lock")]
+        [Summary("Locks a channel")]
+        [RequireContext(ContextType.Guild)]
+        [Cooldown(10)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task ChannelLock([Summary("The text channel you want to lock")]IGuildChannel textChannel = null, [Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The time you want to lock the channel for")]string time = null)
+        {
+            if (reason == null)
+                reason = "[No reason was provided]";
+            if (time == null)
+            {
+                try
+                {
+                    textChannel = textChannel ?? (IGuildChannel)Context.Channel;
+                    //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason}",
+                        Color = Color.Orange,
+
+                    };
+                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    {
+                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    }
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("Something went wrong!");
+                }
+            }
+            else //if time is specified
+            {
+                try
+                {
+                    //sends locked message
+                    var timeset = TimeSpan.ParseExact(time, Formats, CultureInfo.CurrentCulture);
+                    textChannel = textChannel ?? (IGuildChannel)Context.Channel;
+                    //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason} \n**Duration:** {timeset}",
+                        Color = Color.Orange,
+
+                    };
+                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    {
+                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    }
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+
+                    await Task.Delay(timeset);
+                    //unlocks after the time passes
+                    try
+                    {
+                        textChannel = textChannel ?? (IGuildChannel)Context.Channel;
+                        //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                        EmbedBuilder builder2 = new EmbedBuilder
+                        {
+                            Description = $"🔓  <#{textChannel.Id}> Unlocked \n \n**Reason:** Lock duration finished.",
+                            Color = Color.DarkGreen,
+
+                        };
+                        foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                        {
+                            var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                            if (role.Name != "Muted")
+                                await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                        }
+                        await Context.Channel.SendMessageAsync("", false, builder2.Build());
+                    }
+                    catch
+                    {
+                        await Context.Channel.SendMessageAsync("Something went wrong!");
+                    }
+
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("Something went wrong!");
+                }
+            }
+        }
+
+        [Command("lock")]
+        [Summary("Locks a channel")]
+        [RequireContext(ContextType.Guild)]
+        [Cooldown(10)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task ChannelLock([Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The time you want to lock the channel for")]string time = null)
+        {
+            if (reason == null)
+                reason = "[No reason was provided]";
+            if (time == null)
+            {
+                try
+                {
+                    var textChannel = (IGuildChannel)Context.Channel;
+                    //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason}",
+                        Color = Color.Orange,
+
+                    };
+                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    {
+                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    }
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("Something went wrong!");
+                }
+            }
+            else //if time is specified
+            {
+                try
+                {
+                    //sends locked message
+                    var timeset = TimeSpan.ParseExact(time, Formats, CultureInfo.CurrentCulture);
+                    var textChannel = (IGuildChannel)Context.Channel;
+                    //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason} \n**Duration:** {timeset}",
+                        Color = Color.Orange,
+
+                    };
+                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    {
+                        var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                    }
+                    await Context.Channel.SendMessageAsync("", false, builder.Build());
+
+                    await Task.Delay(timeset);
+                    //unlocks after the time passes
+                    try
+                    {
+                        textChannel = textChannel ?? (IGuildChannel)Context.Channel;
+                        //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                        EmbedBuilder builder2 = new EmbedBuilder
+                        {
+                            Description = $"🔓  <#{textChannel.Id}> Unlocked \n \n**Reason:** Lock duration finished.",
+                            Color = Color.DarkGreen,
+
+                        };
+                        foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                        {
+                            var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                            if (role.Name != "Muted")
+                                await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                        }
+                        await Context.Channel.SendMessageAsync("", false, builder2.Build());
+                    }
+                    catch
+                    {
+                        await Context.Channel.SendMessageAsync("Something went wrong!");
+                    }
+
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("Something went wrong!");
+                }
+            }
+        }
+
+        [Command("unlock")]
+        [Summary("Unlocks a channel")]
+        [RequireContext(ContextType.Guild)]
+        [Cooldown(10)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task ChannelUnLock([Summary("The text channel you want to unlock")]IGuildChannel textChannel = null, [Summary("OPTIONAL: The reason behind unlocking the channel")]string reason = null)
+        {
+            if (reason == null)
+                reason = "[No reason was provided]";
+            try
+            {
+                textChannel = textChannel ?? (IGuildChannel)Context.Channel;
+                //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Description = $"🔓  <#{textChannel.Id}> Unlocked \n \n**Reason:** {reason}",
+                    Color = Color.DarkGreen,
+
+                };
+                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                {
+                    var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    if (role.Name != "Muted")
+                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                }
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync("Something went wrong!");
+            }
+        }
+
+        [Command("unlock")]
+        [Summary("Unlocks a channel")]
+        [RequireContext(ContextType.Guild)]
+        [Cooldown(10)]
+        [RequireUserPermission(GuildPermission.ManageChannels)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task ChannelUnLock([Summary("OPTIONAL: The reason behind unlocking the channel")]string reason = null)
+        {
+            if (reason == null)
+                reason = "[No reason was provided]";
+            try
+            {
+                var textChannel = (IGuildChannel)Context.Channel;
+                //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Description = $"🔓  <#{textChannel.Id}> Unlocked \n \n**Reason:** {reason}",
+                    Color = Color.DarkGreen,
+
+                };
+                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                {
+                    var perms = textChannel.GetPermissionOverwrite(role).GetValueOrDefault();
+                    if (role.Name != "Muted")
+                        await textChannel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                }
+                await Context.Channel.SendMessageAsync("", false, builder.Build());
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync("Something went wrong!");
+            }
+        }
+        #endregion
+
+        #region Server locking/unlocking
+        [Command("lock-server")]
+        [Summary("Locks the whole server.")]
+        [RequireContext(ContextType.Guild)]
+        [Cooldown(15)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task ServerLock([Summary("OPTIONAL: The reason behind locking the server")]string reason = null, [Summary("OPTIONAL: The time you want to lock the server for")]string time = null)
+        {
+            if (reason == null)
+                reason = "[No reason was provided]";
+            var guild = Context.Guild;
+            EmbedBuilder emb = new EmbedBuilder()
+                .WithColor(Color.DarkerGrey)
+                .WithDescription("🔐 Locking server... this may take some time.");
+            var msg = await ReplyAsync("", false, emb.Build());
+            if (time == null)
+            {
+                try
+                {
+                    //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Description = $"🔒  **{guild.Name}** Locked \n \n**Reason:** {reason}",
+                        Color = Color.Orange,
+
+                    };
+                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    {
+                        foreach (var channel in guild.TextChannels)
+                        {
+                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                        }
+                        foreach (var channel in guild.VoiceChannels)
+                        {
+                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Deny));
+                        }
+                    }
+                    await msg.ModifyAsync(m => m.Embed = builder.Build());
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("Something went wrong!");
+                }
+            }
+            else //if time is specified
+            {
+                try
+                {
+                    //sends locked message
+                    var timeset = TimeSpan.ParseExact(time, Formats, CultureInfo.CurrentCulture);
+                    //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                    EmbedBuilder builder = new EmbedBuilder
+                    {
+                        Description = $"🔒  **{guild.Name}** Locked \n \n**Reason:** {reason} \n**Duration:** {timeset}",
+                        Color = Color.Orange,
+
+                    };
+                    foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                    {
+                        foreach (var channel in guild.TextChannels)
+                        {
+                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Deny));
+                        }
+                        foreach (var channel in guild.VoiceChannels)
+                        {
+                            var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Deny));
+                        }
+                    }
+                    await msg.ModifyAsync(m => m.Embed = builder.Build());
+
+                    await Task.Delay(timeset);
+                    //unlocks after the time passes
+                    try
+                    {
+                        //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                        EmbedBuilder builder2 = new EmbedBuilder
+                        {
+                            Description = $"🔓  **{guild.Name}** Unlocked \n \n**Reason:** Lock duration finished.",
+                            Color = Color.DarkGreen,
+
+                        };
+                        foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                        {
+                            foreach (var channel in guild.TextChannels)
+                            {
+                                var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                                if (role.Name != "Muted")
+                                    await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                            }
+                            foreach (var channel in guild.VoiceChannels)
+                            {
+                                var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                                if (role.Name != "Muted")
+                                    await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Allow));
+                            }
+                        }
+                        await Context.Channel.SendMessageAsync("", false, builder2.Build());
+                    }
+                    catch
+                    {
+                        await Context.Channel.SendMessageAsync("Something went wrong!");
+                    }
+
+                }
+                catch
+                {
+                    await Context.Channel.SendMessageAsync("Something went wrong!");
+                }
+            }
+        }
+
+        [Command("unlock-server")]
+        [Summary("Unlocks the whole server")]
+        [RequireContext(ContextType.Guild)]
+        [Cooldown(15)]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task ServerUnLock([Summary("OPTIONAL: The reason behind unlocking the server")]string reason = null)
+        {
+            if (reason == null)
+                reason = "[No reason was provided]";
+            EmbedBuilder emb = new EmbedBuilder()
+                .WithColor(Color.DarkerGrey)
+                .WithDescription("🔐 Unlocking server... this may take some time.");
+            var msg = await ReplyAsync("", false, emb.Build());
+            var guild = Context.Guild;
+            try
+            {
+                //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
+                EmbedBuilder builder = new EmbedBuilder
+                {
+                    Description = $"🔓  **{guild.Name}** Unlocked \n \n**Reason:** {reason}",
+                    Color = Color.DarkGreen,
+
+                };
+                foreach (IRole role in Context.Guild.Roles.Where(r => !r.Permissions.ManageMessages))
+                {
+                    foreach (var channel in guild.TextChannels)
+                    {
+                        var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        if (role.Name != "Muted")
+                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(sendMessages: PermValue.Allow));
+                    }
+                    foreach (var channel in guild.VoiceChannels)
+                    {
+                        var perms = channel.GetPermissionOverwrite(role).GetValueOrDefault();
+
+                        if (role.Name != "Muted")
+                            await channel.AddPermissionOverwriteAsync(role, perms.Modify(connect: PermValue.Allow));
+                    }
+                }
+                await msg.ModifyAsync(m => m.Embed = builder.Build());
+            }
+            catch
+            {
+                await Context.Channel.SendMessageAsync("Something went wrong!");
+            }
+        }
+        #endregion
+
 
         private async Task<IMessage> FindMessageInUnknownChannel(ulong messageId)
         {
@@ -945,6 +1499,7 @@ namespace Bot.Modules
         [Summary("Direct message a user with a warning")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
         public async Task Warn([RequireUserHierarchy][Summary("The user you want to warn/strike")]SocketGuildUser user = null, 
            [Summary("OPTIONAL: The reason behind the warning")] [Remainder] string reason = null)
         {
@@ -999,46 +1554,251 @@ namespace Bot.Modules
                     await ReplyAsync("", false, error.Build()).ConfigureAwait(false);
                 }
             var server = Context.Guild.Name;
-            var warned_user = $"{user.Username}#{user.Discriminator} \n({user.Id})";
+            var warned_username = $"{user}";
+            var warned_userid = user.Id;
             var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
             var moderator = $"{Context.User.Username}#{Context.User.Discriminator}";
-            var time = DateTime.Now;
-            var newWarn = new WarnEntry(moderator,warned_user,time, reason);
+            var time = DateTime.UtcNow;
+            var newWarn = new WarnEntry(moderator,warned_username,warned_userid,time, reason);
             guild.Warns.Add(newWarn);
             var warnings = guild.Warns.ToList();
             guild.Modify(g => g.SetWarns(warnings), _globalGuildAccounts);            
 
         }
 
-        [Command("warnings"),Alias("strikes","warnlist","strikelist","listwarns","liststrikes")]
+        [Command("warnings"),Alias("strikes", "warns","warnlist","strikelist","listwarns","liststrikes")]
         [Summary("Lists the strikes/warnings of a user. Only staff can use it.")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
-        public async Task ListWarns()
+        [RequireContext(ContextType.Guild)]
+        public async Task ListWarns([Remainder] [Summary("OPTIONAL: The user you want to see their warnings.")] SocketGuildUser user = null)
         {
-           
-            var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
-            var Warns = _globalGuildAccounts.GetById(Context.Guild.Id).Warns;
-            EmbedBuilder embed = new EmbedBuilder()
-                .WithColor(Color.Blue)
-                .WithTitle("Warnings:")
-                .WithFooter($"Requested by: {Context.User}", Context.User.GetAvatarUrl())
-                .WithCurrentTimestamp()
-                .WithDescription($"Count: {guild.Warns.Count} \n \n");
-            for (var i = 0; i < Warns.Count; i++)
+            if (user == null)
             {
-                embed.AddField($"\n[{i + 1}] {Warns[i].Warned_user:f}", $"By: {Warns[i].Moderator} \nReason: {Warns[i].Reason} \nDate: {Warns[i].Time}", false);
-            }
-            await ReplyAsync("",false, embed.Build());
+                var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
+                var Warns = _globalGuildAccounts.GetById(Context.Guild.Id).Warns;
+                List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+                List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+                for (var i = 0; i < Warns.Count; i++)
+                {
 
+                    //List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+                    fields.Add(new EmbedFieldBuilder()
+                    {
+                        Name = $"[{i + 1}] {Warns[i].Warned_username}\n({Warns[i].Warned_userid})",
+                        Value = $"By: {Warns[i].Moderator} \nReason: {Warns[i].Reason} \nDate: {Warns[i].Time}",
+                        IsInline = false
+                    });
+                    if (fields.Count > 3)
+                    {
+                        List<EmbedFieldBuilder> firstpart = new List<EmbedFieldBuilder>();
+                        firstpart.AddRange(fields);
+                        fields.RemoveRange(0, 3);
+                        firstpart.RemoveRange(3, fields.Count);
+                        pages.Add(new PaginatedMessage.Page
+                        {
+                            Author = new EmbedAuthorBuilder { Name = "Server Warnings:" },
+                            Description = $"Count: {guild.Warns.Count} \n\nDates are in mm/dd format and time is in UTC. Only the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number",
+                            Fields = new List<EmbedFieldBuilder>(firstpart)
+                        });
+
+                    }
+                }
+                pages.Add(new PaginatedMessage.Page
+                {
+                    Author = new EmbedAuthorBuilder { Name = "Server Warnings:" },
+                    Description = $"Count: {guild.Warns.Count} \n \nDates are in mm/dd format and time is in UTC. Only the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number",
+                    Fields = new List<EmbedFieldBuilder>(fields)
+                });
+                var pager = new PaginatedMessage
+                {
+                    Pages = pages,
+                    Color = Color.DarkGreen,
+                    FooterOverride = null,
+                    Options = PaginatedAppearanceOptions.Default,
+                };
+                if (Warns.Count != 0)
+                {
+                    await PagedReplyAsync(pager, new ReactionList
+                    {
+                        Forward = true,
+                        Backward = true,
+                        First = true,
+                        Last = true,
+                        Jump = true,
+                        Trash = true
+                    }, true);
+                }
+                else
+                {
+                    await PagedReplyAsync(pager, new ReactionList
+                    {
+                        Forward = false,
+                        Backward = false,
+                        Jump = false,
+                        Trash = true
+                    }, true);
+                }
+            }
+            else
+            {
+                var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
+                var Warns = _globalGuildAccounts.GetById(Context.Guild.Id).Warns;
+                List<WarnEntry> userwarns = Warns.Where(x => x.Warned_userid == user.Id).ToList();
+                List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+                List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+                for (var i = 0; i < Warns.Count; i++)
+                {
+                    if (userwarns.Count == 0)
+                        break;
+                    if (Warns[i].Warned_userid != user.Id)
+                        i += 1;
+                    if (Warns[i].Warned_userid == user.Id)
+                    {
+
+                        fields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = $"[{i + 1}]",
+                            Value = $"By: {Warns[i].Moderator} \nReason: {Warns[i].Reason} \nDate: {Warns[i].Time}",
+                            IsInline = false
+                        });
+                        if (fields.Count > 3)
+                        {
+                            List<EmbedFieldBuilder> firstpart = new List<EmbedFieldBuilder>();
+                            firstpart.AddRange(fields);
+                            fields.RemoveRange(0, 3);
+                            firstpart.RemoveRange(3, fields.Count);
+                            pages.Add(new PaginatedMessage.Page
+                            {
+                                Author = new EmbedAuthorBuilder { Name = $"{user} Warnings:" },
+                                Description = $"Count: {userwarns.Count} \n\nDates are in mm/dd format and time is in UTC. Only the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number",
+                                Fields = new List<EmbedFieldBuilder>(firstpart)
+                            });
+
+                        }
+                    }
+                }
+                pages.Add(new PaginatedMessage.Page
+                {
+                    Author = new EmbedAuthorBuilder { Name = $"{user} Warnings:" },
+                    Description = $"Count: {userwarns.Count} \n \nDates are in mm/dd format and time is in UTC. Only the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number",
+                    Fields = new List<EmbedFieldBuilder>(fields)
+                });
+                var pager = new PaginatedMessage
+                {
+                    Pages = pages,
+                    Color = Color.DarkGreen,
+                    FooterOverride = null,
+                    Options = PaginatedAppearanceOptions.Default,
+                };
+                if (userwarns.Count != 0)
+                {
+                    await PagedReplyAsync(pager, new ReactionList
+                    {
+                        Forward = true,
+                        Backward = true,
+                        Jump = true,
+                        Trash = true
+                    }, true);
+                }
+                else if (userwarns.Count == 0)
+                {
+                    await PagedReplyAsync(pager, new ReactionList
+                    {
+                        Forward = false,
+                        Backward = false,
+                        Jump = false,
+                        Trash = true
+                    }, true);
+                }
+            }
+           
         }
-       
-        
+
+        [Command("mywarnings"), Alias("mystrikes", "mywarns", "mywarnlist", "mystrikelist", "mylistwarns", "myliststrikes")]
+        [Summary("Lists your strikes/warnings (if any). Any user can use this command.")]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
+        [RequireContext(ContextType.Guild)]
+        public async Task MyListWarns()
+        {
+            var server = _globalGuildAccounts.GetById(Context.Guild.Id);
+            var warns = server.Warns.ToList();
+            List<WarnEntry> userwarns = warns.Where(x => x.Warned_userid == Context.User.Id).ToList();
+            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+            List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+            for (var i = 0; i < warns.Count; i++)
+            {
+                if (userwarns.Count == 0)
+                    break;
+                if (warns[i].Warned_userid != Context.User.Id)
+                    i += 1;
+                if (warns[i].Warned_userid == Context.User.Id)
+                {
+                    fields.Add(new EmbedFieldBuilder()
+                    {
+                        Name = $"[{i + 1}]",
+                        Value = $"By: {warns[i].Moderator} \nReason: {warns[i].Reason} \nDate: {warns[i].Time}",
+                        IsInline = false
+                    });
+                    if (fields.Count > 3)
+                    {
+                        List<EmbedFieldBuilder> firstpart = new List<EmbedFieldBuilder>();
+                        firstpart.AddRange(fields);
+                        fields.RemoveRange(0, 3);
+                        firstpart.RemoveRange(3, fields.Count);
+                        pages.Add(new PaginatedMessage.Page
+                        {
+                            Author = new EmbedAuthorBuilder { Name = "Your Warnings:" },
+                            Description = $"Count: {userwarns.Count} \n\nDates are in mm/dd format and time is in UTC. Only the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number",
+                            Fields = new List<EmbedFieldBuilder>(firstpart)
+                        });
+
+                    }
+                }
+            }
+            pages.Add(new PaginatedMessage.Page
+            {
+                Author = new EmbedAuthorBuilder { Name = "Your Warnings:" },
+                Description = $"Count: {userwarns.Count} \n \nDates are in mm/dd format and time is in UTC. Only the user who used the command can use the reactions, and if you want to jump through pages react with :1234: and send the page's number",
+                Fields = new List<EmbedFieldBuilder>(fields)
+            });
+            var pager = new PaginatedMessage
+            {
+                Pages = pages,
+                Color = Color.DarkGreen,
+                FooterOverride = null,
+                Options = PaginatedAppearanceOptions.Default,
+            };
+            if (userwarns.Count != 0)
+            {
+                await PagedReplyAsync(pager, new ReactionList
+                {
+                    Forward = true,
+                    Backward = true,
+                    First = true,
+                    Last = true,
+                    Jump = true,
+                    Trash = true
+                }, true);
+            }
+            else if (userwarns.Count == 0)
+            {
+                await PagedReplyAsync(pager, new ReactionList
+                {
+                    Forward = false,
+                    Backward = false,
+                    Jump = false,
+                    Trash = true
+                }, true);
+            }
+        }
+
         [Command("removewarn")]
         [Alias("removestrike", "deletestrike","deletewarn", "remove-warn", "delete-warn", "remove-strike", "delete-strike", "clear-warn", "clear-strike")]
-        [Summary("Direct message a user with a warning")]
+        [Summary("Remove a strike/warning using the index found between the [] in the k!warnings")]
         [RequireBotPermission(GuildPermission.EmbedLinks)]
         [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
         public async Task RemoveWarn([Summary("The index of the warning/strike you want to delete")]int i)
         {
             var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
@@ -1050,12 +1810,89 @@ namespace Bot.Modules
                 Warns.RemoveAt(i - 1);
                 var warnings = guild.Warns.ToList();
                 guild.Modify(g => g.SetWarns(warnings), _globalGuildAccounts);
+                _globalGuildAccounts.SaveAccounts(guild.Id);
                 responseString = $"Deleted the warning with index **{i}**!";
             }
 
             await ReplyAsync(responseString);
         }
-
+        [Command("clearwarnings")]
+        [Alias("clear-warns", "clearstrikes", "clear-strikes", "clearwarns" , "clear-warnings")]
+        [Summary("Clear all warnings for the server OR for specific user.")]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
+        public async Task ClearWarns([Summary("OPTIONAL: The user you want to clear their warns/strikes.")] SocketUser user = null)
+        {
+            var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
+            var Warns = _globalGuildAccounts.GetById(Context.Guild.Id).Warns;
+            if (user != null)
+            {
+                var userwarns = Warns.ToList().Where(w => w.Warned_userid == user.Id).ToList();
+                if (userwarns.Count != 0)
+                {
+                    foreach (var warn in userwarns)
+                    {
+                        Warns.Remove(warn);
+                    }
+                    guild.Modify(g => g.SetWarns(Warns.ToList()), _globalGuildAccounts);
+                    _globalGuildAccounts.SaveAccounts(guild.Id);
+                    await ReplyAsync($"{Constants.success} Successfully cleared all warnings for **{user}** ({user.Id})");
+                }
+                else
+                {
+                    await ReplyAsync($"{Constants.fail} **{user}** has no warnings to clear!");
+                }
+            }
+            else
+            {
+                if (Warns.Count != 0)
+                {
+                    Warns = new List<WarnEntry>();
+                    guild.Modify(g => g.SetWarns(Warns.ToList()), _globalGuildAccounts);
+                    _globalGuildAccounts.SaveAccounts(guild.Id);
+                    await ReplyAsync($"{Constants.success} Successfully cleared all warnings for this server!");
+                }
+                else
+                {
+                    await ReplyAsync($"{Constants.fail} This server has no warnings to clear!");
+                }
+            }
+        }
+        [Command("clearwarnings")]
+        [Alias("clear-warns", "clearstrikes", "clear-strikes", "clearwarns", "clear-warnings")]
+        [Summary("Clear all warnings for a specific user.")]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
+        [RequireUserPermission(GuildPermission.ManageMessages)]
+        [RequireContext(ContextType.Guild)]
+        public async Task ClearWarns([Summary("The user you want to clear their warns/strikes.")] SocketUser user, int amount)
+        {
+            if (amount == 0)
+            {
+                await ReplyAsync($"{Constants.fail} You want to remove 0 warnings? Well I can only remove 1+");
+            }
+            var guild = _globalGuildAccounts.GetFromDiscordGuild(Context.Guild);
+            var Warns = _globalGuildAccounts.GetById(Context.Guild.Id).Warns;
+            var userwarns = Warns.ToList().Where(w => w.Warned_userid == user.Id).ToList();
+            if (userwarns.Count != 0 && userwarns.Count >= amount)
+            {
+                foreach (var warn in userwarns.Take(amount).ToList())
+                {
+                    Warns.Remove(warn);
+                }
+                guild.Modify(g => g.SetWarns(Warns.ToList()), _globalGuildAccounts);
+                _globalGuildAccounts.SaveAccounts(guild.Id);
+                await ReplyAsync($"{Constants.success} Successfully cleared {amount} warning(s) for **{user}** ({user.Id})");
+            }
+            else if (userwarns.Count != 0 && userwarns.Count < amount)
+            {
+                await ReplyAsync($"{Constants.fail} **{user}** doesn't have {amount} warnings, they only have {userwarns.Count}.");
+            }
+            else
+            {
+                await ReplyAsync($"{Constants.fail} **{user}** has no warnings to clear!");
+            }
+        }
         //end
     }
 }

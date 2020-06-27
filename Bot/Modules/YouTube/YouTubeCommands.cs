@@ -29,7 +29,7 @@ namespace Bot.Modules.YouTube
         //Command that links just one video normally so it has play button
         [Command("ysearch", RunMode = RunMode.Async)]
         [Alias("ytsearch", "yt", "youtube", "youtubesearch")]
-        [Ratelimit(6, 1, Measure.Minutes, RatelimitFlags.None)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [RequireBotPermission(ChannelPermission.EmbedLinks)]
         [Summary("Search YouTube for a specific keyword")]
         public async Task SearchYouTube([Remainder] string args = "")

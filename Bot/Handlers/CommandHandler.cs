@@ -22,8 +22,9 @@ namespace Bot.Handlers
         private readonly GlobalGuildAccounts _globalGuildAccounts;
         private readonly GlobalUserAccounts _globalUserAccounts;
         private readonly RoleByPhraseProvider _roleByPhraseProvider;
+        private readonly Logger _logger;
 
-        public CommandHandler(DiscordSocketClient client, CommandService cmdService, IServiceProvider serviceProvider, GlobalGuildAccounts globalGuildAccounts, GlobalUserAccounts globalUserAccounts, RoleByPhraseProvider roleByPhraseProvider)
+        public CommandHandler(DiscordSocketClient client, CommandService cmdService, IServiceProvider serviceProvider, GlobalGuildAccounts globalGuildAccounts, GlobalUserAccounts globalUserAccounts, RoleByPhraseProvider roleByPhraseProvider, Logger logger)
         {
             _client = client;
             _cmdService = cmdService;
@@ -31,7 +32,7 @@ namespace Bot.Handlers
             _globalGuildAccounts = globalGuildAccounts;
             _globalUserAccounts = globalUserAccounts;
             _roleByPhraseProvider = roleByPhraseProvider;
-
+            _logger = logger;
         }
 
         public async Task InitializeAsync()
@@ -64,18 +65,28 @@ namespace Bot.Handlers
          public async Task HandleCommandAsync(SocketMessage s)
          {
              if (!(s is SocketUserMessage msg)) { return; }
-             if (msg.Channel is SocketDMChannel) { return; }
+             //if (msg.Channel is SocketDMChannel) { return; }
              if (msg.Author.IsBot) { return; }
-            var user = _globalUserAccounts.GetById(msg.Author.Id);
-            if (user.Blacklisted == true) { return; }
             var context = new MiunieCommandContext(_client, msg, _globalUserAccounts);
-            await _roleByPhraseProvider.EvaluateMessage(
-                 context.Guild,
-                 context.Channel,
-                 context.Message.Content,
-                 (SocketGuildUser)context.User
-             );
-
+            if (!(msg.Channel is SocketDMChannel))
+            {
+                try
+                {
+                    var user = _globalUserAccounts.GetById(msg.Author.Id);
+                    var guild = _globalGuildAccounts.GetById(context.Guild.Id);
+                    if (user.Blacklisted == true || guild.Blacklisted == true) { return; }
+                }
+                catch
+                {
+                    await _logger.Log(LogSeverity.Critical, "CommandHandler.cs", "User/Guild.json not found.");
+                }
+                await _roleByPhraseProvider.EvaluateMessage(
+                     context.Guild,
+                     context.Channel,
+                     context.Message.Content,
+                     (SocketGuildUser)context.User
+                 );
+            }
              var argPos = 0;
              if (msg.HasStringPrefix("k!", ref argPos)
                 || msg.HasMentionPrefix(_client.CurrentUser, ref argPos)
@@ -83,6 +94,14 @@ namespace Bot.Handlers
              {
                  var prefix = "k!";
                  var cmdSearchResult = _cmdService.Search(context, argPos);
+                CommandMatch cmd = cmd;
+                foreach(var cmds in cmdSearchResult.Commands)
+                {
+                    if (cmdSearchResult.IsSuccess)
+                    {
+                        cmd = cmds;
+                    }
+                }
                  if (!cmdSearchResult.IsSuccess) { return; }
 
                  context.RegisterCommandUsage();
@@ -92,8 +111,19 @@ namespace Bot.Handlers
  #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
                  executionTask.ContinueWith(task =>
                  {
+                     if (!task.Result.IsSuccess && (task.Result.Error == CommandError.Unsuccessful || task.Result.ErrorReason.Contains("Cooldown")))
+                     {
+                         var guild = "";
+                         if ((msg.Channel is SocketDMChannel))
+                         {
+                             guild = "DMs";
+                         }
+                         else
+                             guild = $"{context.Guild.Id}";
+                         _logger.Log(LogSeverity.Error, $"Guild:{guild} - User:{context.User.Id}", task.Result.ErrorReason);
+                     }
                      if (task.Result.IsSuccess == true) { return; }
-                     else if (task.Result.Error == CommandError.UnknownCommand)
+                     /*else if (task.Result.Error == CommandError.UnknownCommand)
                      {
                          var poss = GetPossibleCommands(context);
                          EmbedBuilder errormsg = new EmbedBuilder();
@@ -103,7 +133,7 @@ namespace Bot.Handlers
                          errormsg.WithDescription(poss);
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
-                     }
+                     }*/
 
                      else if (task.Result.Error == CommandError.BadArgCount)
                      {
@@ -111,7 +141,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Bad Usage:");
-                         errormsg.WithDescription($"Command did not have the right amount of parameters. Type {prefix}help (command name) for more info");
+                         errormsg.WithDescription($"Command did not have the right amount of parameters. \nType `{prefix}help {cmd.Command.Name}` for more info.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -121,7 +151,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Unmet Precondition");
-                         errormsg.WithDescription($"A precondition for the command was not met **({task.Result.ErrorReason})**. Type {prefix}help (command name) for more info");
+                         errormsg.WithDescription($"**{task.Result.ErrorReason}** \nA precondition for the command was not met. Type `{prefix}help {cmd.Command.Name}` for more info.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -131,7 +161,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Unsuccessful:");
-                         errormsg.WithDescription($"The command excecution was unsuccessfull, I'm sorry :(");
+                         errormsg.WithDescription($"The command excecution was unsuccessfull, this was automatically reported to the KillerBot Team.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -141,7 +171,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Parse Failed:");
-                         errormsg.WithDescription($"Command could not be parsed, I'm sorry :(");
+                         errormsg.WithDescription($"Command could not be parsed. \nMake sure to do `{prefix}help {cmd.Command.Name}` for more info on the command's usage.");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -161,7 +191,7 @@ namespace Bot.Handlers
                          errormsg.WithColor(Color.Red);
                          errormsg.WithCurrentTimestamp();
                          errormsg.WithTitle("Object Reference:");
-                         errormsg.WithDescription($"{task.Result.ErrorReason} \n \n**Please report this to the bot owner if you think this wasn't supposed to happen by doing `k!report [bug]`**");
+                         errormsg.WithDescription($"**{task.Result.ErrorReason}**");
                          context.Channel.SendMessageAsync("", false, errormsg.Build());
                          return;
                      }
@@ -215,14 +245,26 @@ namespace Bot.Handlers
                     .WithTitle($"New DM: ");
                 if (message.Content.ToString().Contains("discord.gg/"))
                 {
-                    emb.WithDescription($"<@{message.Author.Id}>: [Message contains a server invite link] \n \n|| {message.Content} ||");
+                    emb.WithDescription($"<@{message.Author.Id}>: [Message contains a server invite link]");
                 }
                 else if (message.Content.ToString() == null || message.Content.Length == 0)
-                    emb.WithDescription($"<@{message.Author.Id}>: [Message was an image or an embed]");
+                    emb.WithDescription($"<@{message.Author.Id}>: [Message was an embed]");
 
                 else
                 {
                     emb.WithDescription($"<@{message.Author.Id}>: {message.Content}");
+                    if (message.Attachments.Count != 0)
+                    {
+                        emb.Description += "\n \n**Attachments:** \n";
+                        int number = 0;
+                        foreach (var attachment in message.Attachments)
+                        {
+                            number += 1;
+                            emb.Description += $"[Attachment: {number}]({attachment.Url})\n";
+                            emb.WithImageUrl(attachment.Url);
+                        }
+
+                    }
                 }
 
                 emb.WithTimestamp(message.Timestamp)
@@ -246,7 +288,7 @@ namespace Bot.Handlers
             return success;
         }
 
-        private string GetPossibleCommands(SocketCommandContext context)
+        /*private string GetPossibleCommands(SocketCommandContext context)
         {
             var prefix = "k!";
             var commandText = context.Message.ToString();
@@ -277,7 +319,7 @@ namespace Bot.Handlers
                 message = $"{possibleCommands.Count} possible commands have been found matching your input. Please be more specific.";
             }
             return message;
-        }
+        }*/
 
     }
 }

@@ -2,7 +2,9 @@
 using Bot.Entities;
 using Discord;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Bot.Features.GlobalAccounts
 {
@@ -44,7 +46,10 @@ namespace Bot.Features.GlobalAccounts
         {
             return GetById(guild.Id);
         }
-
+        public List<GlobalGuildAccount> GetAllAccounts()
+        {
+            return serverAccounts.Values.ToList();
+        }
         /// <summary>
         /// This rewrites ALL ServerAccounts to the harddrive... Strongly recommend to use SaveAccounts(id1, id2, id3...) where possible instead
         /// </summary>

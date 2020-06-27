@@ -10,6 +10,8 @@ namespace Bot
         internal static readonly string ServerAccountsFolder = "servers";
         internal static readonly string LogFolder = "logs";
         internal static readonly string InvisibleString = "\u200b";
+        public const string success = "<a:SuccessKB:639875484972351508>";
+        public const string fail = "<:KBfail:580129304592252995>";
         public const long DailyMuiniesGain = 250;
         public const int WorkRewardCooldown = 3600;
         public const int MessageRewardCooldown = 30;

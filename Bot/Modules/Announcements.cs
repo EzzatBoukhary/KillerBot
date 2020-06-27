@@ -10,6 +10,7 @@ namespace Bot.Modules
 {
     [Group("Announcements"), Alias("Announcement"), Summary("Settings for announcements")]
     [RequireUserPermission(GuildPermission.Administrator)]
+    [RequireContext(ContextType.Guild)]
     public class Announcements : ModuleBase<MiunieCommandContext>
     {
         private readonly GlobalGuildAccounts _globalGuildAccounts;
@@ -40,7 +41,8 @@ namespace Bot.Modules
         }
     }
     [Group("Welcome")]
-    [Summary("DM a joining user a random message out of the ones defined.")]
+    [Summary("Announce a joining user in the set announcements channel with a random message out of the ones defined.")]
+    [RequireContext(ContextType.Guild)]
     public class WelcomeMessages : ModuleBase<MiunieCommandContext>
     {
         private readonly GlobalGuildAccounts _globalGuildAccounts;
@@ -54,8 +56,13 @@ namespace Bot.Modules
         [Remarks("`Try using ```@<botname>#<botdiscriminator> help``` for all the commands of <botmention>!`\n" +
                  "Possible placeholders are: `<usermention>`, `<username>`, `<userdiscriminator>`, `<guildname>`, " +
                  "`<botname>`, `<botdiscriminator>`, `<botmention>` ")]
-        public async Task AddWelcomeMessage([Remainder] string message)
+        public async Task AddWelcomeMessage([Remainder] string message = null)
         {
+            if (message == null)
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> Please provide a welcome message. Do `k!help welcome add` for more info.");
+                return;
+            }
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             var response = $"Failed to add this Welcome Message...";
             if (!guildAcc.WelcomeMessages.Contains(message))
@@ -107,6 +114,7 @@ namespace Bot.Modules
     [Summary("Announce a leaving user in the set announcement channel" +
              "with a random message out of the ones defined.")
     ]
+    [RequireContext(ContextType.Guild)]
     public class LeaveMessages : ModuleBase<MiunieCommandContext>
     {
         private readonly GlobalGuildAccounts _globalGuildAccounts;
@@ -120,8 +128,13 @@ namespace Bot.Modules
         [Example("`k!leave add Oh noo! <usermention>, left <guildname>...`")]
         [Remarks("Possible placeholders are: `<usermention>`, `<username>`, `<userdiscriminator>`, `<guildname>`, " +
                  "`<botname>`, `<botdiscriminator>`, `<botmention>`")]
-        public async Task AddLeaveMessage([Remainder] string message)
+        public async Task AddLeaveMessage([Remainder] string message = null)
         {
+            if (message == null)
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> Please provide a leave message. (Do `k!help leave add` for more info.");
+                return;
+            }
             var guildAcc = _globalGuildAccounts.GetById(Context.Guild.Id);
             var response = $"Failed to add this Leave Message...";
             if (!guildAcc.LeaveMessages.Contains(message))

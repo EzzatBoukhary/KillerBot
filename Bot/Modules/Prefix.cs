@@ -18,6 +18,7 @@ namespace Bot.Modules
         }
 
         [Command("add"), Alias("set"), RequireUserPermission(GuildPermission.Administrator)]
+        [Priority(1)]
         [Remarks("Adds a prefix to the list of prefixes")]
         public async Task AddPrefix([Remainder] string prefix)
         {
@@ -27,13 +28,14 @@ namespace Bot.Modules
             {
                 var prefixes = guildAcc.Prefixes.ToList();
                 guildAcc.Modify(g => g.SetPrefixes(prefixes.Append(prefix).ToList()), _globalGuildAccounts);
-                response =  $"Successfully added `{prefix}` as prefix! <a:KBtick:580851374070431774>";
+                response =  $"{Constants.success} Successfully added `{prefix}` as prefix!";
             }
 
             await ReplyAsync(response);
         }
 
         [Command("remove"), Remarks("Removes a prefix from the list of prefixes")]
+        [Priority(1)]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task RemovePrefix([Remainder] string prefix)
         {
@@ -44,13 +46,14 @@ namespace Bot.Modules
                 var prefixes = guildAcc.Prefixes.ToList();
                 prefixes.Remove(prefix);
                 guildAcc.Modify(g => g.SetPrefixes(prefixes), _globalGuildAccounts);
-                response =  $"Successfully removed `{prefix}` as possible prefix! <a:KBtick:580851374070431774>";
+                response =  $"{Constants.success} Successfully removed `{prefix}` as possible prefix!";
             }
 
             await ReplyAsync(response);
         }
 
         [Command("list"),Alias(""), Remarks("Show all possible prefixes for this server")]
+        [Priority(0)]
         public async Task ListPrefixes()
         {
             var prefixes = _globalGuildAccounts.GetById(Context.Guild.Id).Prefixes;

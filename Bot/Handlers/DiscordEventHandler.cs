@@ -34,9 +34,10 @@ namespace Bot.Handlers
         private readonly Features.Announcements _announcements;
         private readonly MessageRewardHandler _messageRewardHandler;
         private readonly RepeatedTaskFunctions _repeatedTaskFunctions;
+        private readonly ServerSetup _serversetup;
         private readonly GlobalGuildAccounts _globalGuildAccounts;
 
-        public DiscordEventHandler(Logger logger, TriviaGames triviaGames, DiscordSocketClient client, CommandHandler commandHandler, ApplicationSettings applicationSettings, ListManager listManager, IOnboarding onboarding, BlogHandler blogHandler, Features.Announcements announcements, MessageRewardHandler messageRewardHandler, RepeatedTaskFunctions repeatedTaskFunctions, GlobalGuildAccounts globalGuildAccounts)
+        public DiscordEventHandler(Logger logger, TriviaGames triviaGames, DiscordSocketClient client, CommandHandler commandHandler, ApplicationSettings applicationSettings, ListManager listManager, IOnboarding onboarding, BlogHandler blogHandler, Features.Announcements announcements, MessageRewardHandler messageRewardHandler, RepeatedTaskFunctions repeatedTaskFunctions, GlobalGuildAccounts globalGuildAccounts, ServerSetup serverSetup)
         {
             _logger = logger;
             _client = client;
@@ -50,6 +51,7 @@ namespace Bot.Handlers
             _messageRewardHandler = messageRewardHandler;
             _repeatedTaskFunctions = repeatedTaskFunctions;
             _globalGuildAccounts = globalGuildAccounts;
+            _serversetup = serverSetup;
         }
 
         public void InitDiscordEvents()
@@ -199,7 +201,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.10.3 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.11.0 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
 
@@ -219,8 +221,21 @@ namespace Bot.Handlers
         {
             _commandHandler.HandleCommandAsync(message);
             _messageRewardHandler.HandleMessageRewards(message);
+            if (message.Author.IsBot == false)
+            {
+                try
+                {
+                    var user = message.Author as SocketGuildUser;
+                    var guild = _globalGuildAccounts.GetById(user.Guild.Id);
+                    var autorole = user.Guild.GetRole(guild.RoleOnJoin);
+                    if (autorole != null && guild.RoleOnJoinMethod != null && guild.RoleOnJoinToggle == true)
+                    {
+                        _serversetup.Method2(user, guild.RoleOnJoinMethod, message);
+                    }
+                }
+                catch { }
+            }
         }
-
         private async Task MessageUpdated(Cacheable<IMessage, ulong> cacheMessageBefore, SocketMessage messageAfter, ISocketMessageChannel channel)
         {
             
@@ -293,7 +308,20 @@ namespace Bot.Handlers
 
         private async Task UserJoined(SocketGuildUser user)
         {
+            var guild = _globalGuildAccounts.GetById(user.Guild.Id);
             _announcements.UserJoined(user, _client);
+            if (user.IsBot == false)
+            {
+                try
+                {
+                    var autorole = user.Guild.GetRole(guild.RoleOnJoin);
+                    if (autorole != null && guild.RoleOnJoinMethod != null && guild.RoleOnJoinToggle == true)
+                    {
+                        _serversetup.Method(user, guild.RoleOnJoinMethod);
+                    }
+                }
+                catch { }
+            }
         }
 
         private async Task UserLeft(SocketGuildUser user)

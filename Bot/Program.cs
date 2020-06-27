@@ -25,6 +25,8 @@ using Bot.Modules.Account;
 using Bot.Modules.YouTube;
 using Bot.Modules.Giphy;
 using Bot.Services;
+using Bot.Modules.Fun;
+using Bot.Preconditions;
 
 namespace Bot
 {
@@ -96,10 +98,14 @@ namespace Bot
             serviceCollection.AddSingleton<GiphyApi>();
             serviceCollection.AddSingleton<IXkcdService, XkcdService>();
             serviceCollection.AddSingleton<GlobalUserAccounts>();
+            serviceCollection.AddSingleton<ServerSetup>();
+            serviceCollection.AddSingleton<Cooldown>();
+            serviceCollection.AddSingleton<RatelimitAttribute>();
             serviceCollection.AddSingleton<Features.Announcements>();
             serviceCollection.AddSingleton<RoleByPhraseProvider>();
             serviceCollection.AddSingleton<MessageRewardHandler>();
             serviceCollection.AddSingleton<RepeatedTaskFunctions>();
+            serviceCollection.AddSingleton<MinigameHandler>();
             serviceCollection.AddSingleton<BotSettings>();
             serviceCollection.AddSingleton<InteractiveService>();
             serviceCollection.AddSingleton<JsonDataStorage>();

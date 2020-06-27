@@ -11,6 +11,7 @@ namespace Bot.Modules.RoleAssignments
 {
     [Group("RoleByPhrase"), Alias("rbp"), Summary("Settings for auto-assigning roles based on a sent Phrase")]
     [RequireUserPermission(GuildPermission.Administrator)]
+    [RequireContext(ContextType.Guild)]
     public class RoleByPhrase : ModuleBase<MiunieCommandContext>
     {
         private readonly RoleByPhraseProvider _roleByPhraseProvider;

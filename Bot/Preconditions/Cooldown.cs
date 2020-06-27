@@ -10,6 +10,7 @@ namespace Bot.Preconditions
     {
         TimeSpan CooldownLength { get; set; }
         bool AdminsAreLimited { get; set; }
+        //private readonly Logger _logger;
         readonly ConcurrentDictionary<CooldownInfo, DateTime> _cooldowns = new ConcurrentDictionary<CooldownInfo, DateTime>();
 
         /// <summary>
@@ -22,7 +23,10 @@ namespace Bot.Preconditions
             CooldownLength = TimeSpan.FromSeconds(seconds);
             AdminsAreLimited = adminsAreLimited;
         }
-
+        /*private Cooldown(Logger logger)
+        {
+            _logger = logger;
+        }*/
         public struct CooldownInfo
         {
             public ulong UserId { get; }
@@ -50,6 +54,7 @@ namespace Bot.Preconditions
                 // Display message if command is on cooldown
                 if (difference.Ticks > 0)
                 {
+                    //_logger.Log(LogSeverity.Warning, $"Guild: {context.Guild.Id}", $"User: {context.User.Id} has triggered the cooldown of a command.");
                     return Task.FromResult(PreconditionResult.FromError($"Cooldown, try again in {difference.ToString(@"hh\:mm\:ss")}"));
                 }
                 // Update cooldown time

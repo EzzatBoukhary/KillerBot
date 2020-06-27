@@ -1,4 +1,4 @@
-﻿using System;
+﻿/*using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -30,7 +30,7 @@ namespace Bot.Modules
 		}
 
 		[Command("help")]
-        [Ratelimit(5, 1, Measure.Minutes, RatelimitFlags.ApplyPerGuild)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         [Alias("h")]
 		[Summary("Gets help")]
 		public async Task HelpCmd()
@@ -85,30 +85,9 @@ namespace Bot.Modules
 			}
 		}
 
-        /*[Command("help")]
-		[Alias("h", "command", "chelp", "ch")]
-		[Summary("Gets help on a specific command")]
-		public async Task HelpSpecific([Remainder] string query)
-		{
-			EmbedBuilder embed = new EmbedBuilder();
-			embed.WithTitle($"Help for {query}");
-			embed.WithColor(new Color(241, 196, 15));
-
-			SearchResult result = _cmdService.Search(Context, query);
-            if (result.IsSuccess)
-                foreach (CommandMatch command in result.Commands)
-                {
-                    ExampleAttribute example = command.Command.Attributes.OfType<ExampleAttribute>().FirstOrDefault();
-                    embed.AddField(command.Command.Name,
-                        $"Summary: {command.Command.Summary}\nAlias: {FormatAliases(command.Command)}\nUsage: `{command.Command.Name} {FormatParms(command.Command)}` \nExample: {example.ExampleText}");
-                }
-			if (embed.Fields.Count == 0)
-				embed.WithDescription("Nothing was found for " + query);
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
-		} */
         [Command("help"), Alias("h")]
         [Remarks("Shows what a specific command or module does and what parameters it takes.")]
-        [Cooldown(5)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
         public async Task HelpQuery([Remainder] string query)
         {
             var builder = new EmbedBuilder();
@@ -146,11 +125,12 @@ namespace Bot.Modules
                 {
                     paramsString += $"\nExample: {example.ExampleText}";
                 }
-
+                if (paramsString == "")
+                    paramsString = "There is no information about this command.";
                 builder.AddField(x =>
                 {
                     x.Name = string.Join(", ", cmd.Aliases);
-                    x.Value = paramsString;
+                    x.Value = $"{paramsString}";
                     x.IsInline = false;
                 });
             }
@@ -246,4 +226,4 @@ namespace Bot.Modules
 			return format.ToString();
 		}
 	}
-}
+}*/

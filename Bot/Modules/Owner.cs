@@ -13,18 +13,24 @@ using Bot.Preconditions;
 using System.Collections.Generic;
 using Discord.Net;
 using System.Text;
+using Bot.Helpers;
 using Bot.Features.GlobalAccounts;
+using Bot.Entities;
 
 namespace Bot.Modules
 {
-    public class Owner : ModuleBase<MiunieCommandContext>
+    public class Owner : InteractiveBase
     {
         private static readonly OverwritePermissions denyOverwrite = new OverwritePermissions(addReactions: PermValue.Deny, sendMessages: PermValue.Deny, attachFiles: PermValue.Deny);
         private readonly GlobalUserAccounts _globalUserAccounts;
+        private readonly GlobalGuildAccounts _globalGuildAccounts;
+        private readonly Logger _logger;
 
-        public Owner(GlobalUserAccounts globalUserAccounts)
+        public Owner(GlobalUserAccounts globalUserAccounts, GlobalGuildAccounts globalGuildAccounts, Logger logger)
         {
             _globalUserAccounts = globalUserAccounts;
+            _globalGuildAccounts = globalGuildAccounts;
+            _logger = logger;
         }
         [Command("SetStream")]
         [Remarks("Usage: k!setstream {streamer} {streamName}")]
@@ -49,14 +55,14 @@ namespace Bot.Modules
                 {
                     guildList += $"Name: {g.Name}\n ID: {g.Id} \n Owner: {g.Owner} \n Owner ID: {g.OwnerId} \n \n";
                 }
-                File.WriteAllText("guildlist.txt", guildList);
-                await ReplyAsync("<a:KBtick:580851374070431774> Guild List was sent to your DMs!");
+                File.WriteAllText($"{Constants.ResourceFolder}/guildlist.txt", guildList);
+                await ReplyAsync($"{Constants.success} Guild List was sent to your DMs!");
                 var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
-                await dmChannel.SendFileAsync("guildlist.txt", null, false, null);
+                await dmChannel.SendFileAsync($"{Constants.ResourceFolder}/guildlist.txt", null, false, null);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                await _logger.Log(LogSeverity.Error, "Owner > guildlist", $"{e}");
 
             }
         }
@@ -121,6 +127,11 @@ namespace Bot.Modules
                 embed.Description += $"\n{dot} [Splash Icon:]({guild.SplashUrl})";
                 embed.WithImageUrl(guild.SplashUrl);
             }
+            var guild2 = _globalGuildAccounts.GetById(guild.Id);
+            if (guild2.KBPremium == false)
+                embed.Description += $"\n{dot} [KB Premium](https://www.patreon.com/KillerBot): {Constants.fail}";
+            else if (guild2.KBPremium == true)
+                embed.Description += $"\n{dot} [KB Premium](https://www.patreon.com/KillerBot): <a:KBPremium:706944892215230495>";
             await Context.Channel.SendMessageAsync("", false, embed.Build()).ConfigureAwait(false);
         }
 
@@ -189,8 +200,8 @@ namespace Bot.Modules
             await ReplyAsync($"KillerBot has left {ServerId}.");
 
         }
-        [Command("shutdown")]
-        [Summary("Turns off KillerBot")]
+        [Command("restart")]
+        [Summary("restart KillerBot")]
         [RequireOwner]
         public async Task Quit()
         {
@@ -213,16 +224,38 @@ namespace Bot.Modules
         }
         [Command("blacklist")]
         [RequireOwner]
-        public async Task Blacklist(ulong id, string reason = null)
+        public async Task Blacklist(ulong id, [Remainder] string reason = null)
         {
             if (reason == null)
                 reason = "[No reason was specified]";
+            if ((Context.Client.GetGuild(id)) != null)
+            {
+                var guildToBlacklist = _globalGuildAccounts.GetById(id);
+                if (guildToBlacklist.Blacklisted == true)
+                {
+                    throw new ArgumentException("The guild is already blacklisted");
+                }
+                else if (guildToBlacklist.Blacklisted == false)
+                {
+                    guildToBlacklist.Blacklisted = true;
+                    _globalGuildAccounts.SaveAccounts(guildToBlacklist.Id);
+                    var guild = Context.Client.GetGuild(guildToBlacklist.Id);
+                    var emb = new EmbedBuilder()
+                    .WithColor(Color.Red)
+                    .WithTitle("=== Blacklist ===")
+                    .WithCurrentTimestamp()
+                    .WithFooter($"Blacklisted by {Context.User}", Context.User.GetAvatarUrl())
+                    .WithDescription($"Blacklisted guild: **{guild.Name}** \nReason: {reason}");
+                    await Context.Channel.SendMessageAsync("", false, emb.Build());
+                    return;
+                }
+            }
             var UserToBlacklist = _globalUserAccounts.GetById(id);
             if (UserToBlacklist.Blacklisted == true)
             {
                 throw new ArgumentException("User is already blacklisted");
             }
-            else
+            else if (UserToBlacklist.Blacklisted == false)
             {
                 UserToBlacklist.Blacklisted = true;
                 _globalUserAccounts.SaveAccounts(id);
@@ -236,6 +269,7 @@ namespace Bot.Modules
                     .WithDescription($"Blacklisted user: **{username}#{discrim}** \nReason: {reason}");
                 await Context.Channel.SendMessageAsync("", false, emb.Build());
             }
+            
         }
         [Command("whitelist"), Alias("unblacklist")]
         [RequireOwner]
@@ -243,6 +277,28 @@ namespace Bot.Modules
         {
             if (reason == null)
                 reason = "[No reason was specified]";
+            if ((Context.Client.GetGuild(id)) != null)
+            {
+                var guildToBlacklist = _globalGuildAccounts.GetById(id);
+                if (guildToBlacklist.Blacklisted == false)
+                {
+                    throw new ArgumentException("The guild is already whitelisted");
+                }
+                else if (guildToBlacklist.Blacklisted == true)
+                {
+                    guildToBlacklist.Blacklisted = false;
+                    _globalGuildAccounts.SaveAccounts(guildToBlacklist.Id);
+                    var guild = Context.Client.GetGuild(guildToBlacklist.Id);
+                    var emb = new EmbedBuilder()
+                    .WithColor(Color.Green)
+                    .WithTitle("=== Whitelist ===")
+                    .WithCurrentTimestamp()
+                    .WithFooter($"Whitelisted by {Context.User}", Context.User.GetAvatarUrl())
+                    .WithDescription($"Whitelisted guild: **{guild.Name}** \nReason: {reason}");
+                    await Context.Channel.SendMessageAsync("", false, emb.Build());
+                    return;
+                }
+            }
             var UserToBlacklist = _globalUserAccounts.GetById(id);
             if (UserToBlacklist.Blacklisted == true)
             {
@@ -268,24 +324,156 @@ namespace Bot.Modules
         public async Task Blacklists()
         {
             var accounts = _globalUserAccounts.GetAllAccounts();
-            var emb = new EmbedBuilder()
-                           .WithTitle("Blacklisted users");
-            foreach (var acc in accounts.ToList())
+            var guilds = _globalGuildAccounts.GetAllAccounts();
+            List<GlobalUserAccount> blacklistedusers = accounts.Where(x => x.Blacklisted == true).ToList();
+            List<GlobalGuildAccount> blacklistedguilds = guilds.Where(x => x.Blacklisted == true).ToList();
+            List<PaginatedMessage.Page> pages = new List<PaginatedMessage.Page>();
+            List<EmbedFieldBuilder> fields = new List<EmbedFieldBuilder>();
+            if (blacklistedguilds.Count != 0 || blacklistedusers.Count != 0)
             {
-                
-                if (acc.Blacklisted == true)
+                foreach (var acc in blacklistedusers)
                 {
-                    var username = Context.Client.GetUser(acc.Id).Username;
-                    var discrim = Context.Client.GetUser(acc.Id).Discriminator;
-                    emb.WithColor(new Color(0,0,0));
-                    emb.AddField($"{username}#{discrim}",$"ID: {acc.Id}", false);
-                    await Context.Channel.SendMessageAsync("", false, emb.Build());
-                    return;
+                    if (acc.Blacklisted == true)
+                    {
+                        var username = Context.Client.GetUser(acc.Id).Username;
+                        var discrim = Context.Client.GetUser(acc.Id).Discriminator;
+                        fields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = $"{username}#{discrim}",
+                            Value = $"ID: **{acc.Id}**",
+                            IsInline = false
+                        });
+                        if (fields.Count > 3)
+                        {
+                            List<EmbedFieldBuilder> firstpart = new List<EmbedFieldBuilder>();
+                            firstpart.AddRange(fields);
+                            fields.RemoveRange(0, 3);
+                            firstpart.RemoveRange(3, fields.Count);
+                            pages.Add(new PaginatedMessage.Page
+                            {
+                                Author = new EmbedAuthorBuilder { Name = $"Blacklists:" },
+                                Fields = new List<EmbedFieldBuilder>(firstpart)
+                            });
+
+                        }
+                    }
                 }
+                foreach (var server in blacklistedguilds)
+                {
+                    if (server.Blacklisted == true)
+                    {
+                        var servername = Context.Client.GetGuild(server.Id);
+                        fields.Add(new EmbedFieldBuilder()
+                        {
+                            Name = $"Server: {servername}",
+                            Value = $"ID: **{server.Id}**",
+                            IsInline = false
+                        });
+                        if (fields.Count > 3)
+                        {
+                            List<EmbedFieldBuilder> firstpart = new List<EmbedFieldBuilder>();
+                            firstpart.AddRange(fields);
+                            fields.RemoveRange(0, 3);
+                            firstpart.RemoveRange(3, fields.Count);
+                            pages.Add(new PaginatedMessage.Page
+                            {
+                                Author = new EmbedAuthorBuilder { Name = "Blacklists:" },
+                                Fields = new List<EmbedFieldBuilder>(firstpart)
+                            });
+
+                        }
+                    }
+                }
+                pages.Add(new PaginatedMessage.Page
+                {
+                    Author = new EmbedAuthorBuilder { Name = "Blacklists:" },
+                    Fields = new List<EmbedFieldBuilder>(fields)
+                });
+                var pager = new PaginatedMessage
+                {
+                    Pages = pages,
+                    Color = Color.DarkGreen,
+                    FooterOverride = null,
+                    Options = PaginatedAppearanceOptions.Default,
+                };
+                    await PagedReplyAsync(pager, new ReactionList
+                    {
+                        Forward = true,
+                        Backward = true,
+                        Jump = true,
+                        Trash = true
+                    }, true);
+        }
+            else
+            {
+                await ReplyAsync("No users/guilds are blacklisted at the moment.");
             }
-            emb.WithColor(Color.Green);
-            emb.Description = "No users are blacklisted at the moment.";
-            await Context.Channel.SendMessageAsync("", false, emb.Build());
+        }
+        [Command("premium")]
+        [Summary("Adds or removes premium to/from a server.")]
+        [RequireOwner]
+        public async Task Premium(string method, [Remainder] ulong ID = 0)
+        {
+            var guild = _globalGuildAccounts.GetById(ID);
+            var guild2 = Context.Client.GetGuild(ID);
+
+            //checkings
+            if ((method == "add" || method == "remove") && ID == 0)
+            {
+                await ReplyAsync($"{Constants.fail} Please put the ID of the server you want to add or remove KB Premium to/from.");
+                return;
+            }
+            if (method == "add" && guild.KBPremium == true)
+            {
+                await ReplyAsync($"<:KBfail:580129304592252995> **{guild2.Name}** already has KB Premium!");
+                return;
+            }
+            else if (method == "remove" && guild.KBPremium == false)
+            {
+                await ReplyAsync($"<:KBfail:580129304592252995> **{guild2.Name}** already doesn't have KB Premium!");
+                return;
+            }
+
+            //adding or removing
+            if (method == "add" && guild.KBPremium == false)
+            {
+                guild.KBPremium = true;
+                _globalGuildAccounts.SaveAccounts(ID);
+                await ReplyAsync($"<a:SuccessKB:639875484972351508> **{guild2.Name}** has been given KB Premium!");
+                return;
+            }
+            else if (method == "remove" && guild.KBPremium == true)
+            {
+                guild.KBPremium = false;
+                _globalGuildAccounts.SaveAccounts(ID);
+                await ReplyAsync($"<a:SuccessKB:639875484972351508> **{guild2.Name}** has lost KB Premium!");
+                return;
+            }
+            else if (method == "list")
+            {
+                var servers = _globalGuildAccounts.GetAllAccounts();
+                var emb = new EmbedBuilder()
+                           .WithTitle("KB Premium Servers");
+                foreach (var server in servers)
+                {
+                    if (server.KBPremium == true)
+                    {
+                        var servername = Context.Client.GetGuild(server.Id).Name;
+                        emb.WithColor(Color.Green);
+                        emb.AddField(servername, $"ID: {server.Id}", false);
+                        await Context.Channel.SendMessageAsync("", false, emb.Build());
+                        return;
+                    }
+                }
+                emb.WithColor(Color.Red);
+                emb.Description = "There are no servers with KB Premium at the moment.";
+                await Context.Channel.SendMessageAsync("", false, emb.Build());
+            }
+
+            else
+            {
+                await ReplyAsync("<:KBfail:580129304592252995> Please mention if you want to **add** or **remove** premium before the server ID. Or you can `list` the premium servers.");
+            }
         }
         [Command("logs")]
         [Summary("Show KillerBot logs")]
@@ -294,11 +482,26 @@ namespace Bot.Modules
         {
             var folder = Constants.LogFolder;
             var fileName = "Logs2.log";
-            await ReplyAsync("<a:KBtick:580851374070431774> The logs file was sent to your DMs!");
+            await ReplyAsync($"{Constants.success} The logs file was sent to your DMs!");
             var dmChannel = await Context.User.GetOrCreateDMChannelAsync();
             await dmChannel.SendFileAsync($"{folder}/{fileName}");
         }
-
+        [Command("updateguilddata")]
+        [Alias("ugd")]
+        [RequireOwner]
+        public async Task UpdateServers()
+        {
+            _globalGuildAccounts.SaveAccounts();
+            await ReplyAsync("<a:SuccessKB:639875484972351508> I updated all the guilds' data.");
+        }
+        [Command("updateuserdata")]
+        [Alias("uud")]
+        [RequireOwner]
+        public async Task UpdateUsers()
+        {
+            _globalUserAccounts.SaveAccounts();
+            await ReplyAsync("<a:SuccessKB:639875484972351508> I updated all the users' data.");
+        }
         [Command("user-data"), Alias("userdata")]
         [RequireOwner]
         public async Task GetAccountFile(ulong id)
@@ -327,12 +530,12 @@ namespace Bot.Modules
             if (source == "wallet")
             {
                 account.Coins += amount;
-                _globalUserAccounts.SaveAccounts();
+                _globalUserAccounts.SaveAccounts(user);
             }
             else if (source == "bank")
             {
                 account.BankCoins += amount;
-                _globalUserAccounts.SaveAccounts();
+                _globalUserAccounts.SaveAccounts(user);
             }
             else
             {
@@ -342,7 +545,7 @@ namespace Bot.Modules
             emb.WithColor(Color.Green);
             emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
             emb.WithCurrentTimestamp();
-            emb.WithDescription($"The user of ID **{account.Id}** has received **{amount} coins**. <a:KBtick:580851374070431774> ");
+            emb.WithDescription($"{Constants.success} The user of ID **{account.Id}** has received **{amount} coins**.");
             emb.WithFooter($"New balance: {account.Coins} coins");
             await ReplyAsync("", false, emb.Build());
         }
@@ -364,12 +567,12 @@ namespace Bot.Modules
             if (source == "wallet")
             {
                 account.Coins -= amount;
-                _globalUserAccounts.SaveAccounts();
+                _globalUserAccounts.SaveAccounts(user);
             }
             else if (source == "bank")
             {
                 account.BankCoins -= amount;
-                _globalUserAccounts.SaveAccounts();
+                _globalUserAccounts.SaveAccounts(user);
             }
             else
             {
@@ -378,7 +581,7 @@ namespace Bot.Modules
             emb.WithColor(Color.Red);
             emb.WithAuthor($"{Context.User.Username}#{Context.User.Discriminator}", Context.User.GetAvatarUrl());
             emb.WithCurrentTimestamp();
-            emb.WithDescription($"The user of ID **{user}** forcefully lost **{amount} coins**. <a:KBtick:580851374070431774> ");
+            emb.WithDescription($"{Constants.success} The user of ID **{user}** forcefully lost **{amount} coins**.");
             emb.WithFooter($"New balance: {account.Coins} coins");
             await ReplyAsync("", false, emb.Build());
         }
