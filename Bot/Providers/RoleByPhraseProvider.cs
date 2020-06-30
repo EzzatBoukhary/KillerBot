@@ -141,6 +141,13 @@ namespace Bot.Providers
             var message2 = "";
             if (guild is null) return;
             var prefixes = _globalGuildAccounts.GetById(guild.Id).Prefixes;
+            var defaultprefix = "k!";
+            var allprefixes = new List<string>()
+            {
+                defaultprefix
+            };
+            foreach (var prefix in prefixes)
+                allprefixes.Add(prefix);
             var tmpArgPos = 0;
             var triggeredPhrases = guildSettings.RoleByPhraseSettings.Phrases.Where(message.Contains).ToList();
 
@@ -150,7 +157,7 @@ namespace Bot.Providers
 
             foreach (var phrase in triggeredPhrases)
             {
-                var success = prefixes.Any(pre =>
+                var success = allprefixes.Any(pre =>
                 {
                     if (!message.StartsWith(pre)) return false;
                     tmpArgPos = pre.Length;

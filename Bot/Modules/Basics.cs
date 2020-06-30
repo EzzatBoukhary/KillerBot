@@ -169,12 +169,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Minor Release ==** `v1.11.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added a new item to the economy shop. \n \n{dot} Added a russian-roulette game to economy: `rr start`, `rr join`, `rr leave`, `rr pt`, `rr delete` \n \n{dot} Added a unique and advanced auto role system: `autorole-setup`, `autorole-info`, `autorole-toggle` \n \n{dot} Added commands: `dog`, `birb`, `foxfact`, `roll`, `clearwarns`, `mywarnings`, `lock`, `lock-server`, `unlock`, `unlock-server`, `tree`, `donate`, `uud`, `ugd`, `premium`. \n \n{dot} Added autologging to some errors. \n \n**[Changed/Fixed]** \n \n{dot} `k!help` and `k!minesweeper` command revamps. \n \n{dot} Fixed typos in some commands. \n \n{dot} Added/changed ratelimits, and command information to some commands. \n \n{dot} Changes to `userinfo`, `serverinfo`, and `account info` to include donations-related stuff. \n \n{dot} Changes in some error replies. \n \n{dot} Fixed the self-role system. \n \n{dot} Fixes to `k!purge` and `k!ri` in the role hex code and embed error. \n \n{dot} Updated `k!info` and `k!invite` \n \n{dot} `k!inventory` and `k!warnings` now allow a user parameter. \n \n{dot} Made `k!warnings`, `k!listbans` and `k!blacklists` paged and fixed a bug in `guildlist` \n \n{dot} Changes to `k!emojisteal` and added an option to add emojis by attaching an image to the command message. \n \n{dot} Allowed command usage in KillerBot's DMs";
+            embed.Description = $" **== Patch ==** `v1.11.1` <:KBupdate:580129240889163787> \n \n{dot} Fixed a bug in the self-role system where the default prefix wouldn't work as a way to use the phrases.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 27th - 2020 02:12 AM GMT");
+                x.WithText("Last updated: June 29th - 2020 10:20 PM GMT");
 
 
 
