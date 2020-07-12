@@ -222,7 +222,8 @@ namespace Bot.Handlers
         {
             _commandHandler.HandleCommandAsync(message);
             _messageRewardHandler.HandleMessageRewards(message);
-            if (message.Author.IsBot == false && _globalGuildAccounts.GetById(user.Guild.Id).RoleOnJoinToggle == true)
+            var user = message.Author as SocketGuildUser;
+            if (message.Author.IsBot == false && user != null && _globalGuildAccounts.GetById(user.Guild.Id).RoleOnJoinToggle == true)
             {
                 try
                 {
@@ -315,7 +316,7 @@ namespace Bot.Handlers
                 try
                 {
                     var autorole = user.Guild.GetRole(guild.RoleOnJoin);
-                    if (autorole != null && guild.RoleOnJoinMethod != null)
+                    if (autorole != null && user != null && guild.RoleOnJoinMethod != null)
                     {
                         _serversetup.Method(user, guild.RoleOnJoinMethod);
                     }
