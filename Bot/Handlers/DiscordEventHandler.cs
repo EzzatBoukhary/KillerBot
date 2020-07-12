@@ -266,8 +266,8 @@ namespace Bot.Handlers
         {
             await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", $"https://twitch.tv/Killer30kill", ActivityType.Streaming);
             _repeatedTaskFunctions.InitRepeatedTasks();
-            var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
-            channel.SendMessageAsync("<a:SuccessKB:639875484972351508>");
+            //var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
+            //channel.SendMessageAsync("<a:SuccessKB:639875484972351508>");
             // ServerBots.Init(_globalGuildAccounts);
 
         }
