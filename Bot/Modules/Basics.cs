@@ -169,12 +169,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.11.1` <:KBupdate:580129240889163787> \n \n{dot} Fixed a bug in the self-role system where the default prefix wouldn't work as a way to use the phrases.";
+            embed.Description = $" **== Patch ==** `v1.11.2` <:KBupdate:580129240889163787> \n \n{dot} A possible fix to the bot's connection issues.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 29th - 2020 10:20 PM GMT");
+                x.WithText("Last updated: July 12th - 2020 08:25 PM GMT");
 
 
 
