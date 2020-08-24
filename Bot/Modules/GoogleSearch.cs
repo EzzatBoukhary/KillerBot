@@ -12,16 +12,12 @@ namespace Bot.Modules.Fun
 {
 	public class GoogleSearch : ModuleBase<SocketCommandContext>
 	{
-		// Module Information
-		// Original Author  - Creepysin
-		// Description      - Searches Google
-		// Contributors     - Creepysin, 
 
 		[Command("google", RunMode = RunMode.Async)]
-		[Summary("Searches Google")]
+		[Summary("Searches Google. Sorry if the results don't meet your needs.")]
 		[Alias("g")]
-		[Cooldown(5)]
-		[RequireBotPermission(GuildPermission.EmbedLinks)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
 		public async Task Google([Remainder] string search = "")
 		{
 
@@ -31,14 +27,14 @@ namespace Bot.Modules.Fun
 				return;
 			}
 
-			await GSearch(search, Context.Channel);
+			await GSearch(search, Context.Channel, 4);
 		}
 
 		[Command("google", RunMode = RunMode.Async)]
-		[Summary("Searches Google")]
+		[Summary("Searches Google. Sorry if the results don't meet your needs.")]
 		[Alias("g")]
-		[Cooldown(5)]
-		[RequireBotPermission(GuildPermission.EmbedLinks)]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
+        [RequireBotPermission(GuildPermission.EmbedLinks)]
 		public async Task Google(int maxSearchResults = 10, [Remainder] string search = "")
 		{
 			if (string.IsNullOrEmpty(search))
@@ -47,7 +43,7 @@ namespace Bot.Modules.Fun
 				return;
 			}
 
-			if (maxSearchResults > 10)
+			if (maxSearchResults > 8)
 			{
 				await Context.Channel.SendMessageAsync(
 					$"The max search amount you have put in is too high! It has to be below 10.");

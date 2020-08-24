@@ -84,7 +84,7 @@ namespace Bot.Common
 			HelpModule fun = new HelpModule
 			{
 				Group = "Fun",
-				Modules = new List<string> {"GiphyCommands", "GoogleSearch", "YouTubeCommands", "combat", "XkcdModule", "MiniGames", "images", "Trivia"}
+				Modules = new List<string> { "Trivia", "MiniGames", "combat", "XkcdModule", "GiphyCommands", "GoogleSearch", "YouTubeCommands", "images"}
 			};
 			helpModules.Add(fun);
 

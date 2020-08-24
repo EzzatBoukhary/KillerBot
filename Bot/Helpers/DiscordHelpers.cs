@@ -34,7 +34,25 @@ namespace Bot.Helpers
 
             return highestRole;
         }
+        public static IRole GetUsersHigherstRole2(IGuildUser user)
+        {
+            IReadOnlyCollection<ulong> roleIds = user.RoleIds;
 
+            IRole highestRole = null;
+            foreach (ulong id in roleIds)
+            {
+                IRole role = user.Guild.GetRole(id);
+                if (role.Name == "@everyone")
+                    continue;
+
+                if (highestRole == null)
+                    highestRole = role;
+                else if (role.Position > highestRole.Position)
+                    highestRole = role;
+            }
+
+            return highestRole;
+        }
         public static string GetListOfUsersRoles(IGuildUser user)
         {
             string roles = "";

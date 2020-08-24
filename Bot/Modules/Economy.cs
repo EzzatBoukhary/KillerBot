@@ -488,7 +488,7 @@ namespace Bot.Modules
         #endregion
 
         [Command("work")]
-        [Summary("Work every hour and receive some coins!")]
+        [Summary("Work every 2 hours and receive some coins for your hard work!")]
         [Cooldown(7200)]
         public async Task Work()
         {
@@ -649,7 +649,8 @@ namespace Bot.Modules
 
             if (sinceLastRobbery.TotalHours < 24)
             {
-                var e = new InvalidOperationException(Constants.ExRobberyTooSoon);
+                TimeSpan canRobTime = new TimeSpan(24, 0, 0) - sinceLastRobbery; // 24 hours - since last robbery time
+                var e = new InvalidOperationException($"{Constants.ExRobberyTooSoon} Try again in {canRobTime.Hours}h, {canRobTime.Minutes}m");
                 e.Data.Add("sinceLastRobbery", sinceLastRobbery);
                 throw e;
             }
@@ -657,7 +658,7 @@ namespace Bot.Modules
                 throw new ArgumentException("<:KBfail:580129304592252995> Cannot rob bots.");
 
             if (robbed.Coins < 1)
-                await ReplyAsync("User has no money to rob :shrug:");
+                await ReplyAsync("User has no money in their wallet to rob :shrug:");
 
             //If robbed user has money
             else
@@ -859,7 +860,7 @@ namespace Bot.Modules
 
                     EmbedBuilder success = new EmbedBuilder();
                     success.WithTitle("<:rob:593876945205329966> == ROBBERY == <:rob:593876945205329966>");
-                    success.WithDescription(RobbingResult + $"and got {amount * 2} coin(s).");
+                    success.WithDescription(RobbingResult + $"and got {amount} coin(s).");
                     success.WithColor(new Color(0, 255, 0));
                     success.WithCurrentTimestamp();
                     robber.Coins += amount;
@@ -933,7 +934,7 @@ namespace Bot.Modules
             {
                 if (user == null)
                 {
-                    throw new ArgumentException("Please provide the user hosting a russian-roulette game to join their game");
+                    throw new ArgumentException("Please provide the user hosting a russian-roulette game to leave their game");
                 }
                 await minigameHandler.LeaveGame(Context, MinigameHandler.Games.RussianRoulette, user.Id);
             }

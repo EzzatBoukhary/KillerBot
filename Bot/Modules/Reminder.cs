@@ -109,7 +109,7 @@ namespace Bot.Modules
             embed.WithTitle("I will remind you through DM:");
             embed.AddField($"**____**", $"{bigmess2}");
 
-            ReplyAsync("", false, embed.Build());
+            await ReplyAsync("", false, embed.Build());
         } 
 
         [Command("remindAt")]
@@ -167,7 +167,7 @@ namespace Bot.Modules
             embed.WithColor(Color.Blue);
             embed.WithTitle("I will remind you through DM:");
             embed.AddField($"**____**", $"{bigmess2}");
-            ReplyAsync("", false, embed.Build());
+            await ReplyAsync("", false, embed.Build());
         }
 
 

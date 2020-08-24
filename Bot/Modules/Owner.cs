@@ -89,7 +89,17 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithAuthor("== SERVER INFORMATION ==");
             embed.WithColor(Color.Blue);
-            embed.WithTitle(guild.Name);
+            embed.Title += $"{guild.Name} \n";
+            if (guild.PremiumTier == PremiumTier.Tier1)
+                embed.Title += $"<:KBBoost:731580776117698618>";
+            else if (guild.PremiumTier == PremiumTier.Tier2)
+                embed.Title += $"<:KBBoost:731580776117698618> <:KBBoost:731580776117698618>";
+            else if (guild.PremiumTier == PremiumTier.Tier3)
+                embed.Title += $"<:KBBoost:731580776117698618> <:KBBoost:731580776117698618> <:KBBoost:731580776117698618>";
+            if (guild.PremiumSubscriptionCount > 0 && guild.PremiumSubscriptionCount > 1)
+                embed.Title += $" ({guild.PremiumSubscriptionCount} boosts)";
+            else
+                embed.Title += $"({guild.PremiumSubscriptionCount} boost)";
             embed.Description = $"{dot} ID: **{guild.Id}**" +
             $"\n{dot} Owner: **{ownername.ToString()}**" +
             $"\n{dot} Creation: **{guild.CreatedAt.DateTime.ToLongDateString()} {guild.CreatedAt.DateTime.ToLongTimeString()} UTC**" +

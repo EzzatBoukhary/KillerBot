@@ -114,7 +114,7 @@ namespace Bot.Handlers
                      if (!task.Result.IsSuccess && (task.Result.Error == CommandError.Unsuccessful || task.Result.ErrorReason.Contains("Cooldown")))
                      {
                          var guild = "";
-                         if ((msg.Channel is SocketDMChannel))
+                         if (msg.Channel is SocketDMChannel)
                          {
                              guild = "DMs";
                          }

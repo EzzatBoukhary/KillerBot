@@ -54,8 +54,9 @@ namespace Bot.Modules
             }
             try
             {
-                var messages = await Context.Channel.GetMessagesAsync(msgs + 1).FlattenAsync();
-                await ((ITextChannel)Context.Channel).DeleteMessagesAsync(messages);
+                var messages = await Context.Channel.GetMessagesAsync(msgs + 1).FlattenAsync(); //get the last X messages in the channel
+                var notpinned = messages.Where(msg => msg.IsPinned == false); //get the non-pinned ones
+                await ((ITextChannel)Context.Channel).DeleteMessagesAsync(notpinned); //purge non-pinned messages
                 var m = await ReplyAsync($"Deleted {messages.Count() - 1} Messages 👌");
                 await Task.Delay(3000);
                 await m.DeleteAsync();
@@ -88,8 +89,8 @@ namespace Bot.Modules
 
             var messages = await Context.Message.Channel.GetMessagesAsync().FlattenAsync();
 
-            var result = messages.Where(x => x.Author.Id == user.Id && x.CreatedAt >= DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(14)));
-            var result2 = result.Take(msgs);
+            var result = messages.Where(x => x.Author.Id == user.Id && x.IsPinned == false && x.CreatedAt >= DateTimeOffset.UtcNow.Subtract(TimeSpan.FromDays(14))); //get the messages from the user, not pinned and less than 14 days ago
+            var result2 = result.Take(msgs); //get a specific amount of the messages
             try
             {
                 await (Context.Message.Channel as SocketTextChannel).DeleteMessagesAsync(result2);
@@ -280,11 +281,12 @@ namespace Bot.Modules
             if (!user.Roles.Any(r => r.Id == muteRole.Id))
             {
                 var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
-                IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
+                IRole exec_role = DiscordHelpers.GetUsersHigherstRole2(exec);
                 if (exec_role == null && Context.User.Id != Context.Guild.OwnerId)
                     throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-                if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
-                    throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+                else if (exec_role != null)
+                    if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
+                        throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
                 await user.AddRoleAsync(muteRole, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
                 var usr = Context.Guild.GetUser(user.Id);
@@ -311,6 +313,7 @@ namespace Bot.Modules
                 await ReplyAsync($"**{user.Username}#{user.Discriminator}** is already muted.");
             }
         }
+
         //=====mute with time=====
         [Command("tempmute")]
         [Summary("Mutes a user for a limited time")]
@@ -352,11 +355,12 @@ namespace Bot.Modules
                 if (!user.Roles.Any(r => r.Id == muteRole.Id))
                 {
                     var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
-                    IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
+                    IRole exec_role = DiscordHelpers.GetUsersHigherstRole2(exec);
                     if (exec_role == null && Context.User.Id != Context.Guild.OwnerId)
                         throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-                    if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
-                        throw new ArgumentException("You don't have enough permissions due to role hierarchy");
+                    else if (exec_role != null)
+                        if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
+                            throw new ArgumentException("You don't have enough permissions due to role hierarchy");
 
                     await user.AddRoleAsync(muteRole, options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
                     await ReplyAsync($"<a:SuccessKB:639875484972351508> **{user.Username}** has been muted.");
@@ -399,17 +403,65 @@ namespace Bot.Modules
             if (user.Roles.Any(r => r.Id == muteRole.Id))
             {
                 var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
-                IRole exec_role = DiscordHelpers.GetUsersHigherstRole(exec);
+                IRole exec_role = DiscordHelpers.GetUsersHigherstRole2(exec);
                 if (exec_role == null && Context.User.Id != Context.Guild.OwnerId)
                     throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-                if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
-                    throw new ArgumentException("You don't have enough permissions due to role hierarchy");
-
+                else if (exec_role != null)
+                    if ((muteRole != null) && (exec_role.Position < muteRole.Position) && Context.User.Id != Context.Guild.OwnerId)
+                        throw new ArgumentException("You don't have enough permissions due to role hierarchy");
                 await user.RemoveRoleAsync(await GetMuteRole(user.Guild), options: new RequestOptions { AuditLogReason = $"{Context.User.Username}#{Context.User.Discriminator}: {reason}" }).ConfigureAwait(false);
                 await ReplyAsync($"<a:SuccessKB:639875484972351508> **{user}** has been unmuted by **{Context.User}** for **{reason}**");
             }
             else
                 throw new ArgumentException("User is not muted");
+        }
+
+        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 3 Being a bad boy.")]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
+        public async Task BanAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")] SocketGuildUser user = null,
+          [Summary("OPTIONAL: The amount of days of messages you want to delete from that user")]  int pruneDays = 0,
+           [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
+        {
+            if (user == null)
+                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user!");
+            if (string.IsNullOrEmpty(reason))
+            {
+                reason = "[No reason was provided]";
+            }
+            var gld = Context.Guild as SocketGuild;
+
+            var embed = new EmbedBuilder();
+            embed.Color = new Color(206, 47, 47);
+            embed.Title = "=== Banned User ===";
+            embed.Description = $"**Banned User: ** {user.Username}#{user.Discriminator} || {user.Id} \n**Banned by: ** {Context.User}\n**Reason: **{reason} \n**Days Pruned:** {pruneDays}";
+            embed.ImageUrl = "https://i.redd.it/psv0ndgiqrny.gif";
+            //var ModLog = await Context.Client.GetChannelAsync(log.ModLogChannelId) as ITextChannel;
+            //await ModLog.SendMessageAsync("", embed: embed);   
+            try
+            {
+                var embed2 = new EmbedBuilder();
+                embed2.Description = ($"You've been banned from **{Context.Guild.Name}** for **{reason}**.");
+                var dmChannel = await user.GetOrCreateDMChannelAsync();
+                await dmChannel.SendMessageAsync("", false, embed2.Build());
+
+            }
+            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
+            await gld.AddBanAsync(user, pruneDays, $"{Context.User}: {reason}");
+            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT BANNED*** :hammer: ");
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+
+        //Ban with no prune days
+        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
+        [RequireBotPermission(GuildPermission.BanMembers)]
+        [RequireUserPermission(GuildPermission.BanMembers)]
+        [RequireContext(ContextType.Guild)]
+        public async Task BanAsync2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")]SocketGuildUser user = null,
+           [Summary("OPTIONAL: The reason behind the ban")] [Remainder] string reason = null)
+        {
+            await BanAsync(user, 0, reason);
         }
 
         //forced ban with prune days
@@ -458,78 +510,6 @@ namespace Bot.Modules
             }
         }
 
-        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 3 Being a bad boy.")]
-        [RequireBotPermission(GuildPermission.BanMembers)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
-        [RequireContext(ContextType.Guild)]
-        public async Task BanAsync([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")] SocketGuildUser user = null,
-          [Summary("OPTIONAL: The amount of days of messages you want to delete from that user")]  int pruneDays = 0,
-           [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
-        {
-            if (user == null)
-                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user!");
-            if (string.IsNullOrEmpty(reason))
-            {
-                reason = "[No reason was provided]";
-            }
-            var gld = Context.Guild as SocketGuild;
-
-            var embed = new EmbedBuilder();
-            embed.Color = new Color(206, 47, 47);
-            embed.Title = "=== Banned User ===";
-            embed.Description = $"**Banned User: ** {user.Username}#{user.Discriminator} || {user.Id} \n**Banned by: ** {Context.User}\n**Reason: **{reason} \n**Days Pruned:** {pruneDays}";
-            embed.ImageUrl = "https://i.redd.it/psv0ndgiqrny.gif";
-            //var ModLog = await Context.Client.GetChannelAsync(log.ModLogChannelId) as ITextChannel;
-            //await ModLog.SendMessageAsync("", embed: embed);   
-            try
-            {
-                var embed2 = new EmbedBuilder();
-                embed2.Description = ($"You've been banned from **{Context.Guild.Name}** for **{reason}**.");
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
-                await dmChannel.SendMessageAsync("", false, embed2.Build());
-
-            }
-            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
-            await gld.AddBanAsync(user, pruneDays, $"{Context.User}: {reason}");
-            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT BANNED*** :hammer: ");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
-        }
-
-        //Ban with no prune days
-        [Command("ban"), Remarks("Do k!help ban about the parameters. | Usage: Ban @Username {Days to prune messages} Reason"), Summary("Bans a user from the guild."), Example("k!ban @Panda#8822 Being a bad boy.")]
-        [RequireBotPermission(GuildPermission.BanMembers)]
-        [RequireUserPermission(GuildPermission.BanMembers)]
-        [RequireContext(ContextType.Guild)]
-        public async Task BanAsync2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The user you want to ban")]SocketGuildUser user = null,
-           [Summary("OPTIONAL: The reason behind the ban")] [Remainder] string reason = null)
-        {
-            if (user == null)
-                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user");
-            if (string.IsNullOrEmpty(reason))
-            {
-                reason = "[No reason was provided]";
-            }
-
-            var gld = Context.Guild as SocketGuild;
-
-            var embed = new EmbedBuilder();
-            embed.Color = new Color(206, 47, 47);
-            embed.Title = "=== Banned User ===";
-            embed.Description = $"**Banned User: ** {user.Username}#{user.Discriminator} || {user.Id}\n**Banned by: ** {Context.User}\n**Reason: **{reason}";
-            embed.ImageUrl = "https://i.redd.it/psv0ndgiqrny.gif";  
-            try
-            {
-                var embed2 = new EmbedBuilder();
-                embed2.Description = ($"You've been banned from **{Context.Guild.Name}** for **{reason}**.");
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
-                await dmChannel.SendMessageAsync("", false, embed2.Build());
-
-            }
-            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
-            await gld.AddBanAsync(user, 0, $"{Context.User}: {reason}");
-            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT BANNED*** :hammer: ");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
-        }
         //forced ban with no prunedays
         [Command("ban"), Summary("Usage: k!ban {User ID} Reason"), Remarks("Force bans a user from the guild."), Example("k!ban 223530903773773824 You're not Welcome here ever.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
@@ -538,42 +518,9 @@ namespace Bot.Modules
         public async Task ForceBan2([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy] [Summary("The ID of user you want to ban")] ulong id,
            [Summary("OPTIONAL: The Reason behind the ban")] [Remainder] string reason = null)
         {
-            if (string.IsNullOrEmpty(reason))
-            {
-                reason = "[No reason was provided]";
-            }
-            var gld = Context.Guild as SocketGuild;
-            try
-            {
-                var oldbans = await Context.Guild.GetBansAsync();
-                var theUser = oldbans.FirstOrDefault(x => x.User.Id == id);
-                if (theUser != null)
-                {
-                    await ReplyAsync("<:KBfail:580129304592252995> The user is already banned!");
-                    return;
-                }
-                await gld.AddBanAsync(id, 0, $"{Context.User}: {reason}");
-                var newbans = await Context.Guild.GetBansAsync();
-                foreach (var ban in newbans)
-                {
-                    if (ban.User.Id == id)
-                    {
-                        var user = ban.User;
-                        var embed = new EmbedBuilder();
-                        embed.Color = new Color(206, 47, 47);
-                        embed.Title = "=== Forced Ban ===";
-                        embed.Description = $"**Banned User: ** {user.Username}#{user.Discriminator} || {user.Id} \n**Banned by: ** {Context.User}\n**Reason: **{reason}";
-                        embed.ImageUrl = "https://i.redd.it/psv0ndgiqrny.gif";
-                        await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT FORCEFULLY BANNED*** :hammer: :fire: ");
-                        await Context.Channel.SendMessageAsync("", false, embed.Build());
-                    }
-                }
-            }
-            catch
-            {
-                await Context.Channel.SendMessageAsync("Something went wrong... Is the user banned already?");
-            }
+            await ForceBan(id, 0, reason);
         }
+
         [Command("unban")]
         [Remarks("Unbans a user. However if you want the user's name has spaces I'd recommend using the ID method (you need to enable developer mode)")]
         [RequireContext(ContextType.Guild)]
@@ -630,7 +577,7 @@ namespace Bot.Modules
              
         }
 
-        [Command("sban"), Alias("soft", "softban")]
+        [Command("softban"), Alias("soft", "sban")]
         [Summary("Bans and unbans a user instantly. The purpose of this is to get rid of the user's messages.")]
         [Example("k!softban @Panda#8822 2 Spamming")]
         [RequireBotPermission(GuildPermission.BanMembers)]
@@ -639,7 +586,6 @@ namespace Bot.Modules
         public async Task SoftBan([NoSelf][RequireBotHigherHirachy][RequireUserHierarchy][Summary("The user to softban")] SocketGuildUser user = null,
                                   [Summary("Number of days for which to prune the user's messages (1 day is default)")] int pruneDays = 1,
                                   [Summary("Reason for softban")] [Remainder] string reason = null)
-                                  
         {
             if (user == null)
                 throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user");
@@ -670,7 +616,7 @@ namespace Bot.Modules
 
         }
 
-        [Command("sban"), Alias("soft", "softban")]
+        [Command("softban"), Alias("soft", "sban")]
         [Example("k!sban @Panda#8822 Spam harder next time.")]
         [RequireBotPermission(GuildPermission.BanMembers)]
         [RequireContext(ContextType.Guild)]
@@ -680,33 +626,7 @@ namespace Bot.Modules
                                   [Remainder][Summary("Reason for softban")] string reason = null)
 
         {
-            if (user == null)
-                throw new ArgumentException("<:KBfail:580129304592252995> You must mention a user");
-            if (string.IsNullOrEmpty(reason))
-            {
-                reason = "[No reason was provided]";
-            }
-
-            var gld = Context.Guild as SocketGuild;
-
-            var embed = new EmbedBuilder();
-            embed.Color = Color.Orange;
-            embed.Title = "=== Soft Ban ===";
-            embed.Description = $"**Soft banned User: ** {user.Username}#{user.Discriminator} || {user.Id}\n**Soft Banned by: ** {Context.User}\n**Reason: **{reason}";
-            try
-            {
-                var embed2 = new EmbedBuilder();
-                embed2.Description = ($"You've been soft banned from **{Context.Guild.Name}** for **{reason}**.");
-                var dmChannel = await user.GetOrCreateDMChannelAsync();
-                await dmChannel.SendMessageAsync("", false, embed2.Build());
-
-            }
-            catch (HttpException ignored) when (ignored.DiscordCode == 50007) { }
-            await gld.AddBanAsync(user, 1, $"{Context.User}: {reason}");
-            await ReplyAsync($"***{user.Username + '#' + user.Discriminator} GOT SOFT BANNED!***");
-            await Context.Channel.SendMessageAsync("", false, embed.Build());
-            await Context.Guild.RemoveBanAsync(user, options: new RequestOptions { AuditLogReason = $"Soft Banned by: {Context.User.Username}#{Context.User.Discriminator}" }).ConfigureAwait(false);
-
+            await SoftBan(user, 1, reason);
         }
 
         [Command("changenick"), Alias("setnick", "change-nick")]
@@ -856,11 +776,11 @@ namespace Bot.Modules
             {
                 try
                 {
-                    muteRole = await guild.CreateRoleAsync(muteRoleName, GuildPermissions.None).ConfigureAwait(false);
+                    muteRole = await guild.CreateRoleAsync(muteRoleName, GuildPermissions.None, null, false, false).ConfigureAwait(false);
                 }
                 catch
                 {
-                    muteRole = guild.Roles.FirstOrDefault(r => r.Name == muteRoleName) ?? await guild.CreateRoleAsync(defaultMuteRoleName, GuildPermissions.None).ConfigureAwait(false);
+                    muteRole = guild.Roles.FirstOrDefault(r => r.Name == muteRoleName) ?? await guild.CreateRoleAsync(defaultMuteRoleName, GuildPermissions.None, null, false, false).ConfigureAwait(false);
                 }
             }
 
@@ -1051,7 +971,7 @@ namespace Bot.Modules
         [Cooldown(10)]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
-        public async Task ChannelLock([Summary("The text channel you want to lock")]IGuildChannel textChannel = null, [Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The time you want to lock the channel for")]string time = null)
+        public async Task ChannelLock([Summary("The text channel you want to lock")]IGuildChannel textChannel = null, [Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The duration you want to lock the channel for")]string time = null)
         {
             if (reason == null)
                 reason = "[No reason was provided]";
@@ -1150,7 +1070,7 @@ namespace Bot.Modules
         [Cooldown(10)]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
-        public async Task ChannelLock([Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The time you want to lock the channel for")]string time = null)
+        public async Task ChannelLock([Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The duration you want to lock the channel for")]string time = null)
         {
             if (reason == null)
                 reason = "[No reason was provided]";
@@ -1523,6 +1443,93 @@ namespace Bot.Modules
         }
         #endregion
 
+        [Command("setslowmode")]
+        [Summary("Sets a slowmode for the channel the command was sent in.")]
+        [Remarks("Usage: `setslowmode <time in seconds>`")]
+        [RequireUserPermission(ChannelPermission.ManageChannels)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task Slowmode([Summary("Slowmode time in seconds")]int time)
+        {
+            if (time > 21600)
+            {
+                await ReplyAsync($"{Constants.fail} The slowmode interval can't be more than 21,600 seconds. (6 hours)");
+                return;
+            }
+            var channel = Context.Channel as ITextChannel;
+            if (channel.SlowModeInterval == time)
+            {
+                await ReplyAsync($"This channel already has that slowmode! ({channel.SlowModeInterval})");
+                return;
+            }
+            else if (time == 0)
+            {
+                await channel.ModifyAsync(x => x.SlowModeInterval = 0);
+                await ReplyAsync("Slowmode has been disabled! Users may now chat regularly again in this channel!");
+                return;
+            }
+            await channel.ModifyAsync(x => x.SlowModeInterval = time);
+            await ReplyAsync($"Users may now send 1 message every {time} seconds in this channel!");
+        }
+
+        [Command("setslowmode")]
+        [Summary("Sets a slowmode for a specific channel.")]
+        [Remarks("Usage: `setslowmode #channel <time in seconds>`")]
+        [RequireUserPermission(ChannelPermission.ManageChannels)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task Slowmode(ITextChannel channel, [Summary("Slowmode time in seconds")] int time)
+        {
+            if (time > 21600)
+            {
+                await ReplyAsync($"{Constants.fail} The slowmode interval can't be more than 21,600 seconds. (6 hours)");
+                return;
+            }
+            if (channel.SlowModeInterval == time)
+            {
+                await ReplyAsync($"This channel already has that slowmode! ({channel.SlowModeInterval})");
+                return;
+            }
+            else if (time == 0)
+            {
+                await channel.ModifyAsync(x => x.SlowModeInterval = 0);
+                await ReplyAsync($"Slowmode has been disabled! Users may now chat regularly again in {channel.Mention}!");
+                return;
+            }
+            await channel.ModifyAsync(x => x.SlowModeInterval = time);
+            await ReplyAsync($"Users may now send 1 message every {time} seconds in {channel.Mention}!");
+        }
+
+        [Command("setserverslowmode")]
+        [Summary("Sets a slowmode for all text channels in the server.")]
+        [Remarks("Usage: `setserverslowmode <time in seconds>`")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireBotPermission(GuildPermission.ManageChannels)]
+        public async Task ServerSlowMode([Summary("Slowmode time in seconds")]int time)
+        {
+            if (time > 21600)
+            {
+                await ReplyAsync($"{Constants.fail} The slowmode interval can't be more than 21,600 seconds. (6 hours)");
+                return;
+            }
+            var msg = await ReplyAsync("Setting server slowmode... *the thing that everyone hates :)*");
+            foreach (var channel in Context.Guild.TextChannels)
+            {
+                var chn = channel as ITextChannel;
+                try
+                {
+                    await channel.ModifyAsync(x => x.SlowModeInterval = time);
+                }
+                catch
+                {
+
+                }
+            }
+            if (time == 0)
+            {
+                await msg.ModifyAsync(m => m.Content = $"Slowmode has been disabled! Users may now chat regularly again in this server.");
+                return;
+            }
+            await msg.ModifyAsync(m => m.Content = $"Users may now send 1 message every {time} seconds in all text channels of this server!");
+        }
 
         private async Task<IMessage> FindMessageInUnknownChannel(ulong messageId)
         {

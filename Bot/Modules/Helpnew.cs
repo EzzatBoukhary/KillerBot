@@ -29,7 +29,7 @@ namespace Bot.Modules
             _commandHandler = cmdHandler;
         }
 
-        [Summary("Show all available commands")]
+        [Summary("Shows all available commands")]
         [Command("help")]
         public async Task HelpCommand()
         {
@@ -124,7 +124,7 @@ namespace Bot.Modules
         [Command("help"), Alias("h")]
         [Remarks("Shows what a specific command or module does and what parameters it takes.")]
         [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
-        public async Task HelpQuery([Remainder] string query)
+        public async Task HelpQuery([Summary("Command/module name you want help on")][Remainder] string query)
         {
             var builder = new EmbedBuilder();
 

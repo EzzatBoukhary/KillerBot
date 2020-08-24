@@ -21,7 +21,7 @@ namespace Bot.Modules
         }
 
         [Command("SetChannel"), Alias("Set", "toggle on", "on"), RequireUserPermission(GuildPermission.Administrator)]
-        [Example("k!setchannel #joins-leaves")]
+        [Example("k!announcements setchannel #joins-leaves")]
         [Remarks("Sets the channel where to post announcements")]
         public async Task SetAnnouncementChannel([Summary("The #channel you want the announcements to be sent in.")]ITextChannel channel)
         {
@@ -31,7 +31,7 @@ namespace Bot.Modules
         }
 
         [Command("UnsetChannel"), Alias("Unset", "Off", "toggle off"), RequireUserPermission(GuildPermission.Administrator)]
-        [Example("k!unsetchannel")]
+        [Example("k!announcements unsetchannel")]
         [Remarks("Turns posting announcements to a channel off")]
         public async Task UnsetAnnouncementChannel()
         {
@@ -95,6 +95,7 @@ namespace Bot.Modules
         }
 
         [Command("list"), Remarks("Shows all currently set Welcome Messages")]
+        [Example("k!welcome list")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ListWelcomeMessages()
         {
@@ -167,6 +168,7 @@ namespace Bot.Modules
         }
 
         [Command("list"), Remarks("Shows all currently set Leave Messages")]
+        [Example("k!leave list")]
         [RequireUserPermission(GuildPermission.Administrator)]
         public async Task ListLeaveMessages()
         {

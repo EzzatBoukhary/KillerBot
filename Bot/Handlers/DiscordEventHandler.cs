@@ -201,10 +201,11 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.11.1 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.11.2 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
-
+            //var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
+            //channel.SendMessageAsync("<a:SuccessKB:639875484972351508>");
         }
 
         private async Task LoggedOut()
@@ -221,14 +222,14 @@ namespace Bot.Handlers
         {
             _commandHandler.HandleCommandAsync(message);
             _messageRewardHandler.HandleMessageRewards(message);
-            if (message.Author.IsBot == false)
+            var user = message.Author as SocketGuildUser;
+            if (message.Author.IsBot == false && user != null && _globalGuildAccounts.GetById(user.Guild.Id).RoleOnJoinToggle == true)
             {
                 try
                 {
-                    var user = message.Author as SocketGuildUser;
                     var guild = _globalGuildAccounts.GetById(user.Guild.Id);
                     var autorole = user.Guild.GetRole(guild.RoleOnJoin);
-                    if (autorole != null && guild.RoleOnJoinMethod != null && guild.RoleOnJoinToggle == true)
+                    if (autorole != null && guild.RoleOnJoinMethod != null)
                     {
                         _serversetup.Method2(user, guild.RoleOnJoinMethod, message);
                     }
@@ -265,8 +266,6 @@ namespace Bot.Handlers
         {
             await _client.SetGameAsync($"k!help | {_client.Guilds.Count} servers", $"https://twitch.tv/Killer30kill", ActivityType.Streaming);
             _repeatedTaskFunctions.InitRepeatedTasks();
-            var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;
-            channel.SendMessageAsync("<a:SuccessKB:639875484972351508>");
             // ServerBots.Init(_globalGuildAccounts);
 
         }
@@ -310,12 +309,12 @@ namespace Bot.Handlers
         {
             var guild = _globalGuildAccounts.GetById(user.Guild.Id);
             _announcements.UserJoined(user, _client);
-            if (user.IsBot == false)
+            if (user.IsBot == false && guild.RoleOnJoinToggle == true)
             {
                 try
                 {
                     var autorole = user.Guild.GetRole(guild.RoleOnJoin);
-                    if (autorole != null && guild.RoleOnJoinMethod != null && guild.RoleOnJoinToggle == true)
+                    if (autorole != null && guild.RoleOnJoinMethod != null)
                     {
                         _serversetup.Method(user, guild.RoleOnJoinMethod);
                     }

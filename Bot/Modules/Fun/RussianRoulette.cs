@@ -90,7 +90,7 @@ namespace Bot.Modules.Fun
         public async Task StartGame(SocketCommandContext context)
         {
             host = (SocketGuildUser)context.User;
-            await context.Channel.SendMessageAsync("", false, Embed($"{host.Mention} has started a game of Russian Roulette with {PlayerSlots} players!\n\nType `k!rr join @{host.Username}#{host.Discriminator}` to enter the game!", "", false));
+            await context.Channel.SendMessageAsync("", false, Embed($"{host.Mention} has started a game of Russian Roulette with {PlayerSlots} players and a bet of **{Bet} coins**!\n\nType `k!rr join @{host.Username}#{host.Discriminator}` to enter the game!", "", false));
             Players.Add(host);
             AlivePlayers.Add(host);
             _globalUserAccounts.GetById(host.Id).Coins -= Bet;
@@ -106,7 +106,7 @@ namespace Bot.Modules.Fun
             AlivePlayers.Add(newPlayer);
             _globalUserAccounts.GetById(newPlayer.Id).Coins -= Bet;
             if (Players.Count != PlayerSlots)
-                await context.Channel.SendMessageAsync("", false, Embed($"{PlayerSlots - Players.Count} more player(s) needed!\n\nType `k!rr join @{Players.ElementAt(0).Username}#{Players.ElementAt(0).Discriminator}` to enter the game!", "", true));
+                await context.Channel.SendMessageAsync("", false, Embed($"{PlayerSlots - Players.Count} more player(s) needed!\n\nType `k!rr join @{Players.ElementAt(0).Username}#{Players.ElementAt(0).Discriminator}` to enter the game! (**Bet: {Bet} coins**)", "", true));
             else
                 await context.Channel.SendMessageAsync("", false, gameEmbed($"Initial round.\n\nWaiting for {AlivePlayers.ElementAt(0).Mention} to pull the trigger. (`k!rr pt`)", ""));
         }
@@ -115,7 +115,7 @@ namespace Bot.Modules.Fun
         {
             if (Players.Count() < PlayerSlots)
             {
-                await context.Channel.SendMessageAsync("", false, Embed($"{PlayerSlots - Players.Count} more player(s) needed!\n\nType `k!rr join @{Players.ElementAt(0).Username}#{Players.ElementAt(0).Discriminator}` to enter the game!", "", true));
+                await context.Channel.SendMessageAsync("", false, Embed($"{PlayerSlots - Players.Count} more player(s) needed!\n\nType `k!rr join @{Players.ElementAt(0).Username}#{Players.ElementAt(0).Discriminator}` to enter the game! (**Bet: {Bet} coins**)", "", true));
                 return;
             }
             SocketGuildUser player = (SocketGuildUser)context.User;
@@ -129,8 +129,6 @@ namespace Bot.Modules.Fun
             round++;
             int badChamber = RandomChamber();
             int currentChamber = RandomChamber();
-            currentTurn = currentTurn == (AlivePlayers.Count-1) ? currentTurn = 0 : currentTurn + 1;
-
             if (currentChamber == badChamber)
             {
                 var playeracc = _globalUserAccounts.GetById(player.Id);
@@ -149,7 +147,8 @@ namespace Bot.Modules.Fun
                     {
                         if (playeracc.Bought_Items[i].name == "Life Saver")
                         {
-                            await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} almost died BUT the shot missed and they survive! (thanks to **Life Saver**)", ""));
+                            currentTurn = currentTurn == (AlivePlayers.Count - 1) ? currentTurn = 0 : currentTurn + 1;
+                            await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} almost died BUT the shot missed and they survive! (thanks to **Life Saver**) \n\nWaiting for {AlivePlayers.ElementAt(currentTurn).Mention} to pull the trigger. (`k!rr pt`)", ""));
                             playeracc.Bought_Items.Remove(playeracc.Bought_Items[i]);
                             _globalUserAccounts.SaveAccounts(playeracc.Id);
                             return;
@@ -159,7 +158,7 @@ namespace Bot.Modules.Fun
                 await DieAndCheckForWin(player, context).ConfigureAwait(false);
                 if (gameended == false)
                 {
-                    AlivePlayers.Remove(player);
+                    //AlivePlayers.Remove(player);
                     for (int i = 0; i < playeracc.Bought_Items.Count; i++)
                     {
                         if (playeracc.Bought_Items[i].Duration.CompareTo(new TimeSpan(long.MaxValue)) < 0)
@@ -174,18 +173,23 @@ namespace Bot.Modules.Fun
                         else if (playeracc.Bought_Items[i].name == "No Loss Day")
                         {
 
-                            await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost NOTHING due to **No Loss Day**!\n\nWaiting for {Players.ElementAt(currentTurn).Mention} to pull the trigger. (`k!rr pt`)", ""));
+                            await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost NOTHING due to **No Loss Day**!\n\nWaiting for {AlivePlayers.ElementAt(currentTurn).Mention} to pull the trigger. (`k!rr pt`)", ""));
                             playeracc.Coins += Bet;
                             _globalUserAccounts.SaveAccounts(playeracc.Id);
                             return;
                         }
-                        
+
                     }
-                    await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost 3 Coins!\n\nWaiting for {Players.ElementAt(currentTurn).Mention} to pull the trigger. (`k!rr pt`)", ""));
+                    currentTurn = currentTurn % AlivePlayers.Count;
+
+                    await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost **{Bet} coins**!\n\nWaiting for {AlivePlayers.ElementAt(currentTurn).Mention} to pull the trigger. (`k!rr pt`)", ""));
                 }
             }
             else
-                await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*click*\n\n{player.Mention} survived!\n\nWaiting for {Players.ElementAt(currentTurn).Mention} to pull the trigger. (`k!rr pt`)", ""));
+            {
+                currentTurn = currentTurn == (AlivePlayers.Count - 1) ? currentTurn = 0 : currentTurn + 1;
+                await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*click*\n\n{player.Mention} survived!\n\nWaiting for {AlivePlayers.ElementAt(currentTurn).Mention} to pull the trigger. (`k!rr pt`)", ""));
+            }
         }
 
         private async Task DieAndCheckForWin(SocketGuildUser player, SocketCommandContext context)
@@ -242,7 +246,7 @@ namespace Bot.Modules.Fun
                 {
                     lost.Coins += Bet;
                     winner.Coins += Bet * 3;
-                    await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost NOTHING due to **No Loss Day**!\n\n{Players.ElementAt(0).Mention} won the game and got **{Bet * 2} coins** due to **Double Day**!", ""));
+                    await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost NOTHING due to **No Loss Day**!\n\n{AlivePlayers.ElementAt(0).Mention} won the game and got **{Bet * 2} coins** due to **Double Day**!", ""));
                 }
                 else if (NoLoss == false && Double == true)
                 {

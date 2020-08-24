@@ -17,6 +17,7 @@ using System.IO;
 using System.Net.Http;
 using Bot.Entities;
 using Bot.Features.GlobalAccounts;
+using System.Text.RegularExpressions;
 
 namespace Bot.Modules
 {
@@ -83,6 +84,13 @@ namespace Bot.Modules
         {
             if (feedback == null)
                 throw new ArgumentException("Please write a feedback to send.");
+
+            var guild = "";
+            if (Context.Message.Channel is SocketDMChannel)
+                guild = "[KillerBot DMs]";
+            else
+                guild = $"{Context.Guild.Name}";
+
             var embed = new EmbedBuilder()
             {
                 Color = (Color.Green)
@@ -98,9 +106,9 @@ namespace Bot.Modules
             }
             else
             {
-                embed2.WithDescription($"```{feedback}```");
-                    }
-            embed2.WithFooter(new EmbedFooterBuilder().WithText($"Feedback from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {Context.Guild.Name}"))
+                embed2.WithDescription($"{feedback}");
+            }
+            embed2.WithFooter(new EmbedFooterBuilder().WithText($"Feedback from: {Context.User.Username}#{Context.User.Discriminator} | Guild: {guild}"))
             .WithAuthor($"{Context.User}", Context.User.GetAvatarUrl());
 
             var channel = Context.Client.GetChannel(550073251641032717) as SocketTextChannel;
@@ -169,12 +177,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.11.1` <:KBupdate:580129240889163787> \n \n{dot} Fixed a bug in the self-role system where the default prefix wouldn't work as a way to use the phrases.";
+            embed.Description = $" **== Patch ==** `v1.12.0` <:KBupdate:580129240889163787> \n \n{dot} A possible fix to the bot's connection issues.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: June 29th - 2020 10:20 PM GMT");
+                x.WithText("Last updated: July 12th - 2020 08:25 PM GMT");
 
 
 
@@ -285,8 +293,18 @@ namespace Bot.Modules
                 embed.WithAuthor("== SERVER INFORMATION ==");
                 embed.WithColor(Color.Blue);
                 embed.WithFooter($"Created {daysAgo}");
-                embed.WithTitle(guild.Name);
-                embed.Description = $"{dot} ID: **{guild.Id}**" +
+            embed.Title += $"{guild.Name} \n";
+            if (guild.PremiumTier == PremiumTier.Tier1)
+                embed.Title += $"<:KBBoost:731580776117698618>";
+            else if (guild.PremiumTier == PremiumTier.Tier2)
+                embed.Title += $"<:KBBoost:731580776117698618> <:KBBoost:731580776117698618>";
+            else if (guild.PremiumTier == PremiumTier.Tier3)
+                embed.Title += $"<:KBBoost:731580776117698618> <:KBBoost:731580776117698618> <:KBBoost:731580776117698618>";
+            if (guild.PremiumSubscriptionCount > 0 && guild.PremiumSubscriptionCount > 1)
+                embed.Title += $" ({guild.PremiumSubscriptionCount} boosts)";
+            else
+                embed.Title += $"({guild.PremiumSubscriptionCount} boost)";
+            embed.Description = $"{dot} ID: **{guild.Id}**" +
                 $"\n{dot} Owner: **{ownername.ToString()}**" +
                 $"\n{dot} Creation: **{guild.CreatedAt.DateTime.ToLongDateString()} {guild.CreatedAt.DateTime.ToLongTimeString()} UTC**" +
                 $"\n{dot} Region: **{guild.VoiceRegionId.ToString()}**" +
@@ -457,10 +475,7 @@ namespace Bot.Modules
                 }
                 foreach (GuildPermission perm in mentionedRole.Permissions.ToList())
                 {
-                    if (perm.ToString() == "512")
-                        perms += "`Video`, ";
-                    else
-                        perms += $"`{perm.ToString()}`, ";
+                    perms += $"`{perm.ToString()}`, ";
                     
                 }
                 embed.AddField(x => {
@@ -472,6 +487,7 @@ namespace Bot.Modules
                 await channel.SendMessageAsync("", false, embed.Build());
             }
         }
+
         [Command("mock"), Summary("rEpEaTs yOuR tExT lIkE tHiS.")]
         public async Task Mock([Summary("tHe tExT yOu wAnT tO mOcK")][Remainder] string input = "")
         {
@@ -551,7 +567,6 @@ namespace Bot.Modules
             {
                 emb.Description += $" {nitro2}";
             }
-
             //Tags looking for nitro
             else if (user.Discriminator == "0001")
                 emb.Description += $" {nitro}";
@@ -770,6 +785,15 @@ namespace Bot.Modules
             if (user.GuildPermissions.MuteMembers)
                 permissions += "Mute Members, ";
 
+            if (user.GuildPermissions.Stream)
+                permissions += "Stream, ";
+
+            if (user.GuildPermissions.PrioritySpeaker)
+                permissions += "Priority Speaker, ";
+
+            if (user.GuildPermissions.ChangeNickname)
+                permissions += "Change Nickname, ";
+
             if (string.IsNullOrEmpty(permissions))
                 permissions += "No permissions. ";
 
@@ -785,30 +809,128 @@ namespace Bot.Modules
             wr.UserAgent = "KillerBot";
             await ReplyAsync(JsonConvert.DeserializeObject<Dadjoke>(new StreamReader(wr.GetResponse().GetResponseStream()).ReadToEnd()).joke);
         }
-        /*
+        
         [Command("embed")]
         [Summary("Create an embed in a specific channel.")]
         [Remarks("You can seperate the embed title from the description with a |")]
-        public async Task Embed(SocketTextChannel channel, string color, [Remainder] string args)
+        [Example("k!embed #cool #00F1FF epic title | epic description")]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
+        public async Task Embed([Summary("OPTIONAL: Text channel to send the embed in")]SocketTextChannel channel, [Summary("The embed's color (HEX CODE)")]string color, [Summary("Embed's title | OPTIONAL: Embed's description")][Remainder] string args = null)
         {
+            var user = Context.User as SocketGuildUser;
+            if (((SocketGuildUser)Context.User).GetPermissions(channel).SendMessages == false)
+            {
+                await ReplyAsync($"{Constants.fail} You do not have enough permissions to send that message in that channel.");
+                return;
+            }
+
+            var hex = color.Replace("#", "");
+
+            if (!new Regex("^[a-zA-Z0-9]*$").IsMatch(hex) || hex.Length != 6)
+            {
+                await ReplyAsync($"{Constants.fail} Please enter a valid hexadecimal. \nExample: `k!embed #general #00F1FF epic title | epic description`");
+                return;
+            }
+            if (args == null)
+            {
+                await ReplyAsync($"{Constants.fail} Please include a title for the embed and an optional description. \nExample: `k!embed #general #00F1FF epic title | epic description`");
+                return;
+            }
+            var RGB = HexToRGB(hex);
             var td = args.Split('|', StringSplitOptions.RemoveEmptyEntries);
-            var embed = new EmbedBuilder();
-                //.WithColor()
+
+            var embed = new EmbedBuilder()
+                .WithColor(RGB.R, RGB.G, RGB.B);
+
             if (td.Length == 1)
             {
                 embed.Title = args;
             }
             else if (td.Length == 2)
             {
-                embed.Title = $"{td.Take(1)}";
-                embed.Description = $"{td.Take(2)}";
+                bool title = false;
+                foreach (var text in td)
+                {
+                    if (title == false)
+                    {
+                        title = true;
+                        embed.Title = $"{text}";
+                    }
+                    else
+                        embed.Description = $"{text}";
+                }
             }
-            await channel.SendMessageAsync("", false, embed.Build());
-        }*/
+            var msg = await channel.SendMessageAsync("", false, embed.Build());
+            var emb = new EmbedBuilder()
+                .WithColor(Color.Green)
+                .WithDescription($"{Constants.success} Embed sent in {channel.Mention}! \n[Jump To Message!]({msg.GetJumpUrl()})");
+            await ReplyAsync("", false, emb.Build());
+        }
+        [Command("embed")]
+        [Summary("Create an embed in the current channel.")]
+        [Remarks("You can seperate the embed title from the description with a |")]
+        [Example("k!embed #00F1FF epic title | epic description")]
+        [Ratelimit(4, 1, Measure.Minutes, RatelimitFlags.None)]
+        public async Task Embed([Summary("The embed's color (HEX CODE)")]string color, [Summary("Embed's title | OPTIONAL: Embed's description")][Remainder] string args = null)
+        {
+            var hex = color.Replace("#", "");
+
+            if (!new Regex("^[a-zA-Z0-9]*$").IsMatch(hex) || hex.Length != 6)
+            {
+                await ReplyAsync($"{Constants.fail} Please enter a valid hexadecimal. \nExample: `k!embed #00F1FF epic title | epic description`");
+                return;
+            }
+            if (args == null)
+            {
+                await ReplyAsync($"{Constants.fail} Please include a title for the embed and an optional description. \nExample: `k!embed #00F1FF epic title | epic description`");
+                return;
+            }
+            var RGB = HexToRGB(hex);
+            var td = args.Split('|', StringSplitOptions.RemoveEmptyEntries);
+
+            var embed = new EmbedBuilder()
+                .WithColor(RGB.R, RGB.G, RGB.B);
+
+            if (td.Length == 1)
+            {
+                embed.Title = args;
+            }
+            else if (td.Length == 2)
+            {
+                bool title = false;
+                foreach (var text in td)
+                {
+                    if (title == false)
+                    {
+                        title = true;
+                        embed.Title = $"{text}";
+                    }
+                    else
+                        embed.Description = $"{text}";
+                }
+            }
+            await Context.Channel.SendMessageAsync("", false, embed.Build());
+        }
+        // Convert a hexidecimal to an RGB value (input does not include the '#')
+        public static Color HexToRGB(string hex)
+        {
+            // First two values of the hex
+            int r = int.Parse(hex.Substring(0, hex.Length - 4), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+            // Get the middle two values of the hex
+            int g = int.Parse(hex.Substring(2, 2), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+            // Final two values
+            int b = int.Parse(hex.Substring(4), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+            return new Discord.Color(r, g, b);
+        }
+
         [Command("FindMessageID"), Alias("getmessageid", "messageid", "fmi", "gmi")]
         [Summary("Gets the message id of a message in the current channel with the provided message text")]
         [Remarks("Keep in mind that this isn't the best efficient way to get the ID of a message. If you're having any trouble try doing it manually.")]
         [Example("k!messageid Hey find my id!")]
+        [Ratelimit(3, 1, Measure.Minutes, RatelimitFlags.None)]
         public async Task FindMessageIDAsync([Summary("The content of the message to search for")][Remainder] string messageContent)
         {
             if (messageContent.IsEmptyOrWhiteSpace())

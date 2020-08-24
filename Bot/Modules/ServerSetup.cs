@@ -599,6 +599,7 @@ namespace Bot.Modules
             var autorole = user.Guild.GetRole(guild.RoleOnJoin);
             if (autorole != null)
             {
+                if (user.Roles.Contains(autorole)) { return; }
                 if (method == "phrased")
                 {
                     await GiveRoleOnPhrase(user, msg);
