@@ -188,13 +188,13 @@ namespace Bot.Providers
                 if(role is null) continue;
                 if (sender.RoleIds.Contains(roleId))
                 {
-                    await sender.RemoveRoleAsync(role);
+                    await sender.RemoveRoleAsync(role, options: new RequestOptions { AuditLogReason = "[Role By Phrase]" });
                     await channel.SendMessageAsync($"<a:SuccessKB:639875484972351508> I have taken away from you **{role.Name}**!");
                     return;
                 }
                 try
                 {
-                    await sender.AddRoleAsync(role);
+                    await sender.AddRoleAsync(role, options: new RequestOptions { AuditLogReason = "[Role By Phrase]" });
                     await channel.SendMessageAsync($"<a:SuccessKB:639875484972351508> I have given you **{role.Name}**!");
                 }
                 catch

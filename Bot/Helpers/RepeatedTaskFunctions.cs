@@ -54,7 +54,7 @@ namespace Bot.Helpers
                 foreach (var reminder in account.Reminders)
                 {
                     if (reminder.DueDate >= now) continue;
-                    dmChannel.SendMessageAsync(":alarm_clock: Reminder: " + reminder.Description);
+                    await dmChannel.SendMessageAsync(":alarm_clock: Reminder: " + reminder.Description + $"\n(Original Message: <{reminder.MsgURL}>)");
                     // Usage of a second list because trying to use 
                     // accountReminders.Remove(reminder) would break the foreach loop
                     toBeRemoved.Add(reminder);

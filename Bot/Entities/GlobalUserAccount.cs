@@ -82,11 +82,13 @@ namespace Bot.Entities
     {
         public DateTime DueDate;
         public string Description;
+        public string MsgURL;
 
-        public ReminderEntry(DateTime dueDate, string description)
+        public ReminderEntry(DateTime dueDate, string description, string msgURL)
         {
             DueDate = dueDate;
             Description = description;
+            MsgURL = msgURL;
         }
         }
     }

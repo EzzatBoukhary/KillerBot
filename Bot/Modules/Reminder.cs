@@ -50,7 +50,7 @@ namespace Bot.Modules
             _globalUserAccounts = globalUserAccounts;
         }
 
-        [Command(""), Priority(0), Remarks("Usage: {prefix}remind {thing to remind} in {time until I remind you} (__in__ is very important to be there.)")]
+        [Command(""), Priority(0), Remarks("Usage: k!remind {thing to remind} in {time until I remind you} (__in__ is very important to be there.)")]
         [Summary("Adds a reminder.")]
         [Example("k!remind DO THE THING! :rage: in 2d 23h 3m 12s")]
         public async Task AddReminder([Summary("The thing you want the bot to remind you about, in (how much time till it sends the reminder)")][Remainder] string args = null)
@@ -86,7 +86,7 @@ namespace Bot.Modules
                 await ReplyAsync("Please provide a valid time I can remind you in. Make sure its a positive 2 digit number. \nExample: `k!remind DO THE THING! :rage: in 2d 23h 3m 12s` \nNotes: The `in` before the time parameters is very important! and the time parameters can't be more than 2 digit numbers.");
                 return;
             }
-            var newReminder = new ReminderEntry(timeDateTime, reminderString);
+            var newReminder = new ReminderEntry(timeDateTime, reminderString, Context.Message.GetJumpUrl());
 
             var account = _globalUserAccounts.GetById(Context.User.Id);
 
@@ -104,18 +104,18 @@ namespace Bot.Modules
 
             var embed = new EmbedBuilder();
             embed.WithAuthor(Context.User);
-            embed.WithCurrentTimestamp();
+            embed.WithTimestamp(timeDateTime);
             embed.WithColor(Color.Blue);
-            embed.WithTitle("I will remind you through DM:");
+            embed.WithTitle("I will remind you through DM to:");
             embed.AddField($"**____**", $"{bigmess2}");
 
             await ReplyAsync("", false, embed.Build());
         } 
 
-        [Command("remindAt")]
+        [Command("on")]
         [Priority(1)]
         [Remarks("Add a reminder on a specific date and time (UTC/GMT+0)")]
-        [Summary("How to use: e.g: `remind 2019-03-12 ANY_TEXT at 14:22` __at__ is very important (UTC time) to be there as well as the yyyy-mm-dd format. ")]
+        [Summary("How to use: e.g: `k!remind on 08-28-2020 ANY_TEXT at 14:22` __at__ is very important (UTC time) to be there as well as the mm-dd-yyyy or yyyy-mm-dd format. ")]
         public async Task AddReminderOn(string timeOn, [Remainder] string args)
         {
             string[] splittedArgs = { };
@@ -130,14 +130,14 @@ namespace Bot.Modules
 
             if (!DateTime.TryParse(timeOn, out var myDate)) //|| myDate < DateTime.Now
             {
-                await ReplyAsync("Date input is not correct, you can try this `yyyy-mm-dd`");
+                await ReplyAsync("Date input is not correct, the format should be `mm-dd-yyyy` or `yyyy-mm-dd`");
                 return;
             }
 
             if (splittedArgs == null)
             {
                 await ReplyAsync("If you don't know how to use the command it should be like:\n" +
-                                 "remind 2018-08-22 ANY_TEXT at 14:22`\n" +
+                                 "k!remind on 08-28-2020 ANY_TEXT at 14:22`\n" +
                                  "And the ` in ` before the timeparameters is very important.");
                 return;
             }
@@ -152,20 +152,20 @@ namespace Bot.Modules
             var reminderString = string.Join(" at ", splittedArgs, 0, splittedArgs.Length - 1);
             var hourTime = TimeSpan.ParseExact(timeString, "h\\:mm", CultureInfo.CurrentCulture);
             var timeDateTime = TimeZoneInfo.ConvertTimeToUtc(myDate + hourTime, tz);
-            var newReminder = new ReminderEntry(timeDateTime, reminderString);
+            var newReminder = new ReminderEntry(timeDateTime, reminderString, Context.Message.GetJumpUrl());
 
             account.Reminders.Add(newReminder);
             _globalUserAccounts.SaveAccounts(Context.User.Id);
 
             var bigmess2 =
                 $"{reminderString}\n\n" +
-                $"I will send you a DM in  __**{myDate + hourTime}**__ `by {timezone}`\n";
+                $"I will send you a DM on  __**{myDate + hourTime}**__ `by {timezone}`\n";
 
             var embed = new EmbedBuilder();
             embed.WithAuthor(Context.User);
-            embed.WithCurrentTimestamp();
+            embed.WithTimestamp(timeDateTime);
             embed.WithColor(Color.Blue);
-            embed.WithTitle("I will remind you through DM:");
+            embed.WithTitle("I will remind you through DM to:");
             embed.AddField($"**____**", $"{bigmess2}");
             await ReplyAsync("", false, embed.Build());
         }
@@ -173,16 +173,28 @@ namespace Bot.Modules
 
 
         [Command("List"), Priority(2), Summary("List all your reminders")]
-        public async Task ShowReminders()
+        public async Task ShowReminders([Summary("The number of the page in the reminders list if any other pages exist.")] int page = 1)
         {
             var reminders = _globalUserAccounts.GetById(Context.User.Id).Reminders;
             var embB = new EmbedBuilder()
                 .WithTitle("Your Reminders (Times are in UTC / GMT+0)")
                 //.WithFooter("Did you know? " + Global.GetRandomDidYouKnow())
-                .WithDescription("To delete a reminder use the command `{prefix}reminder remove <number>` " +
+                .WithDescription("To delete a reminder use the command `k!reminder remove <number>` " +
                                  "and the number is the one to the left of the Dates inside the [].");
-
-            for (var i = 0; i < reminders.Count; i++)
+            const int AlarmsPerPage = 5;
+            var account = _globalUserAccounts.GetById(Context.User.Id);
+            // Calculate the highest accepted page number => amount of pages we need to be able to fit all users in them
+            // (amount of users) / (how many to show per page + 1) results in +1 page more every time we exceed our usersPerPage  
+            var lastPageNumber = 1 + (reminders.Count / (AlarmsPerPage + 1));
+            if (page > lastPageNumber)
+            {
+                await ReplyAsync($"There are not that many pages...\nPage {lastPageNumber} is the last one...");
+                return;
+            }
+            embB.WithFooter($"Page {page}/{lastPageNumber} | k!reminder list <page number>");
+            int endIndex = page * AlarmsPerPage;
+            int startIndex = endIndex - AlarmsPerPage;
+            for (int i = startIndex; i < endIndex && i < reminders.Count; i++)
             {
                 embB.AddField($"[{i+1}] {reminders[i].DueDate:f}", reminders[i].Description, true);
             }
@@ -194,7 +206,7 @@ namespace Bot.Modules
         public async Task DeleteReminder(int index)
         {
             var reminders = _globalUserAccounts.GetById(Context.User.Id).Reminders;
-            var responseString = "Reminder doesn't exist, maybe use `{prefix}remind list` before you try to " +
+            var responseString = "Reminder doesn't exist, maybe use `k!remind list` before you try to " +
                                  "delete a reminder.";
             if (index > 0 && index <= reminders.Count)
             {

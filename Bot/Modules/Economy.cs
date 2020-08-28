@@ -572,6 +572,8 @@ namespace Bot.Modules
                 {
                     await ReplyAsync("You can't deposit 0 coins... :neutral_face:");
                 }
+                else if (account.Coins < 0)
+                    await ReplyAsync("You are in debt, you have nothing in your wallet to deposit.");
                 else
                 {
                     await ReplyAsync($"{Constants.success} {account.Coins} coins were deposited to your bank.");
@@ -991,8 +993,8 @@ namespace Bot.Modules
 
     #region Rock Paper Scissors Commands
     [Command("rps")]
-        [Ratelimit(5, 2, Measure.Minutes, RatelimitFlags.None)]
-        [Summary("Do this command to know more info about the game. for example.'")]
+        [Ratelimit(7, 2, Measure.Minutes, RatelimitFlags.None)]
+        [Summary("Do this command to know more info about the game. Can only be used 7 times in 2 minutes.")]
         [Example("k!rps 30 rock")]
         [Remarks("Put a bet and play rock paper scissors")]
 
@@ -1162,9 +1164,9 @@ namespace Bot.Modules
         [Command("inventory"), Alias("inven")]
         [Summary("The list of items you have if there's any.")]
         [Remarks("To get new stuff do `k!buy {item}`")]
-        public async Task Inv([Summary("The number of the page in the shop menu if any other pages exist.")] int page = 1)
+        public async Task Inv([Summary("The number of the page in your inventory if any other pages exist.")] int page = 1)
         {
-            const int ItemsPerPage = 3;
+                const int ItemsPerPage = 3;
                 var account = _globalUserAccounts.GetById(Context.User.Id);
                 // Calculate the highest accepted page number => amount of pages we need to be able to fit all users in them
                 // (amount of users) / (how many to show per page + 1) results in +1 page more every time we exceed our usersPerPage  
@@ -1204,9 +1206,9 @@ namespace Bot.Modules
                 await ReplyAsync("", false, embed.Build());
         }
         [Command("inventory"), Alias("inven")]
-        [Summary("The list of items you have if there's any.")]
+        [Summary("The list of items a user has if there's any.")]
         [Remarks("To get new stuff do `k!buy {item}`")]
-        public async Task Inv([Summary("OPTIONAL: The user you want to check their inventory. Use \"\" if the name has spaces.")] SocketUser user, [Summary("The number of the page in the shop menu if any other pages exist.")] int page = 1)
+        public async Task Inv([Summary("OPTIONAL: The user you want to check their inventory. Use \"\" if the name has spaces.")] SocketUser user, [Summary("The number of the page in the user's inventory if any other pages exist.")] int page = 1)
         {
             const int ItemsPerPage = 3;
                 var account = _globalUserAccounts.GetById(user.Id);

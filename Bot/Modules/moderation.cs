@@ -157,7 +157,7 @@ namespace Bot.Modules
         public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
         {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
-            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole2(exec);
             if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
             else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
@@ -184,7 +184,7 @@ namespace Bot.Modules
         public async Task AddRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy] SocketRole role, [Remainder] SocketGuildUser user)
         {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
-            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole2(exec);
             if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
             else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
@@ -211,7 +211,7 @@ namespace Bot.Modules
          public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketGuildUser user, [Remainder] SocketRole role)
          {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
-            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole2(exec);
             if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
             else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
@@ -240,7 +240,7 @@ namespace Bot.Modules
         public async Task RemoveRoleAsync([RequireBotHigherHirachy][RequireUserHierarchy]SocketRole role, [Remainder] SocketGuildUser user)
         {
             var exec = (Context.Guild as SocketGuild).GetUser(Context.User.Id);
-            IRole highestRole = DiscordHelpers.GetUsersHigherstRole(exec);
+            IRole highestRole = DiscordHelpers.GetUsersHigherstRole2(exec);
             if (highestRole == null && Context.User.Id != Context.Guild.OwnerId)
                 throw new ArgumentException("You don't have enough permissions due to role hierarchy");
             else if (highestRole == null && Context.User.Id == Context.Guild.OwnerId)
@@ -971,10 +971,8 @@ namespace Bot.Modules
         [Cooldown(10)]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
-        public async Task ChannelLock([Summary("The text channel you want to lock")]IGuildChannel textChannel = null, [Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The duration you want to lock the channel for")]string time = null)
+        public async Task ChannelLock([Summary("The text channel you want to lock")]IGuildChannel textChannel = null, [Summary("OPTIONAL: The duration you want to lock the channel for")]string time = null)
         {
-            if (reason == null)
-                reason = "[No reason was provided]";
             if (time == null)
             {
                 try
@@ -983,7 +981,7 @@ namespace Bot.Modules
                     //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                     EmbedBuilder builder = new EmbedBuilder
                     {
-                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason}",
+                        Description = $"🔒  <#{textChannel.Id}> Locked",
                         Color = Color.Orange,
 
                     };
@@ -1013,7 +1011,7 @@ namespace Bot.Modules
                     //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                     EmbedBuilder builder = new EmbedBuilder
                     {
-                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason} \n**Duration:** {timeset}",
+                        Description = $"🔒  <#{textChannel.Id}> Locked \n\n**Duration:** {timeset}",
                         Color = Color.Orange,
 
                     };
@@ -1070,10 +1068,8 @@ namespace Bot.Modules
         [Cooldown(10)]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
-        public async Task ChannelLock([Summary("OPTIONAL: The reason behind locking the channel")]string reason = null, [Summary("OPTIONAL: The duration you want to lock the channel for")]string time = null)
+        public async Task ChannelLock([Summary("OPTIONAL: The duration you want to lock the channel for")]string time = null)
         {
-            if (reason == null)
-                reason = "[No reason was provided]";
             if (time == null)
             {
                 try
@@ -1082,7 +1078,7 @@ namespace Bot.Modules
                     //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                     EmbedBuilder builder = new EmbedBuilder
                     {
-                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason}",
+                        Description = $"🔒  <#{textChannel.Id}> Locked",
                         Color = Color.Orange,
 
                     };
@@ -1112,7 +1108,7 @@ namespace Bot.Modules
                     //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                     EmbedBuilder builder = new EmbedBuilder
                     {
-                        Description = $"🔒  <#{textChannel.Id}> Locked \n \n**Reason:** {reason} \n**Duration:** {timeset}",
+                        Description = $"🔒  <#{textChannel.Id}> Locked \n\n**Duration:** {timeset}",
                         Color = Color.Orange,
 
                     };
@@ -1169,17 +1165,15 @@ namespace Bot.Modules
         [Cooldown(10)]
         [RequireUserPermission(GuildPermission.ManageChannels)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
-        public async Task ChannelUnLock([Summary("The text channel you want to unlock")]IGuildChannel textChannel = null, [Summary("OPTIONAL: The reason behind unlocking the channel")]string reason = null)
+        public async Task ChannelUnLock([Summary("The text channel you want to unlock")]IGuildChannel textChannel = null)
         {
-            if (reason == null)
-                reason = "[No reason was provided]";
             try
             {
                 textChannel = textChannel ?? (IGuildChannel)Context.Channel;
                 //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                 EmbedBuilder builder = new EmbedBuilder
                 {
-                    Description = $"🔓  <#{textChannel.Id}> Unlocked \n \n**Reason:** {reason}",
+                    Description = $"🔓  <#{textChannel.Id}> Unlocked",
                     Color = Color.DarkGreen,
 
                 };
@@ -1245,10 +1239,8 @@ namespace Bot.Modules
         [Cooldown(15)]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
-        public async Task ServerLock([Summary("OPTIONAL: The reason behind locking the server")]string reason = null, [Summary("OPTIONAL: The time you want to lock the server for")]string time = null)
+        public async Task ServerLock([Summary("OPTIONAL: The time you want to lock the server for")]string time = null)
         {
-            if (reason == null)
-                reason = "[No reason was provided]";
             var guild = Context.Guild;
             EmbedBuilder emb = new EmbedBuilder()
                 .WithColor(Color.DarkerGrey)
@@ -1261,7 +1253,7 @@ namespace Bot.Modules
                     //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                     EmbedBuilder builder = new EmbedBuilder
                     {
-                        Description = $"🔒  **{guild.Name}** Locked \n \n**Reason:** {reason}",
+                        Description = $"🔒  **{guild.Name}** Locked",
                         Color = Color.Orange,
 
                     };
@@ -1306,7 +1298,7 @@ namespace Bot.Modules
                     //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                     EmbedBuilder builder = new EmbedBuilder
                     {
-                        Description = $"🔒  **{guild.Name}** Locked \n \n**Reason:** {reason} \n**Duration:** {timeset}",
+                        Description = $"🔒  **{guild.Name}** Locked \n\n**Duration:** {timeset}",
                         Color = Color.Orange,
 
                     };
@@ -1392,10 +1384,8 @@ namespace Bot.Modules
         [Cooldown(15)]
         [RequireUserPermission(GuildPermission.Administrator)]
         [RequireBotPermission(GuildPermission.ManageChannels)]
-        public async Task ServerUnLock([Summary("OPTIONAL: The reason behind unlocking the server")]string reason = null)
+        public async Task ServerUnLock()
         {
-            if (reason == null)
-                reason = "[No reason was provided]";
             EmbedBuilder emb = new EmbedBuilder()
                 .WithColor(Color.DarkerGrey)
                 .WithDescription("🔐 Unlocking server... this may take some time.");
@@ -1406,7 +1396,7 @@ namespace Bot.Modules
                 //IGuildChannel textChannel = (IGuildChannel)Context.Channel;
                 EmbedBuilder builder = new EmbedBuilder
                 {
-                    Description = $"🔓  **{guild.Name}** Unlocked \n \n**Reason:** {reason}",
+                    Description = $"🔓  **{guild.Name}** Unlocked",
                     Color = Color.DarkGreen,
 
                 };

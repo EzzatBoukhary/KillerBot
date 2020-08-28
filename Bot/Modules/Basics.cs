@@ -177,12 +177,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.12.0` <:KBupdate:580129240889163787> \n \n{dot} A possible fix to the bot's connection issues.";
+            embed.Description = $" **== Minor Release ==** `v1.12.0` <:KBupdate:580129240889163787> \n \n**[Added]** \n \n{dot} Added `k!setslowmode`, `k!setserverslowmode` and `k!embed` commands. \n \n**[Changed/Fixed]** \n \n{dot} Fixed a major bug in russian roulette that happens sometimes with 3+ players. \n \n{dot} Pinned messages are now ignored in the purge command. \n \n{dot} Fixed a bug with the deposit command. \n \n{dot} Removed reasons from the locking commands. \n \n{dot} Changes in the rob command. \n \n{dot} Minor changes to the google commands. \n \n{dot} Improvements to the reminder commands. \n \n{dot} Fixed a bug in the mute, addrole, removerole commands. \n \n{dot} Added audit log reasons to role changes in RoleByPhrase. \n \n{dot} Fixed some typos in the commands' info.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: July 12th - 2020 08:25 PM GMT");
+                x.WithText("Last updated: August 28th - 2020 08:25 PM GMT");
 
 
 

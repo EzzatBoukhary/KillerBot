@@ -95,14 +95,14 @@ namespace Bot.Handlers
                  var prefix = "k!";
                  var cmdSearchResult = _cmdService.Search(context, argPos);
                 CommandMatch cmd = cmd;
-                foreach(var cmds in cmdSearchResult.Commands)
+                if (!cmdSearchResult.IsSuccess) { return; }
+                foreach (var cmds in cmdSearchResult.Commands)
                 {
                     if (cmdSearchResult.IsSuccess)
                     {
                         cmd = cmds;
                     }
                 }
-                 if (!cmdSearchResult.IsSuccess) { return; }
 
                  context.RegisterCommandUsage();
 
