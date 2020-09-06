@@ -776,11 +776,11 @@ namespace Bot.Modules
             {
                 try
                 {
-                    muteRole = await guild.CreateRoleAsync(muteRoleName, GuildPermissions.None, null, false, false).ConfigureAwait(false);
+                    muteRole = await guild.CreateRoleAsync(muteRoleName, GuildPermissions.None, null, false /*false*/).ConfigureAwait(false);
                 }
                 catch
                 {
-                    muteRole = guild.Roles.FirstOrDefault(r => r.Name == muteRoleName) ?? await guild.CreateRoleAsync(defaultMuteRoleName, GuildPermissions.None, null, false, false).ConfigureAwait(false);
+                    muteRole = guild.Roles.FirstOrDefault(r => r.Name == muteRoleName) ?? await guild.CreateRoleAsync(defaultMuteRoleName, GuildPermissions.None, null, false /*false*/).ConfigureAwait(false);
                 }
             }
 

@@ -25,7 +25,17 @@ namespace Bot
         internal Task Log(LogMessage logMessage)
         {
             string message = String.Concat(DateTime.Now.ToShortTimeString(), " [", logMessage.Source, "] ", logMessage.Message);
-            if(_appSettings.LogIntoConsole) LogConsole(message, logMessage.Severity);
+            if (_appSettings.LogIntoConsole)
+            {
+                LogConsole(message, logMessage.Severity);
+                if (logMessage.Exception != null)
+                {
+                    LogConsole(logMessage.Exception.Message, logMessage.Severity);
+                    LogConsole(logMessage.Exception.StackTrace, logMessage.Severity);
+                    LogConsole(logMessage.Exception.Message, logMessage.Severity);
+                }
+            }
+
             if(_appSettings.LogIntoFile) LogFile(message);
             return Task.CompletedTask;
         }

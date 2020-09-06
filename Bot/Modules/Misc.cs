@@ -50,7 +50,7 @@ namespace Bot.Modules
         {
             EmbedBuilder builder = new EmbedBuilder();
             builder.Color = new Color(114, 137, 218);
-            builder.AddField("Version", $"The current version of the bot is: `1.12.1`");
+            builder.AddField("Version", $"The current version of the bot is: `1.12.2`");
             await ReplyAsync("", false, builder.Build());
         }
         [Command("Uptime")]

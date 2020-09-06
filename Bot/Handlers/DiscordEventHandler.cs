@@ -201,7 +201,7 @@ namespace Bot.Handlers
         private async Task LoggedIn()
         {
             _logger.Log(LogSeverity.Error, "=== KillerBot Console ===", "\n");
-            _logger.Log(LogSeverity.Warning, "| Version 1.12.1 |","\n");
+            _logger.Log(LogSeverity.Warning, "| Version 1.12.2 |","\n");
             _logger.Log(LogSeverity.Verbose, "Made By Panda#8822", "\n");
             _logger.Log(LogSeverity.Info, $"{DateTime.Today.Day}-{DateTime.Today.Month}-{DateTime.Today.Year}", "\n");
             //var channel = _client.GetChannel(550072406505553921) as SocketTextChannel;

@@ -177,12 +177,12 @@ namespace Bot.Modules
             var embed = new EmbedBuilder();
             embed.WithColor(Color.Green);
             embed.WithTitle("== Changelog ==");
-            embed.Description = $" **== Patch ==** `v1.12.1` <:KBupdate:580129240889163787> \n \n**[Removed]** \n \n{dot} Removed `k!embed` commands as it is not fully done and has some bugs.";
+            embed.Description = $" **== Patch ==** `v1.12.2` <:KBupdate:580129240889163787> \n \n**[Changed/Fixed]** \n \n{dot} Fixed the bug affecting `k!help` command and most other paginated commands.";
             embed.WithFooter(x =>
 
             {
 
-                x.WithText("Last updated: August 30th - 2020 07:05 PM GMT");
+                x.WithText("Last updated: September 5th - 2020 12:05 AM GMT");
 
 
 
@@ -294,7 +294,7 @@ namespace Bot.Modules
                 embed.WithColor(Color.Blue);
                 embed.WithFooter($"Created {daysAgo}");
             embed.Title += $"{guild.Name} \n";
-            if (guild.PremiumTier == PremiumTier.Tier1)
+            /*if (guild.PremiumTier == PremiumTier.Tier1)
                 embed.Title += $"<:KBBoost:731580776117698618>";
             else if (guild.PremiumTier == PremiumTier.Tier2)
                 embed.Title += $"<:KBBoost:731580776117698618> <:KBBoost:731580776117698618>";
@@ -303,7 +303,7 @@ namespace Bot.Modules
             if (guild.PremiumSubscriptionCount > 0 && guild.PremiumSubscriptionCount > 1)
                 embed.Title += $" ({guild.PremiumSubscriptionCount} boosts)";
             else
-                embed.Title += $"({guild.PremiumSubscriptionCount} boost)";
+                embed.Title += $"({guild.PremiumSubscriptionCount} boost)";*/
             embed.Description = $"{dot} ID: **{guild.Id}**" +
                 $"\n{dot} Owner: **{ownername.ToString()}**" +
                 $"\n{dot} Creation: **{guild.CreatedAt.DateTime.ToLongDateString()} {guild.CreatedAt.DateTime.ToLongTimeString()} UTC**" +
@@ -785,8 +785,8 @@ namespace Bot.Modules
             if (user.GuildPermissions.MuteMembers)
                 permissions += "Mute Members, ";
 
-            if (user.GuildPermissions.Stream)
-                permissions += "Stream, ";
+            //if (user.GuildPermissions.Stream)
+            //    permissions += "Stream, ";
 
             if (user.GuildPermissions.PrioritySpeaker)
                 permissions += "Priority Speaker, ";

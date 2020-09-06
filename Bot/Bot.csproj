@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -7,14 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Addons.Interactive" Version="1.0.1" />
-    <PackageReference Include="Discord.Addons.PassiveInteractive" Version="2.0.3" />
-    <PackageReference Include="Discord.Net" Version="2.2.0" />
-    <PackageReference Include="Discord.Net.Commands" Version="2.2.0" />
-    <PackageReference Include="Discord.Net.Core" Version="2.2.0" />
-    <PackageReference Include="Discord.Net.Rest" Version="2.2.0" />
-    <PackageReference Include="Discord.Net.Webhook" Version="2.2.0" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="2.2.0" />
+    <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Commands" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Core" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Rest" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.Webhook" Version="2.0.1" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="2.0.1" />
     <PackageReference Include="Gommon" Version="1.1.0" />
     <PackageReference Include="Google.Apis" Version="1.42.0" />
     <PackageReference Include="Google.Apis.Customsearch.v1" Version="1.42.0.1369" />
@@ -33,6 +31,12 @@
 
   <ItemGroup>
     <Folder Include="Models\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Discord.Addons.Interactive">
+      <HintPath>bin\Debug\netcoreapp2.1\Discord.Addons.Interactive.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

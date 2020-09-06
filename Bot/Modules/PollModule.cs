@@ -160,7 +160,7 @@ namespace Bot.Modules
                     + $"- You have {poll.PollDuration} to cast your vote"
                     )
                 .AddField("Pick one", answers);
-            var rcbd = new ReactionCallbackData("", embedBuilder.Build(), false, true, poll.PollDuration, async c => await PollEndedAsync(c, poll).ConfigureAwait(false));
+            var rcbd = new ReactionCallbackData("", embedBuilder.Build(), false, true, false, poll.PollDuration, async c => await PollEndedAsync(c, poll).ConfigureAwait(false));
             foreach (Emoji answerEmoji in poll.Answers.Select(x => x.AnswerEmoji))
             {
                 _ = rcbd.WithCallback(answerEmoji, (c, r) => AddVoteCount(r, poll));
