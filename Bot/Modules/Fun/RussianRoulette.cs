@@ -240,6 +240,7 @@ namespace Bot.Modules.Fun
                 if (NoLoss == true && Double == false)
                 {
                     lost.Coins += Bet;
+                    winner.Coins += Bet * 2;
                     await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost NOTHING due to **No Loss Day**!\n\n{AlivePlayers.ElementAt(0).Mention} won the game and got **{Bet} coins**!", ""));
                 }
                 else if (NoLoss == true && Double == true)
