@@ -258,6 +258,7 @@ namespace Bot.Modules.Fun
                     winner.Coins += Bet * 2;
                     await context.Channel.SendMessageAsync("", false, gameEmbed($"The cylinder spins...\n\n*BANG*\n\n{player.Mention} died and lost {Bet} Coins!\n\n{AlivePlayers.ElementAt(0).Mention} won the game and got {Bet} coins!", ""));
                 }
+                _globalUserAccounts.SaveAccounts();
                 endGame(host.Id);
                 gameended = true;
             }
