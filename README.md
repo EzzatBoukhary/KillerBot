@@ -22,7 +22,7 @@ KillerBot, a multi-purpose Discord Bot, was actively developed from April 2019 t
   
 - **Utility Commands**: Streamline server management with a collection of utility commands designed to simplify common tasks and enhance overall efficiency.
   
-- **Regular Updates and Support**: Benefit from dedicated support and frequent updates, ensuring that KillerBot remains relevant and responsive to the evolving needs of Discord communities.
+- **Regular Updates and Support**: Benefit from beta testing, dedicated support, and frequent updates, ensuring that KillerBot remains relevant and responsive to the evolving needs of Discord communities.
 
 ## Technologies Used
 
@@ -34,7 +34,11 @@ KillerBot was built using:
   
 - **JSON**: Employed JSON for efficient data storage, facilitating smooth operation and scalability.
   
-- **APIs and Webhooks**: Integrated various APIs and webhooks to enrich bot features and enhance user engagement.
+- **APIs and Webhooks**: Integrated various APIs (like Youtube API, OpenWeather, and more) and webhooks to enrich bot features and enhance user engagement.
+
+## Demo Examples:
+
+## Highlight Review:
 
 ## Conclusion
 
