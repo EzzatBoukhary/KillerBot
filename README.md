@@ -1,12 +1,13 @@
 # KillerBot
 
 ![KillerBot Logo](https://yt3.googleusercontent.com/ytc/AIf8zZTaFvoH5VBKvX0JnAzlxFLchc_mON6a_gLySF9u=s176-c-k-c0x00ffffff-no-rj)
+![Trailer](https://www.youtube.com/watch?v=1D4B9EFbSGk)
 
 **KillerBot** is a versatile Discord bot designed to enhance server functionality and user experience. Although the project is now discontinued, it stands as a testament to the skills and dedication poured into its development.
 
 ## Overview
 
-KillerBot, hosted on [GitHub](https://github.com/EzzatBoukhary/KillerBot), was actively developed from April 2019 to August 2022, during which it gained significant traction within the Discord community. With over 100,000 users across more than 600 servers, KillerBot boasted a wide array of functionalities, ranging from moderation tools to entertainment features, making it a valuable addition to any Discord server.
+KillerBot, a multi-purpose Discord Bot, was actively developed from April 2019 to August 2022, during which it gained significant traction within the Discord community. With over 100,000 users across more than 600 servers, KillerBot boasted a wide array of functionalities, ranging from moderation tools to entertainment features, making it a valuable addition to any Discord server.
 
 ## Key Features
 
