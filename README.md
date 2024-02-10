@@ -1,7 +1,7 @@
 # KillerBot
 
 ![KillerBot Logo](https://yt3.googleusercontent.com/ytc/AIf8zZTaFvoH5VBKvX0JnAzlxFLchc_mON6a_gLySF9u=s176-c-k-c0x00ffffff-no-rj)
-![Trailer](https://www.youtube.com/watch?v=1D4B9EFbSGk)
+[![Watch the video](https://i.ytimg.com/an_webp/1D4B9EFbSGk/mqdefault_6s.webp?du=3000&sqp=CN2Om64G&rs=AOn4CLCpFfWAcROEXubczeGmU_3F3v9WnA)](https://www.youtube.com/watch?v=1D4B9EFbSGk)
 
 **KillerBot** is a versatile Discord bot designed to enhance server functionality and user experience. Although the project is now discontinued, it stands as a testament to the skills and dedication poured into its development.
 
