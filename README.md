@@ -37,8 +37,13 @@ KillerBot was built using:
 - **APIs and Webhooks**: Integrated various APIs (like Youtube API, OpenWeather, and more) and webhooks to enrich bot features and enhance user engagement.
 
 ## Demo Examples:
+![User Interaction](https://github.com/EzzatBoukhary/KillerBot/blob/master/Discord_hA9bAlJ1pu.png)
+![Weather API Command](https://github.com/EzzatBoukhary/KillerBot/blob/master/Discord_WctbanG82J.png)
+![Trivia Command](https://github.com/EzzatBoukhary/KillerBot/blob/master/Discord_1v8G2STMOK.png)
+![Commands List](https://github.com/EzzatBoukhary/KillerBot/blob/master/Discord_O1jBmRCiJq.png)
 
 ## Highlight Review:
+![User Review](https://github.com/EzzatBoukhary/KillerBot/blob/master/chrome_IgSajfRq62.png)
 
 ## Conclusion
 
