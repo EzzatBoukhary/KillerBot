@@ -8,7 +8,7 @@ Watch the bot trailer here: https://www.youtube.com/watch?v=1D4B9EFbSGk
 
 ## Overview
 
-KillerBot, a multi-purpose Discord Bot, was actively developed from April 2019 to August 2022, during which it gained significant traction within the Discord community. With over 100,000 users across more than 600 servers, KillerBot boasted a wide array of functionalities, ranging from moderation tools to entertainment features, making it a valuable addition to any Discord server.
+KillerBot, a multi-purpose Discord Bot, was actively developed from April 2019 to August 2022, during which it gained significant traction within the Discord community. With over 250,000 users across more than 600 servers, KillerBot boasted a wide array of functionalities, ranging from moderation tools to entertainment features, making it a valuable addition to any Discord server.
 
 ## Key Features
 
